@@ -1,0 +1,17 @@
+{
+  "name": "fincalc-pro",
+  "version": "1.0.0",
+  "description": "FinCalc Pro - Professional Financial Calculator Website with Live NSE/BSE/Gold Data",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.16.0"
+  },
+  "keywords": ["emi-calculator", "sip-calculator", "home-loan", "gold-rates", "nse", "bse"],
+  "author": "FinCalc Pro",
+  "license": "MIT"
+}

@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>FinCalc Pro — Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --accent:       #6366f1;
+      --accent-dark:  #4f46e5;
+      --accent-dim:   rgba(99,102,241,0.10);
+      --green:        #16a34a;
+      --green-bg:     rgba(22,163,74,0.08);
+      --red:          #dc2626;
+      --red-bg:       rgba(220,38,38,0.08);
+      --gold:         #d97706;
+      --gold-bg:      rgba(217,119,6,0.08);
+      --bg:           #f8fafc;
+      --bg-card:      #ffffff;
+      --bg-sidebar:   #0f172a;
+      --border:       rgba(15,23,42,0.09);
+      --text-1:       #0f172a;
+      --text-2:       #475569;
+      --text-3:       #94a3b8;
+      --radius-sm:    8px;
+      --radius-md:    12px;
+      --radius-lg:    18px;
+      --font:         'Inter', -apple-system, sans-serif;
+      --shadow-sm:    0 1px 4px rgba(15,23,42,0.06);
+      --shadow-md:    0 4px 24px rgba(15,23,42,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── LOGIN WALL ───────────────────────────────── */
+    #loginWall {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #loginWall.hidden { display: none; }
+
+    .login-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 24px;
+      padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-logo-icon svg { color: #fff; }
+    .login-logo-text { font-size: 1.2rem; font-weight: 800; color: #f1f5f9; }
+    .login-logo-text span { color: #818cf8; }
+    .login-badge {
+      display: inline-block; background: rgba(99,102,241,0.18);
+      color: #818cf8; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px; margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .login-title { font-size: 1.55rem; font-weight: 800; color: #f1f5f9; margin-bottom: 6px; }
+    .login-sub   { font-size: 0.88rem; color: #94a3b8; margin-bottom: 28px; }
+
+    .login-field { margin-bottom: 16px; }
+    .login-field label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: #94a3b8; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .login-field input {
+      width: 100%; padding: 11px 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-sm); color: #f1f5f9;
+      font-family: var(--font); font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .login-field input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+    .login-field input::placeholder { color: #475569; }
+
+    .login-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff; border: none; border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; margin-top: 8px;
+      box-shadow: 0 4px 18px rgba(99,102,241,0.4);
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+    .login-err {
+      color: #fca5a5; font-size: 0.82rem; text-align: center;
+      margin-top: 12px; display: none;
+    }
+    .login-err.show { display: block; }
+
+    /* ── SIDEBAR ──────────────────────────────────── */
+    .sidebar {
+      width: 240px; min-height: 100vh;
+      background: var(--bg-sidebar);
+      display: flex; flex-direction: column;
+      flex-shrink: 0; position: sticky; top: 0; height: 100vh;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sidebar-logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-logo-text { font-size: 1rem; font-weight: 800; color: #f1f5f9; }
+    .sidebar-logo-text em { color: #818cf8; font-style: normal; }
+    .admin-badge-side {
+      display: block; font-size: 0.58rem; font-weight: 700;
+      color: #6366f1; letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(99,102,241,0.15); padding: 2px 7px;
+      border-radius: 10px; margin-top: 2px; width: fit-content;
+    }
+
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+    .sidebar-label {
+      font-size: 0.62rem; font-weight: 700; color: #475569;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 12px 8px 6px;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: var(--radius-sm);
+      font-size: 0.84rem; font-weight: 500; color: #94a3b8;
+      cursor: pointer; transition: all 0.18s; text-decoration: none;
+      margin-bottom: 2px;
+    }
+    .sidebar-item svg { flex-shrink: 0; }
+    .sidebar-item:hover  { color: #f1f5f9; background: rgba(255,255,255,0.05); }
+    .sidebar-item.active { color: #f1f5f9; background: rgba(99,102,241,0.18); }
+    .sidebar-item.active svg { color: #818cf8; }
+
+    .sidebar-bottom {
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .logout-btn {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 9px 10px; border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 0.84rem; font-weight: 500;
+      color: #94a3b8; cursor: pointer; background: none; border: none;
+      transition: all 0.18s;
+    }
+    .logout-btn:hover { color: #fca5a5; background: rgba(220,38,38,0.08); }
+
+    /* ── MAIN CONTENT ─────────────────────────────── */
+    .admin-main {
+      flex: 1; padding: 32px 36px; overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Top bar */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+    }
+    .topbar-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    .topbar-sub   { font-size: 0.85rem; color: var(--text-2); margin-top: 3px; }
+    .live-status {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 8px 16px;
+      font-size: 0.78rem; font-weight: 500; color: var(--text-2);
+      box-shadow: var(--shadow-sm);
+    }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+      50%      { opacity: .75; box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 10px;
+    }
+    .stat-icon.blue   { background: rgba(99,102,241,0.10); }
+    .stat-icon.green  { background: var(--green-bg); }
+    .stat-icon.gold   { background: var(--gold-bg); }
+    .stat-icon.purple { background: rgba(139,92,246,0.10); }
+    .stat-label { font-size: 0.73rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; }
+    .stat-val   { font-size: 1.35rem; font-weight: 800; color: var(--text-1); margin-top: 3px; letter-spacing: -0.02em; }
+    .stat-note  { font-size: 0.72rem; color: var(--text-3); margin-top: 2px; }
+
+    /* Section cards */
+    .data-section {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 20px;
+      box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .data-section-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(99,102,241,0.03), transparent);
+    }
+    .data-section-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .data-section-icon.indigo { background: rgba(99,102,241,0.10); }
+    .data-section-icon.gold   { background: var(--gold-bg); }
+    .data-section-icon.silver { background: rgba(148,163,184,0.15); }
+    .data-section-title { font-size: 0.97rem; font-weight: 700; }
+    .data-section-sub   { font-size: 0.78rem; color: var(--text-3); margin-top: 1px; }
+
+    .data-section-body { padding: 22px 24px; }
+
+    .fields-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-group label {
+      font-size: 0.75rem; font-weight: 600; color: var(--text-2);
+      text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .field-hint { font-size: 0.68rem; color: var(--text-3); margin-top: 1px; }
+    .field-input-wrap { position: relative; }
+    .field-prefix {
+      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+      font-size: 0.82rem; font-weight: 600; color: var(--text-3);
+      pointer-events: none;
+    }
+    .field-input {
+      width: 100%; padding: 9px 12px 9px 26px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text-1);
+      font-family: var(--font); font-size: 0.92rem; font-weight: 600;
+      outline: none; transition: all 0.18s;
+    }
+    .field-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.10);
+      background: #fff;
+    }
+    .field-input.no-prefix { padding-left: 12px; }
+
+    /* Action row */
+    .action-row {
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap; margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 22px; border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.30);
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.40); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-reset {
+      background: var(--bg); border: 1.5px solid var(--border);
+      color: var(--text-2);
+    }
+    .btn-reset:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+    .toast {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 0.82rem; font-weight: 600; padding: 9px 16px;
+      border-radius: 20px; opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { color: var(--green); background: var(--green-bg); border: 1px solid rgba(22,163,74,0.2); }
+    .toast.error   { color: var(--red);   background: var(--red-bg);   border: 1px solid rgba(220,38,38,0.2); }
+
+    /* Last update strip */
+    .update-strip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; background: var(--green-bg);
+      border: 1px solid rgba(22,163,74,0.18);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem; font-weight: 500; color: var(--green);
+      margin-bottom: 20px; display: none;
+    }
+    .update-strip.show { display: flex; }
+
+    /* History log */
+    .log-table-wrap {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .log-table-head {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      font-weight: 700; font-size: 0.92rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .log-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    .log-table th {
+      padding: 10px 20px; background: var(--bg);
+      text-align: left; font-size: 0.68rem; font-weight: 700;
+      color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .log-table td {
+      padding: 11px 20px; border-top: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .log-table td:first-child { color: var(--text-1); font-weight: 600; }
+    .log-table tr:hover td { background: rgba(99,102,241,0.025); }
+    .badge-field {
+      display: inline-block; padding: 2px 8px; border-radius: 5px;
+      font-size: 0.7rem; font-weight: 700;
+      background: rgba(99,102,241,0.08); color: var(--accent);
+    }
+    .log-empty {
+      text-align: center; padding: 40px;
+      color: var(--text-3); font-size: 0.85rem;
+    }
+
+    /* Quick update individual */
+    .quick-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 12px;
+    }
+    .quick-card {
+      background: var(--bg-card); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px;
+      box-shadow: var(--shadow-sm); transition: border-color 0.18s;
+    }
+    .quick-card:hover { border-color: var(--border-active); }
+    .quick-card-label { font-size: 0.72rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .quick-card-cur { font-size: 1.25rem; font-weight: 800; color: var(--text-1); letter-spacing: -0.02em; }
+    .quick-card-change { font-size: 0.76rem; font-weight: 600; }
+    .quick-card-change.up   { color: var(--green); }
+    .quick-card-change.down { color: var(--red); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .admin-main { padding: 20px 16px; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: 1fr; }
+      .fields-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN WALL
+══════════════════════════════════════ -->
+<div id="loginWall">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      </div>
+      <div>
+        <div class="login-logo-text">FinCalc<span>Pro</span></div>
+        <div style="font-size:0.62rem;color:#6366f1;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Admin Portal</div>
+      </div>
+    </div>
+    <h1 class="login-title">Welcome back 👋</h1>
+    <p class="login-sub">Sign in to manage live market data and rates.</p>
+
+    <div class="login-field">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">❌ Invalid credentials. Try again.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP LAYOUT (sidebar + main)
+══════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    </div>
+    <div>
+      <div class="sidebar-logo-text">FinCalc<em>Pro</em></div>
+      <span class="admin-badge-side">Admin</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-label">Dashboard</div>
+    <div class="sidebar-item active" onclick="showSection('overview')" id="nav-overview">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </div>
+
+    <div class="sidebar-label" style="margin-top:8px;">Home Loans Platform</div>
+    <div class="sidebar-item" onclick="showSection('homeloans')" id="nav-homeloans">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Loan Leads &amp; Rates
+    </div>
+
+    <div class="sidebar-label" style="margin-top:8px;">Data Entry</div>
+    <div class="sidebar-item" onclick="showSection('market')" id="nav-market">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Market Indices
+    </div>
+    <div class="sidebar-item" onclick="showSection('gold')" id="nav-gold">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Gold &amp; Metals
+    </div>
+
+    <div class="sidebar-label" style="margin-top:8px;">Reports</div>
+    <div class="sidebar-item" onclick="showSection('history')" id="nav-history">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Update History
+    </div>
+    <a class="sidebar-item" href="/" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      View Live Site
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="doLogout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<main class="admin-main">
+
+  <!-- ══ OVERVIEW ══════════════════════════════════ -->
+  <section class="page-section active" id="section-overview">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Dashboard Overview</div>
+        <div class="topbar-sub">Live market data status and quick summary</div>
+      </div>
+      <div class="live-status">
+        <div class="live-dot"></div>
+        <span id="lastUpdateTime">Connecting...</span>
+      </div>
+    </div>
+
+    <div class="update-strip" id="updateStrip">
+      ✅ Data updated successfully — changes are now live on the website.
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">📈</div>
+        <div class="stat-label">Nifty 50</div>
+        <div class="stat-val" id="ovNifty">—</div>
+        <div class="stat-note" id="ovNiftyChg">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">📊</div>
+        <div class="stat-label">Sensex</div>
+        <div class="stat-val" id="ovSensex">—</div>
+        <div class="stat-note" id="ovSensexChg">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">🥇</div>
+        <div class="stat-label">Gold 24k / 10g</div>
+        <div class="stat-val" id="ovGold">—</div>
+        <div class="stat-note" id="ovGoldChg">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">🥈</div>
+        <div class="stat-label">Silver / 10g</div>
+        <div class="stat-val" id="ovSilver">—</div>
+        <div class="stat-note" id="ovSilverChg">—</div>
+      </div>
+    </div>
+
+    <div class="quick-grid" id="quickGrid">
+      <!-- filled by JS -->
+    </div>
+  </section>
+
+  <!-- ══ HOME LOANS PLATFORM ═════════════════════════ -->
+  <section class="page-section" id="section-homeloans">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Home Loan Applications &amp; Lender Rates</div>
+        <div class="topbar-sub">Manage customer loan leads, update application stages, and update bank interest rates.</div>
+      </div>
+    </div>
+
+    <!-- Loan Leads CRM -->
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon indigo">📋</div>
+        <div>
+          <div class="data-section-title">Loan Application Leads &amp; Tracking CRM</div>
+          <div class="data-section-sub">Update applicant progress stage (1: Submitted ➔ 7: Disbursed)</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:16px">
+          <div class="field-group">
+            <label>Application ID</label>
+            <input type="text" id="adminAppId" class="field-input no-prefix" placeholder="e.g. HL-2026-8942" value="HL-2026-8942"/>
+          </div>
+          <div class="field-group">
+            <label>New Stage</label>
+            <select id="adminAppStage" class="field-input no-prefix" style="height:42px;font-weight:700">
+              <option value="1">1: Application Submitted</option>
+              <option value="2">2: Documents Pending</option>
+              <option value="3" selected>3: Credit Assessment</option>
+              <option value="4">4: Legal Title Verification</option>
+              <option value="5">5: Technical Valuation</option>
+              <option value="6">6: Loan Sanctioned</option>
+              <option value="7">7: Disbursed &amp; Closed</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Stage Remark / Notes</label>
+            <input type="text" id="adminAppNotes" class="field-input no-prefix" placeholder="e.g. Legal check completed successfully." value="Credit score verified. Property legal check queued."/>
+          </div>
+        </div>
+        <button class="btn btn-submit" onclick="updateLeadStage()">Update Applicant Stage →</button>
+      </div>
+    </div>
+
+    <!-- Lender Rate Update -->
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon gold">🏦</div>
+        <div>
+          <div class="data-section-title">Lender Interest Rate Management</div>
+          <div class="data-section-sub">Update interest rate ranges &amp; processing fees for Banks &amp; HFCs</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px">
+          <div class="field-group">
+            <label>Lender</label>
+            <select id="adminLenderSelect" class="field-input no-prefix" style="height:42px;font-weight:700">
+              <option value="sbi">SBI (State Bank of India)</option>
+              <option value="hdfc">HDFC Bank</option>
+              <option value="icici">ICICI Bank</option>
+              <option value="axis">Axis Bank</option>
+              <option value="bob">Bank of Baroda</option>
+              <option value="union">Union Bank of India</option>
+              <option value="lichfl">LIC Housing Finance</option>
+              <option value="bajajhf">Bajaj Housing Finance</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Min Rate (%)</label>
+            <input type="number" id="adminLenderMinRate" class="field-input no-prefix" placeholder="8.50" step="0.05" value="8.50"/>
+          </div>
+          <div class="field-group">
+            <label>Max Rate (%)</label>
+            <input type="number" id="adminLenderMaxRate" class="field-input no-prefix" placeholder="9.65" step="0.05" value="9.65"/>
+          </div>
+          <div class="field-group">
+            <label>Processing Fee Text</label>
+            <input type="text" id="adminLenderFee" class="field-input no-prefix" placeholder="0.35% (Max ₹10,000)" value="0.35% (Min ₹2,000, Max ₹10,000 + GST)"/>
+          </div>
+        </div>
+        <button class="btn btn-submit" onclick="updateLenderRateAdmin()">Save Rate Update →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MARKET INDICES ═════════════════════════════ -->
+  <section class="page-section" id="section-market">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Market Indices</div>
+        <div class="topbar-sub">Manually set NSE / BSE index values. Changes broadcast live via WebSocket.</div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon indigo">📈</div>
+        <div>
+          <div class="data-section-title">Nifty 50 — NSE</div>
+          <div class="data-section-sub">Set current value and previous close</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>Current Value</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyVal" class="field-input" placeholder="24853.15" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Previous Close</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyPrev" class="field-input" placeholder="24725.75" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Day Open</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyOpen" class="field-input" placeholder="24780.00" step="0.01"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon indigo" style="background:rgba(245,158,11,0.10);">📊</div>
+        <div>
+          <div class="data-section-title">Sensex — BSE</div>
+          <div class="data-section-sub">Set current value and previous close</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>Current Value</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="sensexVal" class="field-input" placeholder="81463.09" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Previous Close</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="sensexPrev" class="field-input" placeholder="81506.29" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Day Open</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="sensexOpen" class="field-input" placeholder="81520.00" step="0.01"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon" style="background:rgba(139,92,246,0.10);">🏦</div>
+        <div>
+          <div class="data-section-title">Bank Nifty — NSE</div>
+          <div class="data-section-sub">Set current value and previous close</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>Current Value</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="bankNiftyVal" class="field-input" placeholder="53420.80" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Previous Close</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="bankNiftyPrev" class="field-input" placeholder="53250.00" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Day Open</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="bankNiftyOpen" class="field-input" placeholder="53300.00" step="0.01"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon" style="background:rgba(20,184,166,0.10);">💻</div>
+        <div>
+          <div class="data-section-title">Nifty IT — NSE</div>
+          <div class="data-section-sub">Set current value and previous close</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>Current Value</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyITVal" class="field-input" placeholder="40125.50" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Previous Close</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyITPrev" class="field-input" placeholder="39980.00" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Day Open</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="niftyITOpen" class="field-input" placeholder="40000.00" step="0.01"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-submit" onclick="submitMarket()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Push Live
+      </button>
+      <button class="btn btn-reset" onclick="resetMarket()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reset to Defaults
+      </button>
+      <div class="toast" id="marketToast"></div>
+    </div>
+  </section>
+
+  <!-- ══ GOLD & METALS ══════════════════════════════ -->
+  <section class="page-section" id="section-gold">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Gold & Metals</div>
+        <div class="topbar-sub">Set per-gram rates. 22k/20k/18k auto-calculate if left blank.</div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon gold">🥇</div>
+        <div>
+          <div class="data-section-title">Gold Rates (per gram)</div>
+          <div class="data-section-sub">Enter rates in ₹ per gram</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>24K Gold (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="gold24Val" class="field-input" placeholder="9420" step="1" oninput="autoCalcGold()"/>
+            </div>
+            <div class="field-hint">Purest form — auto-calculates lower karats</div>
+          </div>
+          <div class="field-group">
+            <label>22K Gold (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="gold22Val" class="field-input" placeholder="8635" step="1"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>20K Gold (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="gold20Val" class="field-input" placeholder="7850" step="1"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>18K Gold (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="gold18Val" class="field-input" placeholder="7065" step="1"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>24K Prev Close (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="gold24Prev" class="field-input" placeholder="9395" step="1"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-section-head">
+        <div class="data-section-icon silver">🥈</div>
+        <div>
+          <div class="data-section-title">Silver & Platinum</div>
+          <div class="data-section-sub">Per gram rates</div>
+        </div>
+      </div>
+      <div class="data-section-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label>Silver (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="silverVal" class="field-input" placeholder="105.50" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Silver Prev Close</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="silverPrev" class="field-input" placeholder="104.80" step="0.01"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Platinum (per gram)</label>
+            <div class="field-input-wrap">
+              <span class="field-prefix">₹</span>
+              <input type="number" id="platinumVal" class="field-input" placeholder="2950" step="1"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-submit" onclick="submitGold()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Push Live
+      </button>
+      <button class="btn btn-reset" onclick="resetGold()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reset to Defaults
+      </button>
+      <div class="toast" id="goldToast"></div>
+    </div>
+  </section>
+
+  <!-- ══ HISTORY ════════════════════════════════════ -->
+  <section class="page-section" id="section-history">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Update History</div>
+        <div class="topbar-sub">Log of all manual data entries in this session</div>
+      </div>
+      <button class="btn btn-reset" onclick="clearHistory()" style="font-size:0.8rem;padding:8px 16px;">
+        Clear Log
+      </button>
+    </div>
+
+    <div class="log-table-wrap">
+      <div class="log-table-head">
+        📋 Session Log
+        <span style="font-size:0.75rem;font-weight:500;color:#94a3b8;" id="logCount">0 entries</span>
+      </div>
+      <div id="logBody">
+        <div class="log-empty">No updates yet. Use the Market or Gold pages to push new values.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL — JavaScript
+═══════════════════════════════════════════════ */
+
+const ADMIN_KEY = 'admin123';
+const DEFAULTS = {
+  nifty:     { value: 24853.15, prev: 24725.75, open: 24780.00 },
+  sensex:    { value: 81463.09, prev: 81506.29, open: 81520.00 },
+  bankNifty: { value: 53420.80, prev: 53250.00, open: 53300.00 },
+  niftyIT:   { value: 40125.50, prev: 39980.00, open: 40000.00 },
+  gold24:    { value: 9420, prev: 9395 },
+  gold22:    { value: 8635 },
+  gold20:    { value: 7850 },
+  gold18:    { value: 7065 },
+  silver:    { value: 105.50, prev: 104.80 },
+  platinum:  { value: 2950 }
+};
+
+let sessionLog = [];
+let liveData = null;
+
+// ── Login ──────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  if (u === 'admin' && p === 'admin123') {
+    document.getElementById('loginWall').classList.add('hidden');
+    initWS();
+  } else {
+    err.classList.add('show');
+    document.getElementById('loginPass').value = '';
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+function doLogout() {
+  document.getElementById('loginWall').classList.remove('hidden');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── Sidebar navigation ─────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+}
+
+// ── WebSocket (read-only for overview) ────────────
+function initWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === 'market') {
+      liveData = d;
+      updateOverview(d);
+    }
+  };
+  ws.onerror = () => {};
+}
+
+function updateOverview(d) {
+  const fmt = v => '₹' + v.toLocaleString('en-IN', {minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtG = v => '₹' + v.toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const chg = (v,p) => (v-p >= 0 ? '▲ +' : '▼ ') + (v-p).toFixed(2) + ' (' + ((v-p)/p*100).toFixed(2) + '%)';
+
+  // Nifty
+  document.getElementById('ovNifty').textContent = fmt(d.indices.nifty.value);
+  document.getElementById('ovNiftyChg').textContent = chg(d.indices.nifty.value, d.indices.nifty.prev);
+
+  // Sensex
+  document.getElementById('ovSensex').textContent = fmt(d.indices.sensex.value);
+  document.getElementById('ovSensexChg').textContent = chg(d.indices.sensex.value, d.indices.sensex.prev);
+
+  // Gold
+  const g10 = d.gold.g24 * 10;
+  document.getElementById('ovGold').textContent = fmtG(g10);
+  document.getElementById('ovGoldChg').textContent = (d.gold.ch24 >= 0 ? '▲ +' : '▼ ') + Math.abs(d.gold.ch24) + '/g';
+
+  // Silver
+  document.getElementById('ovSilver').textContent = fmtG(d.gold.silver * 10);
+
+  // last time
+  document.getElementById('lastUpdateTime').textContent = 'Last tick: ' + d.ts;
+
+  // Quick cards
+  const cards = [
+    { label:'Bank Nifty', val: fmt(d.indices.bankNifty.value), chg: d.indices.bankNifty.change },
+    { label:'Nifty IT',   val: fmt(d.indices.niftyIT.value),   chg: d.indices.niftyIT.change   },
+    { label:'Gold 22K',   val: fmtG(d.gold.g22) + '/g',        chg: null },
+    { label:'Gold 18K',   val: fmtG(d.gold.g18) + '/g',        chg: null },
+    { label:'Platinum',   val: fmtG(d.gold.platinum) + '/g',   chg: null },
+    { label:'Silver',     val: '₹' + d.gold.silver + '/g',     chg: null },
+  ];
+  document.getElementById('quickGrid').innerHTML = cards.map(c => `
+    <div class="quick-card">
+      <div class="quick-card-label">${c.label}</div>
+      <div class="quick-card-cur">${c.val}</div>
+      ${c.chg !== null ? `<div class="quick-card-change ${c.chg>=0?'up':'down'}">${c.chg>=0?'▲ +':'▼ '}${Math.abs(c.chg).toFixed(2)}</div>` : ''}
+    </div>`).join('');
+}
+
+// ── Helpers ─────────────────────────────────────
+function num(id)   { return parseFloat(document.getElementById(id).value) || null; }
+function toast(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+async function postUpdate(payload) {
+  const res = await fetch('/api/admin/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+    body: JSON.stringify(payload)
+  });
+  return res.ok;
+}
+
+function addLog(type, fields) {
+  const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  sessionLog.unshift({ ts, type, fields });
+  renderLog();
+}
+
+function renderLog() {
+  const body = document.getElementById('logBody');
+  document.getElementById('logCount').textContent = sessionLog.length + ' entr' + (sessionLog.length===1?'y':'ies');
+  if (!sessionLog.length) {
+    body.innerHTML = '<div class="log-empty">No updates yet.</div>';
+    return;
+  }
+  body.innerHTML = `
+    <table class="log-table">
+      <thead><tr>
+        <th>Time</th><th>Type</th><th>Fields Updated</th>
+      </tr></thead>
+      <tbody>${sessionLog.map(r => `
+        <tr>
+          <td>${r.ts}</td>
+          <td><span class="badge-field">${r.type}</span></td>
+          <td>${r.fields}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function clearHistory() {
+  sessionLog = [];
+  renderLog();
+}
+
+// ── Auto-calc gold karats ────────────────────────
+function autoCalcGold() {
+  const v24 = num('gold24Val');
+  if (!v24) return;
+  document.getElementById('gold22Val').value = Math.round(v24 * 0.9167);
+  document.getElementById('gold20Val').value = Math.round(v24 * 0.8333);
+  document.getElementById('gold18Val').value = Math.round(v24 * 0.75);
+}
+
+// ── Market Submit ────────────────────────────────
+async function submitMarket() {
+  const payload = {};
+  const fieldsUpdated = [];
+
+  const map = [
+    ['nifty',     'niftyVal',     'niftyPrev',     'niftyOpen'    ],
+    ['sensex',    'sensexVal',    'sensexPrev',    'sensexOpen'   ],
+    ['bankNifty', 'bankNiftyVal', 'bankNiftyPrev', 'bankNiftyOpen'],
+    ['niftyIT',   'niftyITVal',   'niftyITPrev',   'niftyITOpen'  ]
+  ];
+
+  map.forEach(([key, vId, pId, oId]) => {
+    const v = num(vId), p = num(pId), o = num(oId);
+    if (v || p || o) {
+      payload[key] = {};
+      if (v) { payload[key].value = v; fieldsUpdated.push(key + '.value'); }
+      if (p) { payload[key].prev  = p; fieldsUpdated.push(key + '.prev');  }
+      if (o) { payload[key].open  = o; fieldsUpdated.push(key + '.open');  }
+    }
+  });
+
+  if (!fieldsUpdated.length) {
+    toast('marketToast', '⚠️ No values entered', 'error');
+    return;
+  }
+
+  const ok = await postUpdate({ indices: payload });
+  if (ok) {
+    toast('marketToast', '✅ Market data pushed live!', 'success');
+    showUpdateStrip();
+    addLog('Market Indices', fieldsUpdated.join(', '));
+  } else {
+    toast('marketToast', '❌ Server error. Try again.', 'error');
+  }
+}
+
+function resetMarket() {
+  const d = DEFAULTS;
+  document.getElementById('niftyVal').value     = d.nifty.value;
+  document.getElementById('niftyPrev').value    = d.nifty.prev;
+  document.getElementById('niftyOpen').value    = d.nifty.open;
+  document.getElementById('sensexVal').value    = d.sensex.value;
+  document.getElementById('sensexPrev').value   = d.sensex.prev;
+  document.getElementById('sensexOpen').value   = d.sensex.open;
+  document.getElementById('bankNiftyVal').value  = d.bankNifty.value;
+  document.getElementById('bankNiftyPrev').value = d.bankNifty.prev;
+  document.getElementById('bankNiftyOpen').value = d.bankNifty.open;
+  document.getElementById('niftyITVal').value   = d.niftyIT.value;
+  document.getElementById('niftyITPrev').value  = d.niftyIT.prev;
+  document.getElementById('niftyITOpen').value  = d.niftyIT.open;
+  toast('marketToast', 'Fields reset to defaults', 'success');
+}
+
+// ── Gold Submit ──────────────────────────────────
+async function submitGold() {
+  const payload = {};
+  const fieldsUpdated = [];
+
+  const g24 = num('gold24Val'), g22 = num('gold22Val'), g20 = num('gold20Val'),
+        g18 = num('gold18Val'), g24p = num('gold24Prev'),
+        sv  = num('silverVal'),  svp = num('silverPrev'),
+        pt  = num('platinumVal');
+
+  if (g24)  { payload.gold24k  = { value: g24  }; fieldsUpdated.push('Gold 24K'); }
+  if (g22)  { payload.gold22k  = { value: g22  }; fieldsUpdated.push('Gold 22K'); }
+  if (g20)  { payload.gold20k  = { value: g20  }; fieldsUpdated.push('Gold 20K'); }
+  if (g18)  { payload.gold18k  = { value: g18  }; fieldsUpdated.push('Gold 18K'); }
+  if (g24p) { if (!payload.gold24k) payload.gold24k = {}; payload.gold24k.prev = g24p; fieldsUpdated.push('Gold 24K prev'); }
+  if (sv)   { payload.silver    = { value: sv   }; fieldsUpdated.push('Silver'); }
+  if (svp)  { if (!payload.silver) payload.silver = {}; payload.silver.prev = svp; }
+  if (pt)   { payload.platinum  = { value: pt   }; fieldsUpdated.push('Platinum'); }
+
+  if (!fieldsUpdated.length) {
+    toast('goldToast', '⚠️ No values entered', 'error');
+    return;
+  }
+
+  const ok = await postUpdate({ metals: payload });
+  if (ok) {
+    toast('goldToast', '✅ Metal rates pushed live!', 'success');
+    showUpdateStrip();
+    addLog('Gold & Metals', fieldsUpdated.join(', '));
+  } else {
+    toast('goldToast', '❌ Server error. Try again.', 'error');
+  }
+}
+
+function resetGold() {
+  const d = DEFAULTS;
+  document.getElementById('gold24Val').value  = d.gold24.value;
+  document.getElementById('gold24Prev').value = d.gold24.prev;
+  document.getElementById('gold22Val').value  = d.gold22.value;
+  document.getElementById('gold20Val').value  = d.gold20.value;
+  document.getElementById('gold18Val').value  = d.gold18.value;
+  document.getElementById('silverVal').value  = d.silver.value;
+  document.getElementById('silverPrev').value = d.silver.prev;
+  document.getElementById('platinumVal').value= d.platinum.value;
+  toast('goldToast', 'Fields reset to defaults', 'success');
+}
+
+async function updateLeadStage() {
+  const appId = document.getElementById('adminAppId').value.trim();
+  const stage = document.getElementById('adminAppStage').value;
+  const notes = document.getElementById('adminAppNotes').value.trim();
+
+  if (!appId) { alert('Please enter an Application ID'); return; }
+
+  const res = await fetch('/api/admin/leads/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+    body: JSON.stringify({ applicationId: appId, statusStep: stage, notes })
+  });
+
+  const data = await res.json();
+  if (data.ok) {
+    alert(`✅ Application ${appId} updated to Stage ${stage}: "${data.app.statusText}"`);
+    addLog('Home Loans Lead', `${appId} -> Stage ${stage}`);
+    showUpdateStrip();
+  } else {
+    alert(`❌ Error: ${data.error}`);
+  }
+}
+
+async function updateLenderRateAdmin() {
+  const lenderId = document.getElementById('adminLenderSelect').value;
+  const minRate = parseFloat(document.getElementById('adminLenderMinRate').value);
+  const maxRate = parseFloat(document.getElementById('adminLenderMaxRate').value);
+  const fee = document.getElementById('adminLenderFee').value;
+
+  const res = await fetch('/api/admin/lenders/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+    body: JSON.stringify({ lenderId, minRate, maxRate, processingFee: fee })
+  });
+
+  const data = await res.json();
+  if (data.ok) {
+    alert(`✅ Updated ${data.lender.name} rate to ${minRate}% - ${maxRate}%`);
+    addLog('Lender Rates', `${data.lender.code}: ${minRate}%`);
+    showUpdateStrip();
+  } else {
+    alert(`❌ Error: ${data.error}`);
+  }
+}
+
+function showUpdateStrip() {
+  const s = document.getElementById('updateStrip');
+  s.classList.add('show');
+  setTimeout(() => s.classList.remove('show'), 5000);
+}
+
+// allow pressing Enter on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginWall').classList.contains('hidden')) {
+    doLogin();
+  }
+});
+</script>
+
+</body>
+</html>
