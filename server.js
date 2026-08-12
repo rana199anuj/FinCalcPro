@@ -773,8 +773,13 @@ wss.on('connection', ws => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`\n✅  FinCalc Pro  →  http://localhost:${PORT}`);
-  console.log(`📡  WebSocket    →  ws://localhost:${PORT}/ws`);
-  console.log(`📊  Broadcasting live market data every 3s\n`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`\n✅  FinCalc Pro  →  http://localhost:${PORT}`);
+    console.log(`📡  WebSocket    →  ws://localhost:${PORT}/ws`);
+    console.log(`📊  Broadcasting live market data every 3s\n`);
+  });
+}
+
+module.exports = app;
+
