@@ -388,6 +388,9 @@
       .fields-grid { grid-template-columns: 1fr; }
     }
   </style>
+  
+  <!-- Vercel Web Analytics -->
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 
@@ -1076,7 +1079,7 @@ function autoCalcGold() {
   document.getElementById('gold18Val').value = Math.round(v24 * 0.75);
 }
 
-// ── Market Submit ────────────────────────────────
+// ── Market Submit ───────────���────────────────────
 async function submitMarket() {
   const payload = {};
   const fieldsUpdated = [];
