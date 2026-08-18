@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="FinCalc Pro — India's Premier Home Loan Discovery, Search & Comparison Platform. Compare interest rates across SBI, HDFC, ICICI, Axis, Bajaj, LIC HFL & 15+ Banks/HFCs with live eligibility & total loan cost scoring."/>
-  <meta name="keywords" content="Home loan comparison India, EMI calculator, home loan eligibility, balance transfer calculator, SBI home loan, HDFC home loan, ICICI home loan, Bajaj Housing Finance, HFC rates 2026, Noida home loan"/>
-  <title>FinCalc Pro | India's #1 Home Loan Discovery & Comparison Platform</title>
+  <meta name="description" content="FinCalc Pro — India's most complete free financial calculator. Home Loan EMI, SIP, FD, Gold Rates, NSE/BSE live data and 25+ calculators."/>
+  <meta name="keywords" content="EMI calculator, SIP calculator, home loan, gold rates, NSE, BSE, FD calculator, PPF, financial planning India"/>
+  <title>FinCalc Pro | India's #1 Financial Calculator — EMI, SIP, Gold Rates</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -13,8 +13,6 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css"/>
-  <!-- Vercel Web Analytics -->
-  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -27,73 +25,72 @@
     <!-- Brand -->
     <a class="brand" href="#" onclick="showHome();return false;">
       <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       </div>
-      <span class="brand-text">FinCalc<span class="brand-accent">Pro</span> <span class="brand-tagline">Home Loans</span></span>
+      <span class="brand-text">FinCalc<span class="brand-accent">Pro</span></span>
     </a>
 
     <!-- Desktop Nav Tabs -->
     <nav class="nav-tabs" id="navTabs">
       <a class="nav-tab active" href="#" onclick="showHome();return false;" id="tab-home">Home</a>
-      
-      <!-- Smart Search & Match -->
-      <a class="nav-tab" href="#" onclick="openCalc('search-wizard');return false;" id="tab-search">🔍 Loan Wizard</a>
-
-      <!-- Home Loans Dropdown -->
       <div class="nav-tab-dropdown">
-        <a class="nav-tab" href="#" id="tab-emi">Home Loans <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a class="nav-tab" href="#" id="tab-emi">EMI Loans <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
         <div class="dropdown-panel">
           <div class="dp-col">
-            <span class="dp-heading">🏠 Discovery & Tools</span>
-            <a href="#" onclick="openCalc('compare-lenders');return false;">Compare All Lenders</a>
-            <a href="#" onclick="openCalc('home-eligibility');return false;">Eligibility & FOIR Engine</a>
-            <a href="#" onclick="openCalc('home-loan');return false;">EMI & Prepayment Calculator</a>
-            <a href="#" onclick="openCalc('home-balance-transfer');return false;">Balance Transfer Savings</a>
-            <a href="#" onclick="openCalc('lender-directory');return false;">Banks & HFCs Directory</a>
+            <span class="dp-heading">🏠 Home Loan</span>
+            <a href="#" onclick="openCalc('home-loan');return false;">Home Loan EMI</a>
+            <a href="#" onclick="openCalc('home-eligibility');return false;">Eligibility Calculator</a>
+            <a href="#" onclick="openCalc('home-affordability');return false;">Affordability Calculator</a>
+            <a href="#" onclick="openCalc('home-balance-transfer');return false;">Balance Transfer</a>
+            <a href="#" onclick="openCalc('loan-to-value');return false;">Loan to Value (LTV)</a>
+            <a href="#" onclick="openCalc('compare-bank');return false;">Compare Bank EMI</a>
+            <a href="#" onclick="openCalc('loan-against-property');return false;">Loan Against Property</a>
           </div>
           <div class="dp-col">
-            <span class="dp-heading">🏢 Loan Products & Cities</span>
-            <a href="#" onclick="openCalc('product-purchase');return false;">Home Purchase Loan</a>
-            <a href="#" onclick="openCalc('product-construction');return false;">Plot & Construction</a>
-            <a href="#" onclick="openCalc('product-nri');return false;">NRI Home Loans</a>
-            <a href="#" onclick="openCalc('city-noida');return false;">Noida & Greater Noida</a>
-            <a href="#" onclick="openCalc('city-gurgaon');return false;">Gurgaon & Delhi NCR</a>
+            <span class="dp-heading">🚗 Other Loans</span>
+            <a href="#" onclick="openCalc('car-loan');return false;">Car Loan</a>
+            <a href="#" onclick="openCalc('two-wheeler');return false;">Two-Wheeler Loan</a>
+            <a href="#" onclick="openCalc('education-loan');return false;">Education Loan</a>
+            <a href="#" onclick="openCalc('gold-loan');return false;">Gold Loan</a>
+            <a href="#" onclick="openCalc('credit-card');return false;">Credit Card Loan</a>
+            <a href="#" onclick="openCalc('consumer-durable');return false;">Consumer Durable</a>
           </div>
         </div>
       </div>
-
-      <!-- Application Tracker -->
-      <a class="nav-tab" href="#" onclick="openCalc('track-application');return false;" id="tab-track">📍 Track Application</a>
-
-      <!-- AI Assistant -->
-      <a class="nav-tab nav-tab-ai" href="#" onclick="openCalc('ai-assistant');return false;" id="tab-ai">✨ AI Loan Assistant</a>
-
-      <!-- Financial Tools Dropdown -->
       <div class="nav-tab-dropdown">
-        <a class="nav-tab" href="#" id="tab-investment">Other Tools <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a class="nav-tab" href="#" id="tab-investment">Investment <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
         <div class="dropdown-panel">
           <div class="dp-col">
-            <span class="dp-heading">📈 Investments</span>
+            <span class="dp-heading">📈 Mutual Funds</span>
             <a href="#" onclick="openCalc('sip');return false;">SIP Calculator</a>
             <a href="#" onclick="openCalc('lumpsum');return false;">Lumpsum Calculator</a>
-            <a href="#" onclick="openCalc('fd');return false;">FD Calculator</a>
-            <a href="#" onclick="openCalc('ppf');return false;">PPF Calculator</a>
+            <a href="#" onclick="openCalc('lumpsum-sip');return false;">Lumpsum + SIP</a>
+            <a href="#" onclick="openCalc('sip-delay');return false;">SIP Delay Cost</a>
+            <a href="#" onclick="openCalc('target-value');return false;">Target Value</a>
+            <a href="#" onclick="openCalc('cagr');return false;">CAGR Calculator</a>
           </div>
           <div class="dp-col">
-            <span class="dp-heading">💎 Live Data</span>
-            <a href="#" onclick="openCalc('gold-rates');return false;">Gold & Silver Rates</a>
-            <a href="#" onclick="openCalc('market');return false;">NSE / BSE Live Market</a>
+            <span class="dp-heading">💰 Savings & Planning</span>
+            <a href="#" onclick="openCalc('fd');return false;">FD Calculator</a>
+            <a href="#" onclick="openCalc('rd');return false;">RD Calculator</a>
+            <a href="#" onclick="openCalc('ppf');return false;">PPF Calculator</a>
+            <a href="#" onclick="openCalc('retirement');return false;">Retirement Planner</a>
+            <a href="#" onclick="openCalc('inflation');return false;">Inflation Calculator</a>
+            <a href="#" onclick="openCalc('gratuity');return false;">Gratuity Calculator</a>
           </div>
         </div>
       </div>
+      <a class="nav-tab" href="#" onclick="openCalc('gold-rates');return false;" id="tab-gold">Gold Rates</a>
+      <a class="nav-tab" href="#" onclick="openCalc('market');return false;" id="tab-market">Market</a>
     </nav>
 
-    <!-- Right: live badge + CTA -->
+    <!-- Right: live badge + hamburger -->
     <div class="nav-right">
-      <button class="nav-apply-btn" onclick="openApplicationModal();return false;">Apply Now</button>
       <div class="live-badge" id="navLiveBadge">
         <span class="live-dot" id="navLiveDot"></span>
         <span id="navNifty">NSE —</span>
+        <span class="live-sep">|</span>
+        <span id="navSensex">BSE —</span>
         <span class="live-sep">|</span>
         <span id="navGold">Gold —</span>
       </div>
@@ -110,22 +107,37 @@
     <button class="drawer-close" id="drawerClose">✕</button>
     <div class="mobile-nav-links">
       <a href="#" onclick="showHome();closeMobile();return false;">🏠 Home</a>
-      <a href="#" onclick="openCalc('search-wizard');closeMobile();return false;">🔍 7-Step Loan Wizard</a>
-      <a href="#" onclick="openCalc('compare-lenders');closeMobile();return false;">⚖️ Compare All Lenders</a>
-      <a href="#" onclick="openCalc('home-eligibility');closeMobile();return false;">🧮 Eligibility Engine</a>
-      <a href="#" onclick="openCalc('home-loan');closeMobile();return false;">📊 EMI & Prepayment</a>
-      <a href="#" onclick="openCalc('home-balance-transfer');closeMobile();return false;">🔄 Balance Transfer</a>
-      <a href="#" onclick="openCalc('lender-directory');closeMobile();return false;">🏢 Banks & HFCs Directory</a>
-      <a href="#" onclick="openCalc('track-application');closeMobile();return false;">📍 Track Application</a>
-      <a href="#" onclick="openCalc('ai-assistant');closeMobile();return false;">✨ AI Assistant</a>
-      <details><summary>Other Calculators & Data</summary>
-        <a href="#" onclick="openCalc('sip');closeMobile();return false;">SIP Calculator</a>
-        <a href="#" onclick="openCalc('fd');closeMobile();return false;">FD Calculator</a>
-        <a href="#" onclick="openCalc('ppf');closeMobile();return false;">PPF Calculator</a>
-        <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">Gold Rates</a>
-        <a href="#" onclick="openCalc('market');closeMobile();return false;">Market Live</a>
+      <details><summary>EMI Loans</summary>
+        <a href="#" onclick="openCalc('home-loan');closeMobile();return false;">Home Loan EMI</a>
+        <a href="#" onclick="openCalc('home-eligibility');closeMobile();return false;">Eligibility</a>
+        <a href="#" onclick="openCalc('home-affordability');closeMobile();return false;">Affordability</a>
+        <a href="#" onclick="openCalc('home-balance-transfer');closeMobile();return false;">Balance Transfer</a>
+        <a href="#" onclick="openCalc('loan-to-value');closeMobile();return false;">LTV Calculator</a>
+        <a href="#" onclick="openCalc('compare-bank');closeMobile();return false;">Compare Bank EMI</a>
+        <a href="#" onclick="openCalc('loan-against-property');closeMobile();return false;">Loan Against Property</a>
+        <a href="#" onclick="openCalc('car-loan');closeMobile();return false;">Car Loan</a>
+        <a href="#" onclick="openCalc('two-wheeler');closeMobile();return false;">Two-Wheeler</a>
+        <a href="#" onclick="openCalc('education-loan');closeMobile();return false;">Education Loan</a>
+        <a href="#" onclick="openCalc('gold-loan');closeMobile();return false;">Gold Loan</a>
+        <a href="#" onclick="openCalc('credit-card');closeMobile();return false;">Credit Card Loan</a>
+        <a href="#" onclick="openCalc('consumer-durable');closeMobile();return false;">Consumer Durable</a>
       </details>
-      <button class="mobile-apply-btn" onclick="openApplicationModal();closeMobile();return false;">🚀 Apply for Home Loan</button>
+      <details><summary>Investment</summary>
+        <a href="#" onclick="openCalc('sip');closeMobile();return false;">SIP Calculator</a>
+        <a href="#" onclick="openCalc('lumpsum');closeMobile();return false;">Lumpsum</a>
+        <a href="#" onclick="openCalc('lumpsum-sip');closeMobile();return false;">Lumpsum + SIP</a>
+        <a href="#" onclick="openCalc('sip-delay');closeMobile();return false;">SIP Delay Cost</a>
+        <a href="#" onclick="openCalc('target-value');closeMobile();return false;">Target Value</a>
+        <a href="#" onclick="openCalc('cagr');closeMobile();return false;">CAGR</a>
+        <a href="#" onclick="openCalc('fd');closeMobile();return false;">FD Calculator</a>
+        <a href="#" onclick="openCalc('rd');closeMobile();return false;">RD Calculator</a>
+        <a href="#" onclick="openCalc('ppf');closeMobile();return false;">PPF Calculator</a>
+        <a href="#" onclick="openCalc('retirement');closeMobile();return false;">Retirement</a>
+        <a href="#" onclick="openCalc('inflation');closeMobile();return false;">Inflation</a>
+        <a href="#" onclick="openCalc('gratuity');closeMobile();return false;">Gratuity</a>
+      </details>
+      <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">💎 Gold Rates</a>
+      <a href="#" onclick="openCalc('market');closeMobile();return false;">📊 Market</a>
     </div>
   </div>
 </div>

@@ -36,23 +36,10 @@ function navigate(view) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
 
   switch (view) {
-    case 'home':                  document.getElementById('tab-home')?.classList.add('active');   renderHome(); break;
-    case 'search-wizard':         document.getElementById('tab-search')?.classList.add('active'); renderSearchWizard(); break;
-    case 'compare-lenders':       document.getElementById('tab-emi')?.classList.add('active');    renderCompareLenders(); break;
-    case 'home-eligibility':      document.getElementById('tab-emi')?.classList.add('active');    renderHomeEligibility(); break;
-    case 'home-loan':             document.getElementById('tab-emi')?.classList.add('active');    renderHomeLoan(); break;
-    case 'home-balance-transfer': document.getElementById('tab-emi')?.classList.add('active');    renderBalanceTransfer(); break;
-    case 'lender-directory':      document.getElementById('tab-emi')?.classList.add('active');    renderLenderDirectory(); break;
-    case 'track-application':     document.getElementById('tab-track')?.classList.add('active'); renderTrackApplication(); break;
-    case 'ai-assistant':          document.getElementById('tab-ai')?.classList.add('active');    renderAIAssistant(); break;
-    case 'gold-rates':            document.getElementById('tab-gold')?.classList.add('active');   renderGoldRates(); break;
-    case 'market':                document.getElementById('tab-market')?.classList.add('active'); renderMarket(); break;
-    default:
-      if (view.startsWith('lender-')) renderLenderDetail(view.replace('lender-', ''));
-      else if (view.startsWith('product-')) renderProductPage(view.replace('product-', ''));
-      else if (view.startsWith('city-')) renderLocalSEOPage(view.replace('city-', ''));
-      else renderCalc(view);
-      break;
+    case 'home':       document.getElementById('tab-home')?.classList.add('active');   renderHome();       break;
+    case 'gold-rates': document.getElementById('tab-gold')?.classList.add('active');   renderGoldRates();  break;
+    case 'market':     document.getElementById('tab-market')?.classList.add('active'); renderMarket();     break;
+    default:           renderCalc(view); break;
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -69,9 +56,10 @@ function closeMobile() {
 document.addEventListener('ws:market', (e) => {
   marketData = e.detail;
   updateNavBadge(marketData);
-  if (currentView === 'home')       updateHomeTicker(marketData);
+  if (currentView === 'home')           updateHomeTicker(marketData);
   else if (currentView === 'gold-rates') updateGoldRates(marketData);
   else if (currentView === 'market')     updateMarketPage(marketData);
+  else if (currentView === 'gold-loan')  updateGoldLoanPanel(marketData);
 });
 
 document.addEventListener('ws:open',  () => { const d = document.getElementById('navLiveDot'); if (d) d.style.background = '#22c55e'; });
@@ -87,189 +75,134 @@ function updateNavBadge(d) {
 }
 
 /* ══════════════════════════════════════════════════
-   HOME PAGE — India's Home Loan Discovery Platform
+   HOME PAGE
    ══════════════════════════════════════════════════ */
 function renderHome() {
   document.getElementById('appMain').innerHTML = `
     <section class="hero">
-      <div class="hero-tag">🇮🇳 India's #1 Home Loan Discovery Platform</div>
-      <h1>Search, Compare &amp; Apply for<br><span>Home Loans in India</span></h1>
-      <p class="hero-sub">Compare interest rates across 15+ Banks &amp; HFCs (SBI, HDFC, ICICI, Axis, Bajaj, LIC HFL). Calculate total loan cost, eligibility, and track your application live.</p>
-      
-      <!-- Quick Search Widget -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;max-width:850px;margin:28px auto 0;box-shadow:var(--shadow-md);text-align:left">
-        <div style="font-weight:800;font-size:1.1rem;margin-bottom:16px;color:var(--text-primary);display:flex;align-items:center;gap:8px">
-          <span>🔍</span> Quick Loan Matcher
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-          <div>
-            <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">Loan Required</label>
-            <select class="form-input" id="qsLoanAmount" style="padding:10px;font-weight:700">
-              <option value="3000000">₹30 Lakh</option>
-              <option value="5000000" selected>₹50 Lakh</option>
-              <option value="7500000">₹75 Lakh</option>
-              <option value="10000000">₹1 Crore</option>
-              <option value="15000000">₹1.5 Crore</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">Monthly Income</label>
-            <select class="form-input" id="qsIncome" style="padding:10px;font-weight:700">
-              <option value="60000">₹60,000 / mo</option>
-              <option value="100000" selected>₹1 Lakh / mo</option>
-              <option value="150000">₹1.5 Lakh / mo</option>
-              <option value="250000">₹2.5 Lakh / mo</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">Tenure</label>
-            <select class="form-input" id="qsTenure" style="padding:10px;font-weight:700">
-              <option value="15">15 Years</option>
-              <option value="20" selected>20 Years</option>
-              <option value="25">25 Years</option>
-              <option value="30">30 Years</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:flex-end">
-            <button onclick="openCalc('search-wizard');return false;" class="btn-primary" style="width:100%;height:44px;font-weight:800;border-radius:10px;margin-top:0">Find Matches →</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-stats" style="margin-top:32px">
-        <div class="hero-stat"><strong>15+</strong><span>Banks &amp; HFCs</span></div>
-        <div class="hero-stat"><strong>RBI KFS</strong><span>Standardized Costs</span></div>
-        <div class="hero-stat"><strong>8.35%</strong><span>Starting Rate</span></div>
-        <div class="hero-stat"><strong>Live</strong><span>Status Tracking</span></div>
+      <div class="hero-tag">📊 Live NSE · BSE · Gold Data</div>
+      <h1>India's Most Complete<br><span>Financial Calculator</span></h1>
+      <p class="hero-sub">25+ professional calculators for EMI, SIP, FD, PPF, Gold Rates — all in one place, completely free.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>25+</strong><span>Calculators</span></div>
+        <div class="hero-stat"><strong>Live</strong><span>Market Data</span></div>
+        <div class="hero-stat"><strong>100%</strong><span>Free Forever</span></div>
+        <div class="hero-stat"><strong>Fast</strong><span>Instant Results</span></div>
       </div>
     </section>
 
-    <!-- Verified Live Rate Bar -->
-    <div style="max-width:1300px;margin:-10px auto 36px;padding:0 24px">
-      <div style="background:#0f172a;color:#fff;border-radius:16px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;box-shadow:var(--shadow-md)">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="background:#22c55e;width:10px;height:10px;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
-          <span style="font-weight:800;font-size:0.9rem">Live Rate Tracker (Aug 2026):</span>
+    <!-- Market Ticker: Stocks -->
+    <div class="market-ticker market-ticker--stocks" id="homeTicker">
+      ${['nifty','sensex','bankNifty','niftyIT'].map(k => `
+        <div class="ticker-card" onclick="openCalc('market')">
+          <div class="ticker-label" id="tc-exch-${k}">NSE</div>
+          <div class="ticker-name" id="tc-name-${k}">Loading…</div>
+          <div class="ticker-val"  id="tc-val-${k}">—</div>
+          <div class="ticker-change" id="tc-chg-${k}">—</div>
+          <div class="ticker-spark">
+            <canvas data-spark="${k}" style="width:100%;height:40px"></canvas>
+          </div>
         </div>
-        <div style="display:flex;gap:20px;overflow-x:auto;font-size:0.84rem;padding-bottom:4px">
-          <div><strong style="color:#60a5fa">Union Bank:</strong> <span style="color:#4ade80;font-weight:800">8.35%</span></div>
-          <div><strong style="color:#60a5fa">Bank of Baroda:</strong> <span style="color:#4ade80;font-weight:800">8.40%</span></div>
-          <div><strong style="color:#60a5fa">PNB:</strong> <span style="color:#4ade80;font-weight:800">8.45%</span></div>
-          <div><strong style="color:#60a5fa">SBI:</strong> <span style="color:#4ade80;font-weight:800">8.50%</span></div>
-          <div><strong style="color:#60a5fa">LIC HFL:</strong> <span style="color:#4ade80;font-weight:800">8.50%</span></div>
-          <div><strong style="color:#60a5fa">Bajaj Housing:</strong> <span style="color:#4ade80;font-weight:800">8.55%</span></div>
-          <div><strong style="color:#60a5fa">HDFC Bank:</strong> <span style="color:#4ade80;font-weight:800">8.60%</span></div>
-          <div><strong style="color:#60a5fa">ICICI Bank:</strong> <span style="color:#4ade80;font-weight:800">8.65%</span></div>
+      `).join('')}
+    </div>
+
+    <!-- Market Ticker: Precious Metals -->
+    <div class="market-ticker market-ticker--metals" id="homeMetalTicker">
+      <div class="ticker-card ticker-card--gold24" onclick="openCalc('gold-rates')">
+        <div class="ticker-label metal-label">MCX · GOLD</div>
+        <div class="ticker-name">Gold 24K (99.9%)</div>
+        <div class="ticker-val" id="tc-val-gold24">—</div>
+        <div class="ticker-unit">per gram</div>
+        <div class="ticker-change" id="tc-chg-gold24">—</div>
+        <div class="ticker-spark">
+          <canvas data-spark-metal="gold24" style="width:100%;height:40px"></canvas>
         </div>
-        <button onclick="openCalc('lender-directory')" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:0.78rem;cursor:pointer;font-weight:700">View All 15+ →</button>
+      </div>
+      <div class="ticker-card ticker-card--gold22" onclick="openCalc('gold-rates')">
+        <div class="ticker-label metal-label">MCX · GOLD</div>
+        <div class="ticker-name">Gold 22K (91.7%)</div>
+        <div class="ticker-val" id="tc-val-gold22">—</div>
+        <div class="ticker-unit">per gram</div>
+        <div class="ticker-change" id="tc-chg-gold22">—</div>
+        <div class="ticker-spark">
+          <canvas data-spark-metal="gold22" style="width:100%;height:40px"></canvas>
+        </div>
+      </div>
+      <div class="ticker-card ticker-card--silver" onclick="openCalc('gold-rates')">
+        <div class="ticker-label metal-label">MCX · SILVER</div>
+        <div class="ticker-name">Silver 999 Pure</div>
+        <div class="ticker-val" id="tc-val-silver">—</div>
+        <div class="ticker-unit">per gram</div>
+        <div class="ticker-change" id="tc-chg-silver">—</div>
+        <div class="ticker-spark">
+          <canvas data-spark-metal="silver" style="width:100%;height:40px"></canvas>
+        </div>
+      </div>
+      <div class="ticker-card ticker-card--platinum" onclick="openCalc('gold-rates')">
+        <div class="ticker-label metal-label">MCX · PLATINUM</div>
+        <div class="ticker-name">Platinum 950</div>
+        <div class="ticker-val" id="tc-val-platinum">—</div>
+        <div class="ticker-unit">per gram</div>
+        <div class="ticker-change" id="tc-chg-platinum">—</div>
+        <div class="ticker-spark">
+          <canvas data-spark-metal="platinum" style="width:100%;height:40px"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- Core Platform Features -->
+    <!-- EMI Section -->
     <div class="section-title">
-      <h2>🏠 Home Loan Discovery Engine</h2>
-      <p>Search, compare total loan costs, calculate FOIR eligibility &amp; track applications</p>
+      <h2>🏠 EMI &amp; Loan Calculators</h2>
+      <p>Calculate monthly EMI for home, car, education, and more</p>
     </div>
     <div class="calc-grid">
-      ${cc('search-wizard','🔍','7-Step Loan Wizard','Find lenders matching your profile & CIBIL')}
-      ${cc('compare-lenders','⚖️','Total Loan Cost Compare','Compare rates, EMI & fees across banks')}
-      ${cc('home-eligibility','🧮','Eligibility & FOIR Engine','Check exact borrowing limit based on income')}
-      ${cc('home-loan','📊','EMI & Prepayment','Calculate EMI & tenure saved with prepayments')}
-      ${cc('home-balance-transfer','🔄','Balance Transfer Savings','Switch lender & save lakhs in interest')}
-      ${cc('lender-directory','🏢','Banks & HFCs Directory','View rates, docs & rules for 15+ lenders')}
-      ${cc('track-application','📍','Live Status Tracker','Track your application ID stage-by-stage')}
-      ${cc('ai-assistant','✨','AI Loan Assistant','Ask any home loan eligibility or doc query')}
+      ${cc('home-loan','🏠','Home Loan EMI','Monthly EMI & total interest')}
+      ${cc('home-eligibility','✅','Loan Eligibility','Max loan based on income')}
+      ${cc('home-affordability','💰','Affordability','How much home can you afford?')}
+      ${cc('home-balance-transfer','🔄','Balance Transfer','Save by switching lender')}
+      ${cc('loan-to-value','📐','LTV Calculator','Loan-to-Value ratio')}
+      ${cc('compare-bank','🏦','Compare Banks','Side-by-side EMI comparison')}
+      ${cc('loan-against-property','🏗️','Loan vs Property','Loan against your asset')}
+      ${cc('car-loan','🚗','Car Loan','Car loan EMI calculator')}
+      ${cc('two-wheeler','🏍️','Two-Wheeler','Bike/scooter EMI')}
+      ${cc('education-loan','🎓','Education Loan','With moratorium period')}
+      ${cc('gold-loan','💎','Gold Loan','Loan against jewellery')}
+      ${cc('credit-card','💳','Credit Card','Payoff planner')}
     </div>
 
-    <!-- Featured Lenders Preview -->
-    <div class="section-title" style="margin-top:40px">
-      <h2>🏛️ Top Banks &amp; Housing Finance Companies (HFCs)</h2>
-      <p>Verified interest rates, processing fees &amp; documentation rules</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1300px;margin:0 auto 40px;padding:0 24px" id="homeLenderGrid">
-      <div class="spinner"></div>
-    </div>
-
-    <!-- Local SEO Hubs -->
+    <!-- Investment Section -->
     <div class="section-title">
-      <h2>📍 Property &amp; City Home Loan Hubs</h2>
-      <p>Compare home loan options customized for NCR locations &amp; property types</p>
+      <h2>📈 Investment Calculators</h2>
+      <p>Plan your wealth with SIP, FD, PPF, retirement and more</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1300px;margin:0 auto 40px;padding:0 24px">
-      <a href="#" onclick="openCalc('city-noida');return false;" class="calc-card" style="text-align:left;padding:20px">
-        <div style="font-size:1.4rem;margin-bottom:8px">🏙️ Noida &amp; Greater Noida</div>
-        <div style="font-size:0.82rem;color:var(--text-muted)">Resale, Noida Extension &amp; YEIDA Plot loans</div>
-      </a>
-      <a href="#" onclick="openCalc('city-gurgaon');return false;" class="calc-card" style="text-align:left;padding:20px">
-        <div style="font-size:1.4rem;margin-bottom:8px">🌆 Gurgaon &amp; Delhi NCR</div>
-        <div style="font-size:0.82rem;color:var(--text-muted)">Luxury apartments, builder floors &amp; DLF projects</div>
-      </a>
-      <a href="#" onclick="openCalc('product-purchase');return false;" class="calc-card" style="text-align:left;padding:20px">
-        <div style="font-size:1.4rem;margin-bottom:8px">🏡 Home Purchase Loan</div>
-        <div style="font-size:0.82rem;color:var(--text-muted)">Ready-to-move &amp; under-construction flats</div>
-      </a>
-      <a href="#" onclick="openCalc('product-construction');return false;" class="calc-card" style="text-align:left;padding:20px">
-        <div style="font-size:1.4rem;margin-bottom:8px">🏗️ Plot + Construction</div>
-        <div style="font-size:0.82rem;color:var(--text-muted)">Plot purchase combined with house construction</div>
-      </a>
-    </div>
-
-    <!-- Other Financial Tools & Market Ticker -->
-    <div class="section-title">
-      <h2>📈 Financial Calculators &amp; Live Markets</h2>
-      <p>Mutual Funds SIP, FD, PPF and live stock market data</p>
-    </div>
-    <div class="calc-grid" style="padding-bottom:60px">
+    <div class="calc-grid">
       ${cc('sip','📈','SIP Calculator','Systematic Investment Plan')}
+      ${cc('lumpsum','💵','Lumpsum','One-time investment returns')}
+      ${cc('lumpsum-sip','🎯','Lumpsum + SIP','Combined investment')}
+      ${cc('sip-delay','⏱️','SIP Delay Cost','Cost of procrastination')}
+      ${cc('target-value','🏆','Target SIP','SIP to reach your goal')}
+      ${cc('cagr','📊','CAGR Calculator','Compound Annual Growth Rate')}
       ${cc('fd','🏛️','FD Calculator','Fixed deposit maturity')}
+      ${cc('rd','📅','RD Calculator','Recurring deposit')}
       ${cc('ppf','🔐','PPF Calculator','Public Provident Fund')}
-      ${cc('gold-rates','🥇','Gold Rates Today','24K, 22K live rates')}
+      ${cc('retirement','👴','Retirement Planner','Your future corpus')}
+      ${cc('inflation','📉','Inflation Impact','Future purchasing power')}
+      ${cc('gratuity','🎁','Gratuity','Employee gratuity amount')}
+    </div>
+
+    <!-- Live Data -->
+    <div class="section-title">
+      <h2>📡 Live Market Data</h2>
+      <p>Real-time NSE/BSE &amp; gold prices updated every 3 seconds</p>
+    </div>
+    <div class="calc-grid" style="padding-bottom:80px">
+      ${cc('gold-rates','🥇','Gold Rates Today','24K, 22K, 20K, 18K live rates')}
       ${cc('market','📊','Market Dashboard','NSE/BSE live overview')}
     </div>
   `;
 
-  // Fetch top lenders for homepage grid
-  fetch('/api/lenders')
-    .then(r => r.json())
-    .then(data => {
-      const grid = document.getElementById('homeLenderGrid');
-      if (!grid || !data.lenders) return;
-      grid.innerHTML = data.lenders.slice(0, 6).map(l => `
-        <div class="market-card" style="display:flex;flex-direction:column;justify-space-between">
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="background:${l.logoBg};color:#fff;font-weight:800;font-size:0.75rem;padding:4px 10px;border-radius:6px">${l.code}</span>
-              <span style="font-size:0.75rem;font-weight:700;color:var(--accent);background:rgba(99,102,241,0.08);padding:3px 8px;border-radius:4px">${l.type}</span>
-            </div>
-            <h3 style="font-size:1.05rem;font-weight:800;color:var(--text-primary);margin-bottom:4px">${l.name}</h3>
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">${l.tagline}</p>
-            
-            <div style="background:var(--bg-secondary);padding:12px;border-radius:10px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div>
-                <span style="font-size:0.68rem;color:var(--text-muted);display:block;text-transform:uppercase;font-weight:700">Interest Rate</span>
-                <strong style="font-size:1.1rem;color:#10b981;font-weight:900">${l.minRate}% - ${l.maxRate}%</strong>
-              </div>
-              <div>
-                <span style="font-size:0.68rem;color:var(--text-muted);display:block;text-transform:uppercase;font-weight:700">Max LTV</span>
-                <strong style="font-size:1.1rem;color:var(--text-primary);font-weight:900">${l.maxLTV}%</strong>
-              </div>
-            </div>
-
-            <div style="font-size:0.76rem;color:var(--text-secondary);margin-bottom:14px">
-              <strong>Processing Fee:</strong> ${l.processingFee}
-            </div>
-          </div>
-
-          <div style="display:flex;gap:8px;margin-top:auto">
-            <button onclick="openCalc('lender-${l.id}');return false;" class="form-input" style="flex:1;text-align:center;font-weight:700;font-size:0.8rem;cursor:pointer">Details</button>
-            <button onclick="openApplicationModal('${l.id}');return false;" class="btn-primary" style="flex:1;margin-top:0;font-size:0.8rem;padding:8px">Apply Now</button>
-          </div>
-        </div>
-      `).join('');
-    })
-    .catch(() => {});
+  if (marketData) updateHomeTicker(marketData);
 }
-
 
 function cc(id, icon, name, desc) {
   return `<a class="calc-card" href="#" onclick="openCalc('${id}');return false;">
@@ -295,6 +228,69 @@ function updateHomeTicker(d) {
     const canvas = document.querySelector(`[data-spark="${k}"]`);
     if (canvas && idx.spark) FinCharts.drawSparkline(canvas, idx.spark, FinCharts.colorFor(idx.color));
   });
+
+  // ── Precious Metal Ticker Cards ──────────────────────────
+  if (!d?.gold) return;
+  const g = d.gold;
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+  // Gold 24K
+  s('tc-val-gold24', '₹' + fmt(g.g24));
+  (() => {
+    const el = document.getElementById('tc-chg-gold24');
+    if (el) {
+      const up = g.ch24 >= 0;
+      el.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(g.ch24)} (${up ? '+' : ''}${g.chp24}%)`;
+      el.className   = 'ticker-change ' + (up ? 'up' : 'down');
+    }
+  })();
+
+  // Gold 22K
+  s('tc-val-gold22', '₹' + fmt(g.g22));
+  (() => {
+    const el = document.getElementById('tc-chg-gold22');
+    if (el) {
+      // 22K tracks 24K change proportionally
+      const ch22 = +(g.g22 * g.chp24 / 100).toFixed(0);
+      const up = g.chp24 >= 0;
+      el.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(ch22)} (${up ? '+' : ''}${Math.abs(g.chp24).toFixed(2)}%)`;
+      el.className   = 'ticker-change ' + (up ? 'up' : 'down');
+    }
+  })();
+
+  // Silver
+  s('tc-val-silver', '₹' + fmt(g.silver, 2));
+  (() => {
+    const el = document.getElementById('tc-chg-silver');
+    if (el && g.chSilver !== undefined) {
+      const up = g.chSilver >= 0;
+      el.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(g.chSilver).toFixed(2)} (${up ? '+' : ''}${Math.abs(g.chpSilver).toFixed(2)}%)`;
+      el.className   = 'ticker-change ' + (up ? 'up' : 'down');
+    }
+  })();
+
+  // Platinum
+  s('tc-val-platinum', '₹' + fmt(g.platinum));
+  (() => {
+    const el = document.getElementById('tc-chg-platinum');
+    if (el && g.chPlat !== undefined) {
+      const up = g.chPlat >= 0;
+      el.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(g.chPlat).toFixed(2)} (${up ? '+' : ''}${Math.abs(g.chpPlat).toFixed(2)}%)`;
+      el.className   = 'ticker-change ' + (up ? 'up' : 'down');
+    }
+  })();
+
+  // Sparklines for metals (reuse gold spark history)
+  const goldCanvas24  = document.querySelector('[data-spark-metal="gold24"]');
+  const goldCanvas22  = document.querySelector('[data-spark-metal="gold22"]');
+  const silverCanvas  = document.querySelector('[data-spark-metal="silver"]');
+  const platinumCanvas= document.querySelector('[data-spark-metal="platinum"]');
+  if (g.spark) {
+    if (goldCanvas24)   FinCharts.drawSparkline(goldCanvas24,   g.spark, '#f59e0b');
+    if (goldCanvas22)   FinCharts.drawSparkline(goldCanvas22,   g.spark.map(v => +(v*0.9167).toFixed(0)), '#fbbf24');
+    if (silverCanvas)   FinCharts.drawSparkline(silverCanvas,   g.spark.map(() => g.silver + (Math.random()-0.5)*0.5), '#94a3b8');
+    if (platinumCanvas) FinCharts.drawSparkline(platinumCanvas, g.spark.map(() => g.platinum + (Math.random()-0.5)*2), '#a78bfa');
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -508,1132 +504,8 @@ function updateMarketPage(d) {
 }
 
 /* ══════════════════════════════════════════════════
-   HOME LOAN SEARCH & MATCHING WIZARD (7 STEPS)
+   CALCULATOR DEFINITIONS
    ══════════════════════════════════════════════════ */
-let currentWizardStep = 1;
-let wizardData = {
-  goal: 'Home Purchase',
-  income: 120000,
-  existingEmi: 0,
-  employment: 'Salaried',
-  location: 'Noida',
-  propertyValue: 6500000,
-  loanRequired: 5000000,
-  tenure: 20,
-  creditScore: 750
-};
-
-function renderSearchWizard() {
-  currentWizardStep = 1;
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:900px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">🔍 7-Step Smart Home Loan Matching Wizard</h1>
-        <p style="color:var(--text-secondary)">Find the exact lenders &amp; HFCs suited for your profile, income, and CIBIL score.</p>
-      </div>
-
-      <div class="wizard-card" id="wizardCard">
-        <div class="wizard-steps-bar">
-          ${[1,2,3,4,5,6,7].map(s => `<div class="wizard-step-dot ${s === 1 ? 'active' : ''}" id="wsDot-${s}">${s}</div>`).join('')}
-        </div>
-
-        <div id="wizardStepContent">
-          <!-- Step 1 -->
-          ${renderWizardStep1()}
-        </div>
-      </div>
-
-      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:14px;padding:16px 20px;margin-top:28px;font-size:0.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:12px">
-        <span style="font-size:1.4rem">💡</span>
-        <div><strong>RBI Transparency Compliant</strong>: All recommendations calculate all-in Total Loan Cost including processing fees, rate type (Floating/Fixed), and tenure limits.</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderWizardStep1() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:16px">Step 1: What is your primary loan goal?</h2>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px">
-      ${[
-        ['Home Purchase','🏡','Buy a ready or under-construction property'],
-        ['Plot + Construction','🏗️','Buy land & construct independent house'],
-        ['Balance Transfer','🔄','Transfer existing loan to lower rate'],
-        ['Home Extension / Renovation','🔨','Extend or renovate existing property'],
-        ['Top-Up Loan','💰','Extra funds on existing home loan'],
-        ['NRI Home Loan','✈️','Home loan for NRIs / PIOs']
-      ].map(([g, icon, desc]) => `
-        <div onclick="setWizardVal('goal','${g}');nextWizardStep(2)" 
-          style="border:2px solid ${wizardData.goal === g ? 'var(--accent)' : 'var(--border)'};background:${wizardData.goal === g ? 'rgba(99,102,241,0.05)' : 'var(--bg-card)'};border-radius:14px;padding:18px;cursor:pointer;transition:all 0.2s ease">
-          <div style="font-size:1.5rem;margin-bottom:6px">${icon}</div>
-          <div style="font-weight:800;color:var(--text-primary);margin-bottom:2px">${g}</div>
-          <div style="font-size:0.78rem;color:var(--text-muted)">${desc}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderWizardStep2() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Step 2: Monthly Income &amp; Existing EMIs</h2>
-    <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:24px">This helps evaluate your FOIR (Fixed Obligation to Income Ratio).</p>
-    
-    <div class="form-group" style="margin-bottom:20px">
-      <label style="font-weight:700">Net Monthly Salary / Business Income: <strong id="wzIncVal">₹${fmt(wizardData.income)}</strong></label>
-      <input type="range" class="range-slider" min="25000" max="500000" step="5000" value="${wizardData.income}" oninput="wizardData.income=parseInt(this.value);document.getElementById('wzIncVal').textContent='₹'+fmt(this.value)">
-    </div>
-
-    <div class="form-group" style="margin-bottom:28px">
-      <label style="font-weight:700">Existing Monthly Loan EMIs: <strong id="wzEmiVal">₹${fmt(wizardData.existingEmi)}</strong></label>
-      <input type="range" class="range-slider" min="0" max="200000" step="2000" value="${wizardData.existingEmi}" oninput="wizardData.existingEmi=parseInt(this.value);document.getElementById('wzEmiVal').textContent='₹'+fmt(this.value)">
-    </div>
-
-    <div style="display:flex;justify-content:space-between">
-      <button onclick="prevWizardStep(1)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-      <button onclick="nextWizardStep(3)" class="btn-primary" style="width:auto;padding:10px 32px;margin-top:0">Next: Employment →</button>
-    </div>
-  `;
-}
-
-function renderWizardStep3() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:16px">Step 3: What is your employment type?</h2>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px">
-      ${[
-        ['Salaried','👔','MNC, Private Ltd, Govt, Public Sector Employee'],
-        ['Self-Employed Professional','👨‍⚕️','Doctor, CA, Architect, Lawyer'],
-        ['Business Owner','🏢','Proprietorship, Partnership, Private Company'],
-        ['NRI / OCI','🌐','Working outside India']
-      ].map(([emp, icon, desc]) => `
-        <div onclick="wizardData.employment='${emp}';nextWizardStep(4)" 
-          style="border:2px solid ${wizardData.employment === emp ? 'var(--accent)' : 'var(--border)'};background:${wizardData.employment === emp ? 'rgba(99,102,241,0.05)' : 'var(--bg-card)'};border-radius:14px;padding:20px;cursor:pointer">
-          <div style="font-size:1.5rem;margin-bottom:6px">${icon}</div>
-          <div style="font-weight:800;color:var(--text-primary);margin-bottom:2px">${emp}</div>
-          <div style="font-size:0.78rem;color:var(--text-muted)">${desc}</div>
-        </div>
-      `).join('')}
-    </div>
-    <div style="display:flex;justify-content:flex-start">
-      <button onclick="prevWizardStep(2)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-    </div>
-  `;
-}
-
-function renderWizardStep4() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:16px">Step 4: Property Location / City</h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
-      ${['Noida','Greater Noida','Ghaziabad','Delhi NCR','Gurgaon','Mumbai','Bengaluru','Pune','Other'].map(loc => `
-        <button onclick="wizardData.location='${loc}';nextWizardStep(5)" class="form-input" 
-          style="padding:14px;font-weight:800;border-color:${wizardData.location === loc ? 'var(--accent)' : 'var(--border)'};background:${wizardData.location === loc ? 'rgba(99,102,241,0.05)' : '#fff'}">
-          📍 ${loc}
-        </button>
-      `).join('')}
-    </div>
-    <div style="display:flex;justify-content:flex-start">
-      <button onclick="prevWizardStep(3)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-    </div>
-  `;
-}
-
-function renderWizardStep5() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Step 5: Estimated Property Value</h2>
-    <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:24px">Required to evaluate Max LTV (Loan to Value) rules.</p>
-    
-    <div class="form-group" style="margin-bottom:28px">
-      <label style="font-weight:700">Property Market Cost: <strong id="wzPropVal">₹${inLakhsCr(wizardData.propertyValue)}</strong></label>
-      <input type="range" class="range-slider" min="1500000" max="30000000" step="500000" value="${wizardData.propertyValue}" oninput="wizardData.propertyValue=parseInt(this.value);document.getElementById('wzPropVal').textContent='₹'+inLakhsCr(this.value)">
-    </div>
-
-    <div style="display:flex;justify-content:space-between">
-      <button onclick="prevWizardStep(4)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-      <button onclick="nextWizardStep(6)" class="btn-primary" style="width:auto;padding:10px 32px;margin-top:0">Next: Loan Required →</button>
-    </div>
-  `;
-}
-
-function renderWizardStep6() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Step 6: Loan Amount Needed &amp; Tenure</h2>
-    
-    <div class="form-group" style="margin-bottom:20px">
-      <label style="font-weight:700">Loan Amount: <strong id="wzLoanVal">₹${inLakhsCr(wizardData.loanRequired)}</strong></label>
-      <input type="range" class="range-slider" min="1000000" max="25000000" step="500000" value="${wizardData.loanRequired}" oninput="wizardData.loanRequired=parseInt(this.value);document.getElementById('wzLoanVal').textContent='₹'+inLakhsCr(this.value)">
-    </div>
-
-    <div class="form-group" style="margin-bottom:28px">
-      <label style="font-weight:700">Desired Tenure: <strong id="wzTenureVal">${wizardData.tenure} Years</strong></label>
-      <input type="range" class="range-slider" min="5" max="30" step="1" value="${wizardData.tenure}" oninput="wizardData.tenure=parseInt(this.value);document.getElementById('wzTenureVal').textContent=this.value+' Years'">
-    </div>
-
-    <div style="display:flex;justify-content:space-between">
-      <button onclick="prevWizardStep(5)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-      <button onclick="nextWizardStep(7)" class="btn-primary" style="width:auto;padding:10px 32px;margin-top:0">Next: Credit Score →</button>
-    </div>
-  `;
-}
-
-function renderWizardStep7() {
-  return `
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Step 7: What is your CIBIL / Credit Score range?</h2>
-    <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:24px">Higher CIBIL score unlocks lower interest rates (up to 0.50% interest concession).</p>
-
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px">
-      ${[
-        [775,'🌟 Excellent (775+)','Eligible for lowest tier interest rates'],
-        [740,'✅ Good (720 - 774)','High approval probability across all lenders'],
-        [680,'🟡 Average (680 - 719)','Standard rates; HFCs strongly recommended'],
-        [620,'🔴 Fair / Low (< 680)','Affordable HFCs (PNB Housing, Aadhar, Home First)']
-      ].map(([sc, label, desc]) => `
-        <div onclick="wizardData.creditScore=${sc};submitWizardResults()" 
-          style="border:2px solid ${wizardData.creditScore === sc ? 'var(--accent)' : 'var(--border)'};background:${wizardData.creditScore === sc ? 'rgba(99,102,241,0.05)' : 'var(--bg-card)'};border-radius:14px;padding:18px;cursor:pointer">
-          <div style="font-weight:800;font-size:1.05rem;color:var(--text-primary);margin-bottom:4px">${label}</div>
-          <div style="font-size:0.78rem;color:var(--text-muted)">${desc}</div>
-        </div>
-      `).join('')}
-    </div>
-    <div style="display:flex;justify-content:flex-start">
-      <button onclick="prevWizardStep(6)" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">← Back</button>
-    </div>
-  `;
-}
-
-function setWizardVal(k, v) { wizardData[k] = v; }
-function nextWizardStep(s) {
-  currentWizardStep = s;
-  for(let i=1;i<=7;i++) {
-    const d = document.getElementById(`wsDot-${i}`);
-    if (d) {
-      d.className = i === s ? 'wizard-step-dot active' : i < s ? 'wizard-step-dot done' : 'wizard-step-dot';
-    }
-  }
-  const el = document.getElementById('wizardStepContent');
-  if (el) {
-    if (s === 1) el.innerHTML = renderWizardStep1();
-    else if (s === 2) el.innerHTML = renderWizardStep2();
-    else if (s === 3) el.innerHTML = renderWizardStep3();
-    else if (s === 4) el.innerHTML = renderWizardStep4();
-    else if (s === 5) el.innerHTML = renderWizardStep5();
-    else if (s === 6) el.innerHTML = renderWizardStep6();
-    else if (s === 7) el.innerHTML = renderWizardStep7();
-  }
-}
-function prevWizardStep(s) { nextWizardStep(s); }
-
-function submitWizardResults() {
-  const el = document.getElementById('wizardStepContent');
-  if (el) el.innerHTML = `<div style="text-align:center;padding:40px"><div class="spinner"></div><p style="margin-top:12px;font-weight:700">Matching your profile with 15+ Banks &amp; HFCs…</p></div>`;
-
-  fetch('/api/loan/search', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(wizardData)
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (!res.ok) return;
-    renderWizardMatches(res);
-  })
-  .catch(() => {
-    el.innerHTML = `<p style="color:var(--red)">Failed to calculate matches. Please try again.</p>`;
-  });
-}
-
-function renderWizardMatches(res) {
-  const el = document.getElementById('wizardStepContent');
-  if (!el) return;
-  const s = res.inputSummary;
-
-  el.innerHTML = `
-    <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:14px;padding:16px 20px;margin-bottom:24px">
-      <h3 style="font-size:1.1rem;font-weight:800;color:#059669;margin-bottom:4px">🎯 Top Matches Found for Your Profile</h3>
-      <div style="font-size:0.82rem;color:var(--text-secondary)">
-        Loan Amount: <strong>₹${inLakhsCr(s.loanRequired)}</strong> | Net Monthly Income: <strong>₹${fmt(s.netIncome)}</strong> | Tenure: <strong>${s.tenure} Yrs</strong> | Est. LTV: <strong>${s.ltvPct}%</strong>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:18px;margin-bottom:28px">
-      ${res.matches.map(m => `
-        <div style="border:1px solid var(--border);border-radius:16px;padding:22px;background:#fff;box-shadow:var(--shadow-sm);display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px;align-items:center">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-              <span style="background:${m.lender.logoBg};color:#fff;font-weight:800;font-size:0.75rem;padding:3px 8px;border-radius:4px">${m.lender.code}</span>
-              <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin:0">${m.lender.name}</h3>
-              <span class="match-score-badge ${m.matchScore >= 90 ? 'high' : 'med'}">${m.matchScore}% Match</span>
-            </div>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px">${m.matchReason}</p>
-            <div style="font-size:0.75rem;color:var(--text-secondary)">
-              Processing Fee: <strong>${m.lender.processingFee}</strong> | Verified Rate: <strong>${m.lender.minRate}%</strong>
-            </div>
-          </div>
-
-          <div class="total-cost-badge">
-            <div style="font-size:0.7rem;text-transform:uppercase;color:#94a3b8">Estimated EMI</div>
-            <span>₹${fmt(m.estEmi)}</span>
-            <div style="font-size:0.68rem;color:#cbd5e1;margin-top:2px">Total Cost: ₹${inLakhsCr(m.totalCostScore)}</div>
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button onclick="openApplicationModal('${m.lender.id}')" class="btn-primary" style="margin:0;font-size:0.85rem;padding:10px">Apply Now</button>
-            <button onclick="openCalc('lender-${m.lender.id}')" class="form-input" style="font-weight:700;font-size:0.8rem;text-align:center">View Rates</button>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div style="text-align:center">
-      <button onclick="renderSearchWizard()" class="form-input" style="width:auto;padding:10px 24px;font-weight:700">🔄 Restart Wizard</button>
-    </div>
-  `;
-}
-
-/* ══════════════════════════════════════════════════
-   LENDER COMPARISON ENGINE (TOTAL LOAN COST SCORE)
-   ══════════════════════════════════════════════════ */
-function renderCompareLenders() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:1250px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">⚖️ Side-by-Side Home Loan Comparison Engine</h1>
-        <p style="color:var(--text-secondary)">Ranks lenders using the <strong>Total Loan Cost Score</strong> (Interest + Processing Fees + Mandatory Charges)</p>
-      </div>
-
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:32px;box-shadow:var(--shadow-sm)">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:end">
-          <div>
-            <label style="font-weight:700;font-size:0.82rem;display:block;margin-bottom:6px">Sample Loan Amount: <strong id="cmpAmtLbl">₹50 Lakh</strong></label>
-            <input type="range" class="range-slider" min="1000000" max="20000000" step="500000" value="5000000" oninput="document.getElementById('cmpAmtLbl').textContent='₹'+inLakhsCr(this.value);updateCompareTable(parseInt(this.value),parseInt(document.getElementById('cmpTenure').value))" id="cmpAmt">
-          </div>
-          <div>
-            <label style="font-weight:700;font-size:0.82rem;display:block;margin-bottom:6px">Loan Tenure: <strong id="cmpTenLbl">20 Years</strong></label>
-            <input type="range" class="range-slider" min="5" max="30" step="1" value="20" oninput="document.getElementById('cmpTenLbl').textContent=this.value+' Years';updateCompareTable(parseInt(document.getElementById('cmpAmt').value),parseInt(this.value))" id="cmpTenure">
-          </div>
-          <div>
-            <button onclick="updateCompareTable(parseInt(document.getElementById('cmpAmt').value),parseInt(document.getElementById('cmpTenure').value))" class="btn-primary" style="margin:0;height:44px;font-weight:800">Recalculate Scores →</button>
-          </div>
-        </div>
-      </div>
-
-      <div style="overflow-x:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md)" id="cmpTableContainer">
-        <div class="spinner"></div>
-      </div>
-    </div>
-  `;
-
-  updateCompareTable(5000000, 20);
-}
-
-function updateCompareTable(loanAmt, tenureYrs) {
-  fetch('/api/lenders')
-    .then(r => r.json())
-    .then(data => {
-      const container = document.getElementById('cmpTableContainer');
-      if (!container || !data.lenders) return;
-
-      const top6 = data.lenders.slice(0, 6);
-      container.innerHTML = `
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th style="width:200px">Parameter</th>
-              ${top6.map(l => `<th style="text-align:center"><span style="background:${l.logoBg};color:#fff;padding:2px 8px;border-radius:4px;font-size:0.75rem">${l.code}</span><br>${l.name}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Min Rate (Floating)</strong></td>
-              ${top6.map(l => `<td style="text-align:center;color:#10b981;font-weight:900;font-size:1rem">${l.minRate}%</td>`).join('')}
-            </tr>
-            <tr>
-              <td><strong>Estimated Monthly EMI</strong></td>
-              ${top6.map(l => {
-                const emi = calcEMI(loanAmt, l.minRate, tenureYrs * 12);
-                return `<td style="text-align:center;font-weight:800;color:var(--text-primary)">₹${fmt(emi)}</td>`;
-              }).join('')}
-            </tr>
-            <tr>
-              <td><strong>Processing Fee</strong></td>
-              ${top6.map(l => `<td style="text-align:center;font-size:0.78rem">${l.processingFee}</td>`).join('')}
-            </tr>
-            <tr>
-              <td><strong>Total Interest Payable</strong></td>
-              ${top6.map(l => {
-                const emi = calcEMI(loanAmt, l.minRate, tenureYrs * 12);
-                const totInt = (emi * tenureYrs * 12) - loanAmt;
-                return `<td style="text-align:center;font-weight:700">₹${inLakhsCr(totInt)}</td>`;
-              }).join('')}
-            </tr>
-            <tr style="background:rgba(99,102,241,0.04)">
-              <td><strong style="color:var(--accent)">Total Loan Cost Score</strong><br><span style="font-size:0.68rem;color:var(--text-muted)">Interest + Processing Fee</span></td>
-              ${top6.map(l => {
-                const emi = calcEMI(loanAmt, l.minRate, tenureYrs * 12);
-                const totInt = (emi * tenureYrs * 12) - loanAmt;
-                const pFee = Math.min(l.maxProcessingFee || 15000, loanAmt * (l.processingFeePct / 100));
-                const totalCost = totInt + pFee;
-                return `<td style="text-align:center;font-weight:900;font-size:1.05rem;color:var(--accent)">₹${inLakhsCr(totalCost)}</td>`;
-              }).join('')}
-            </tr>
-            <tr>
-              <td><strong>Max LTV (Loan-to-Value)</strong></td>
-              ${top6.map(l => `<td style="text-align:center;font-weight:700">${l.maxLTV}%</td>`).join('')}
-            </tr>
-            <tr>
-              <td><strong>Prepayment Penalty</strong></td>
-              ${top6.map(l => `<td style="text-align:center;font-size:0.75rem">${l.prepaymentFee}</td>`).join('')}
-            </tr>
-            <tr>
-              <td><strong>Action</strong></td>
-              ${top6.map(l => `<td style="text-align:center"><button onclick="openApplicationModal('${l.id}')" class="btn-primary" style="margin:0;font-size:0.78rem;padding:6px 14px">Apply Now</button></td>`).join('')}
-            </tr>
-          </tbody>
-        </table>
-      `;
-    })
-    .catch(() => {});
-}
-
-/* ══════════════════════════════════════════════════
-   HOME LOAN ELIGIBILITY & FOIR ENGINE
-   ══════════════════════════════════════════════════ */
-function renderHomeEligibility() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:1000px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">🧮 Home Loan Eligibility &amp; FOIR Calculator</h1>
-        <p style="color:var(--text-secondary)">Calculates maximum borrowing capacity based on Indian underwriting FOIR (Fixed Obligation to Income Ratio) limits.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-        <div class="wizard-card" style="max-width:none">
-          <h3 style="font-weight:800;font-size:1.1rem;margin-bottom:20px">Income &amp; Obligations</h3>
-          
-          <div class="form-group">
-            <label style="font-weight:700">Gross Monthly Income: <strong id="elIncLbl">₹1,20,000</strong></label>
-            <input type="range" class="range-slider" min="25000" max="500000" step="5000" value="120000" id="elIncome" oninput="document.getElementById('elIncLbl').textContent='₹'+fmt(this.value);calcEligibility()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Co-Applicant Monthly Income: <strong id="elCoIncLbl">₹0</strong></label>
-            <input type="range" class="range-slider" min="0" max="300000" step="5000" value="0" id="elCoIncome" oninput="document.getElementById('elCoIncLbl').textContent='₹'+fmt(this.value);calcEligibility()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Existing Monthly EMIs: <strong id="elEmiLbl">₹10,000</strong></label>
-            <input type="range" class="range-slider" min="0" max="150000" step="2000" value="10000" id="elExistEmi" oninput="document.getElementById('elEmiLbl').textContent='₹'+fmt(this.value);calcEligibility()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Loan Tenure: <strong id="elTenLbl">20 Years</strong></label>
-            <input type="range" class="range-slider" min="5" max="30" step="1" value="20" id="elTenure" oninput="document.getElementById('elTenLbl').textContent=this.value+' Years';calcEligibility()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Interest Rate: <strong id="elRateLbl">8.5%</strong></label>
-            <input type="range" class="range-slider" min="8.0" max="12.0" step="0.1" value="8.5" id="elRate" oninput="document.getElementById('elRateLbl').textContent=this.value+'%';calcEligibility()">
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:18px">
-          <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);color:#fff;border-radius:20px;padding:28px;box-shadow:var(--shadow-md);text-align:center">
-            <div style="font-size:0.8rem;text-transform:uppercase;color:#94a3b8;font-weight:700">Estimated Max Home Loan Eligibility</div>
-            <div style="font-size:2.5rem;font-weight:900;color:#38bdf8;margin:8px 0" id="elResAmount">₹0</div>
-            <div style="font-size:0.85rem;color:#cbd5e1">Max Monthly EMI Capacity: <strong id="elResEmi" style="color:#4ade80">₹0</strong></div>
-            <div style="margin-top:14px;background:rgba(255,255,255,0.08);padding:8px 14px;border-radius:20px;font-size:0.75rem;display:inline-block">
-              FOIR Limit Applied: <strong id="elFoirPct">55%</strong>
-            </div>
-          </div>
-
-          <div class="wizard-card" style="max-width:none">
-            <h4 style="font-weight:800;margin-bottom:12px">Underwriting Breakdown</h4>
-            <div style="font-size:0.83rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;justify-content:space-between"><span>Total Gross Income:</span><strong id="elTotIncome">₹0</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Max Allowed Monthly EMI (FOIR):</span><strong id="elMaxAllowedEmi">₹0</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Net Available Monthly EMI:</span><strong id="elNetAvailableEmi" style="color:#10b981">₹0</strong></div>
-            </div>
-            
-            <button onclick="openApplicationModal()" class="btn-primary" style="margin-top:20px">Check Direct Lender Approvals →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  calcEligibility();
-}
-
-function calcEligibility() {
-  const inc = parseFloat(document.getElementById('elIncome')?.value || 120000);
-  const coInc = parseFloat(document.getElementById('elCoIncome')?.value || 0);
-  const existEmi = parseFloat(document.getElementById('elExistEmi')?.value || 10000);
-  const tenureYrs = parseFloat(document.getElementById('elTenure')?.value || 20);
-  const annualRate = parseFloat(document.getElementById('elRate')?.value || 8.5);
-
-  const totInc = inc + coInc;
-  let foir = 0.50;
-  if (totInc >= 150000) foir = 0.60;
-  else if (totInc >= 80000) foir = 0.55;
-
-  const maxAllowedEmi = totInc * foir;
-  const netAvailEmi = Math.max(0, maxAllowedEmi - existEmi);
-
-  // Present Value of Loan given EMI
-  const r = annualRate / 12 / 100;
-  const n = tenureYrs * 12;
-  const maxLoan = r > 0 ? (netAvailEmi * (Math.pow(1 + r, n) - 1)) / (r * Math.pow(1 + r, n)) : netAvailEmi * n;
-
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  set('elResAmount', '₹' + inLakhsCr(Math.round(maxLoan)));
-  set('elResEmi', '₹' + fmt(Math.round(netAvailEmi)));
-  set('elFoirPct', Math.round(foir * 100) + '%');
-  set('elTotIncome', '₹' + fmt(totInc));
-  set('elMaxAllowedEmi', '₹' + fmt(Math.round(maxAllowedEmi)));
-  set('elNetAvailableEmi', '₹' + fmt(Math.round(netAvailEmi)));
-}
-
-/* ══════════════════════════════════════════════════
-   ADVANCED EMI & PREPAYMENT SAVINGS CALCULATOR
-   ══════════════════════════════════════════════════ */
-function renderHomeLoan() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:1100px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">📊 Home Loan EMI &amp; Prepayment Calculator</h1>
-        <p style="color:var(--text-secondary)">Calculate monthly EMI, amortization table, and see how annual prepayments save lakhs in interest.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
-        <div class="wizard-card" style="max-width:none">
-          <h3 style="font-weight:800;font-size:1.1rem;margin-bottom:20px">Loan Parameters</h3>
-          
-          <div class="form-group">
-            <label style="font-weight:700">Loan Amount: <strong id="emAmtLbl">₹50 Lakh</strong></label>
-            <input type="range" class="range-slider" min="500000" max="25000000" step="250000" value="5000000" id="emAmount" oninput="document.getElementById('emAmtLbl').textContent='₹'+inLakhsCr(this.value);calcEmiAndPrepay()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Interest Rate: <strong id="emRateLbl">8.5%</strong></label>
-            <input type="range" class="range-slider" min="7.5" max="14.0" step="0.1" value="8.5" id="emRate" oninput="document.getElementById('emRateLbl').textContent=this.value+'%';calcEmiAndPrepay()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Tenure: <strong id="emTenLbl">20 Years</strong></label>
-            <input type="range" class="range-slider" min="5" max="30" step="1" value="20" id="emTenure" oninput="document.getElementById('emTenLbl').textContent=this.value+' Years';calcEmiAndPrepay()">
-          </div>
-
-          <div class="form-group" style="background:rgba(99,102,241,0.05);padding:14px;border-radius:12px;border:1px solid rgba(99,102,241,0.15)">
-            <label style="font-weight:800;color:var(--accent)">Annual Prepayment Amount: <strong id="emPrepayLbl">₹1,00,000</strong></label>
-            <input type="range" class="range-slider" min="0" max="500000" step="10000" value="100000" id="emPrepay" oninput="document.getElementById('emPrepayLbl').textContent='₹'+fmt(this.value);calcEmiAndPrepay()">
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:18px">
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:var(--shadow-sm)">
-            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Monthly EMI</div>
-            <div style="font-size:2.2rem;font-weight:900;color:var(--text-primary);margin:4px 0" id="emResEmi">₹0</div>
-            <div style="font-size:0.83rem;color:var(--text-secondary);display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)">
-              <span>Total Interest (Standard):</span><strong id="emResTotInt">₹0</strong>
-            </div>
-          </div>
-
-          <div style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:20px;padding:24px;box-shadow:var(--shadow-md)">
-            <div style="font-size:0.8rem;text-transform:uppercase;font-weight:700">💡 Prepayment Savings Impact</div>
-            <div style="font-size:1.8rem;font-weight:900;margin:6px 0" id="emResSavedInt">₹0 Saved!</div>
-            <div style="font-size:0.85rem" id="emResClosesEarly">Loan Closes 0 Years Earlier</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Amortization Table -->
-      <div class="gold-table-section">
-        <div class="gold-table-header">📅 Amortization Schedule (Yearly Principal vs Interest Paid)</div>
-        <table class="gold-table">
-          <thead>
-            <tr><th>Year</th><th>Opening Principal</th><th>EMI Paid (Year)</th><th>Interest Paid</th><th>Principal Paid</th><th>Closing Balance</th></tr>
-          </thead>
-          <tbody id="emAmortTbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  calcEmiAndPrepay();
-}
-
-function calcEmiAndPrepay() {
-  const P = parseFloat(document.getElementById('emAmount')?.value || 5000000);
-  const R = parseFloat(document.getElementById('emRate')?.value || 8.5);
-  const Y = parseFloat(document.getElementById('emTenure')?.value || 20);
-  const prepayAnnual = parseFloat(document.getElementById('emPrepay')?.value || 100000);
-
-  const months = Y * 12;
-  const emi = calcEMI(P, R, months);
-  const standardTotInterest = (emi * months) - P;
-
-  // Prepayment Simulation
-  const r = R / 12 / 100;
-  let balance = P;
-  let prepayTotInterest = 0;
-  let mCount = 0;
-
-  while (balance > 0 && mCount < months) {
-    mCount++;
-    const interestMonth = balance * r;
-    let principalMonth = emi - interestMonth;
-    if (principalMonth > balance) principalMonth = balance;
-
-    balance -= principalMonth;
-    prepayTotInterest += interestMonth;
-
-    if (mCount % 12 === 0 && balance > 0 && prepayAnnual > 0) {
-      const actualPrepay = Math.min(balance, prepayAnnual);
-      balance -= actualPrepay;
-    }
-  }
-
-  const interestSaved = Math.max(0, standardTotInterest - prepayTotInterest);
-  const yearsSaved = Math.max(0, Y - (mCount / 12));
-
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  set('emResEmi', '₹' + fmt(Math.round(emi)));
-  set('emResTotInt', '₹' + inLakhsCr(Math.round(standardTotInterest)));
-  set('emResSavedInt', '₹' + inLakhsCr(Math.round(interestSaved)) + ' Saved!');
-  set('emResClosesEarly', `Loan closes ${yearsSaved.toFixed(1)} Years earlier (${mCount} months)`);
-
-  // Render Amortization Table
-  const tbody = document.getElementById('emAmortTbody');
-  if (tbody) {
-    let bal = P;
-    let rowsHTML = '';
-    for (let yr = 1; yr <= Math.min(Y, 30); yr++) {
-      if (bal <= 0) break;
-      let yrInt = 0, yrPrinc = 0;
-      const openBal = bal;
-
-      for (let m = 1; m <= 12; m++) {
-        if (bal <= 0) break;
-        const iM = bal * r;
-        let pM = emi - iM;
-        if (pM > bal) pM = bal;
-        bal -= pM;
-        yrInt += iM;
-        yrPrinc += pM;
-      }
-
-      rowsHTML += `
-        <tr>
-          <td>Year ${yr}</td>
-          <td class="price">₹${fmt(Math.round(openBal))}</td>
-          <td class="price">₹${fmt(Math.round(yrInt + yrPrinc))}</td>
-          <td style="color:#ef4444;font-weight:700">₹${fmt(Math.round(yrInt))}</td>
-          <td style="color:#10b981;font-weight:700">₹${fmt(Math.round(yrPrinc))}</td>
-          <td class="price">₹${fmt(Math.max(0, Math.round(bal)))}</td>
-        </tr>
-      `;
-    }
-    tbody.innerHTML = rowsHTML;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   HOME LOAN BALANCE TRANSFER (BT) CALCULATOR
-   ══════════════════════════════════════════════════ */
-function renderBalanceTransfer() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:1000px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">🔄 Home Loan Balance Transfer Calculator</h1>
-        <p style="color:var(--text-secondary)">Calculate potential monthly EMI and net interest savings by switching to a lower interest rate lender.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-        <div class="wizard-card" style="max-width:none">
-          <h3 style="font-weight:800;font-size:1.1rem;margin-bottom:20px">Current vs New Offer</h3>
-          
-          <div class="form-group">
-            <label style="font-weight:700">Outstanding Loan Balance: <strong id="btAmtLbl">₹40 Lakh</strong></label>
-            <input type="range" class="range-slider" min="500000" max="20000000" step="250000" value="4000000" id="btAmount" oninput="document.getElementById('btAmtLbl').textContent='₹'+inLakhsCr(this.value);calcBT()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Current Interest Rate: <strong id="btCurrRateLbl">9.2%</strong></label>
-            <input type="range" class="range-slider" min="8.5" max="14.0" step="0.1" value="9.2" id="btCurrRate" oninput="document.getElementById('btCurrRateLbl').textContent=this.value+'%';calcBT()">
-          </div>
-
-          <div class="form-group">
-            <label style="font-weight:700">Remaining Tenure: <strong id="btTenLbl">15 Years</strong></label>
-            <input type="range" class="range-slider" min="3" max="30" step="1" value="15" id="btTenure" oninput="document.getElementById('btTenLbl').textContent=this.value+' Years';calcBT()">
-          </div>
-
-          <div class="form-group" style="background:rgba(16,185,129,0.05);padding:14px;border-radius:12px;border:1px solid rgba(16,185,129,0.2)">
-            <label style="font-weight:800;color:#059669">New Offer Rate: <strong id="btNewRateLbl">8.4%</strong></label>
-            <input type="range" class="range-slider" min="8.0" max="11.0" step="0.1" value="8.4" id="btNewRate" oninput="document.getElementById('btNewRateLbl').textContent=this.value+'%';calcBT()">
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:18px">
-          <div style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:20px;padding:28px;box-shadow:var(--shadow-md);text-align:center">
-            <div style="font-size:0.8rem;text-transform:uppercase;font-weight:700">Net Estimated Interest Savings</div>
-            <div style="font-size:2.4rem;font-weight:900;margin:6px 0" id="btNetSavings">₹0</div>
-            <div style="font-size:0.85rem">Monthly EMI Reduced by: <strong id="btEmiSavings" style="color:#fef08a">₹0/mo</strong></div>
-          </div>
-
-          <div class="wizard-card" style="max-width:none">
-            <h4 style="font-weight:800;margin-bottom:12px">Switching Cost &amp; Net Benefit</h4>
-            <div style="font-size:0.83rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;justify-content:space-between"><span>Current EMI:</span><strong id="btCurrEmi">₹0</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>New EMI:</span><strong id="btNewEmi" style="color:#10b981">₹0</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Estimated Transfer Charges (MODT + Fee):</span><strong id="btTransferFee">₹15,000</strong></div>
-            </div>
-            
-            <button onclick="openApplicationModal()" class="btn-primary" style="margin-top:20px">Check Balance Transfer Offers →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  calcBT();
-}
-
-function calcBT() {
-  const P = parseFloat(document.getElementById('btAmount')?.value || 4000000);
-  const currR = parseFloat(document.getElementById('btCurrRate')?.value || 9.2);
-  const newR = parseFloat(document.getElementById('btNewRate')?.value || 8.4);
-  const Y = parseFloat(document.getElementById('btTenure')?.value || 15);
-
-  const months = Y * 12;
-  const currEmi = calcEMI(P, currR, months);
-  const newEmi = calcEMI(P, newR, months);
-
-  const currTotInt = (currEmi * months) - P;
-  const newTotInt = (newEmi * months) - P;
-  const rawInterestSaved = currTotInt - newTotInt;
-  const estTransferCost = Math.min(25000, Math.max(10000, P * 0.0035));
-  const netSaved = Math.max(0, rawInterestSaved - estTransferCost);
-  const emiSaved = Math.max(0, currEmi - newEmi);
-
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  set('btNetSavings', '₹' + inLakhsCr(Math.round(netSaved)));
-  set('btEmiSavings', '₹' + fmt(Math.round(emiSaved)) + '/mo');
-  set('btCurrEmi', '₹' + fmt(Math.round(currEmi)));
-  set('btNewEmi', '₹' + fmt(Math.round(newEmi)));
-  set('btTransferFee', '₹' + fmt(Math.round(estTransferCost)));
-}
-
-/* ══════════════════════════════════════════════════
-   BANKS & HFCS DIRECTORY & DETAILS
-   ══════════════════════════════════════════════════ */
-function renderLenderDirectory() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:1250px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">🏢 Banks &amp; Housing Finance Companies (HFCs) Directory</h1>
-        <p style="color:var(--text-secondary)">Verified rate cards, documentation checklists, and eligibility thresholds across India.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px" id="lenderDirGrid">
-        <div class="spinner"></div>
-      </div>
-    </div>
-  `;
-
-  fetch('/api/lenders')
-    .then(r => r.json())
-    .then(data => {
-      const grid = document.getElementById('lenderDirGrid');
-      if (!grid || !data.lenders) return;
-      grid.innerHTML = data.lenders.map(l => `
-        <div class="market-card" style="display:flex;flex-direction:column;justify-content:space-between">
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="background:${l.logoBg};color:#fff;font-weight:800;font-size:0.75rem;padding:4px 10px;border-radius:6px">${l.code}</span>
-              <span style="font-size:0.75rem;font-weight:700;color:var(--accent);background:rgba(99,102,241,0.08);padding:3px 8px;border-radius:4px">${l.type}</span>
-            </div>
-            <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:4px">${l.name}</h3>
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">${l.tagline}</p>
-
-            <div style="background:var(--bg-secondary);padding:12px;border-radius:10px;margin-bottom:14px">
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-                <span style="color:var(--text-muted)">Starting Rate:</span>
-                <strong style="color:#10b981;font-weight:900">${l.minRate}%</strong>
-              </div>
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem">
-                <span style="color:var(--text-muted)">Max Tenure:</span>
-                <strong style="color:var(--text-primary);font-weight:800">${l.maxTenure} Yrs</strong>
-              </div>
-            </div>
-
-            <div style="font-size:0.76rem;color:var(--text-secondary);margin-bottom:14px">
-              <strong>Docs Needed:</strong> ${l.docsRequired.slice(0, 2).join(', ')}
-            </div>
-          </div>
-
-          <div style="display:flex;gap:8px;margin-top:auto">
-            <button onclick="openCalc('lender-${l.id}')" class="form-input" style="flex:1;text-align:center;font-weight:700;font-size:0.8rem">Rate Card</button>
-            <button onclick="openApplicationModal('${l.id}')" class="btn-primary" style="flex:1;margin:0;font-size:0.8rem;padding:8px">Apply Now</button>
-          </div>
-        </div>
-      `).join('');
-    });
-}
-
-function renderLenderDetail(lenderId) {
-  fetch(`/api/lenders/${lenderId}`)
-    .then(r => r.json())
-    .then(data => {
-      const l = data.lender;
-      if (!l) return;
-
-      document.getElementById('appMain').innerHTML = `
-        <div style="max-width:1000px;margin:32px auto 80px;padding:0 24px">
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:24px;padding:32px;box-shadow:var(--shadow-md);margin-bottom:28px">
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-              <span style="background:${l.logoBg};color:#fff;font-weight:900;font-size:1.2rem;padding:8px 18px;border-radius:10px">${l.code}</span>
-              <div>
-                <h1 style="font-size:1.8rem;font-weight:900;margin:0;color:var(--text-primary)">${l.name} Home Loan</h1>
-                <p style="color:var(--text-muted);font-size:0.85rem;margin:2px 0 0">${l.tagline}</p>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;background:var(--bg-secondary);padding:20px;border-radius:14px;margin-bottom:24px">
-              <div><span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Interest Rate Range</span><div style="font-size:1.3rem;font-weight:900;color:#10b981">${l.minRate}% - ${l.maxRate}%</div></div>
-              <div><span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Rate Type</span><div style="font-size:0.85rem;font-weight:800">${l.rateType}</div></div>
-              <div><span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Max Tenure</span><div style="font-size:1.3rem;font-weight:900">${l.maxTenure} Years</div></div>
-              <div><span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Max LTV</span><div style="font-size:1.3rem;font-weight:900">${l.maxLTV}%</div></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-              <div>
-                <h4 style="font-weight:800;margin-bottom:8px">Key Features &amp; Highlights</h4>
-                <ul style="font-size:0.84rem;color:var(--text-secondary);padding-left:18px;line-height:1.6">
-                  ${l.highlights.map(h => `<li>${h}</li>`).join('')}
-                </ul>
-              </div>
-              <div>
-                <h4 style="font-weight:800;margin-bottom:8px">Required Documents</h4>
-                <ul style="font-size:0.84rem;color:var(--text-secondary);padding-left:18px;line-height:1.6">
-                  ${l.docsRequired.map(d => `<li>${d}</li>`).join('')}
-                </ul>
-              </div>
-            </div>
-
-            <button onclick="openApplicationModal('${l.id}')" class="btn-primary" style="width:100%;height:48px;font-size:1rem;font-weight:800">Apply for ${l.name} Home Loan →</button>
-          </div>
-        </div>
-      `;
-    });
-}
-
-/* ══════════════════════════════════════════════════
-   SEO PRODUCT & CITY HUB PAGES
-   ══════════════════════════════════════════════════ */
-function renderProductPage(slug) {
-  const titles = {
-    purchase: 'Home Purchase Loan',
-    construction: 'Plot & House Construction Loan',
-    nri: 'NRI Home Loan'
-  };
-  const title = titles[slug] || 'Home Loan Product';
-
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:900px;margin:32px auto 80px;padding:0 24px">
-      <h1 style="font-size:2rem;font-weight:900;margin-bottom:12px">🏡 ${title}</h1>
-      <p style="color:var(--text-secondary);margin-bottom:28px">Complete guidelines, interest rates, eligibility criteria &amp; application process in India.</p>
-      <div class="wizard-card" style="max-width:none">
-        <h3 style="font-weight:800;margin-bottom:12px">Overview</h3>
-        <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;margin-bottom:20px">
-          Compare leading banks offering ${title} options with floating interest rates starting from 8.35%. Includes step-by-step document verification and legal title clearance guidance.
-        </p>
-        <button onclick="openCalc('search-wizard')" class="btn-primary">Find Matching Lenders →</button>
-      </div>
-    </div>
-  `;
-}
-
-function renderLocalSEOPage(slug) {
-  const cities = {
-    noida: 'Noida & Greater Noida Home Loans',
-    gurgaon: 'Gurgaon & Delhi NCR Home Loans'
-  };
-  const title = cities[slug] || 'NCR Home Loans';
-
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:900px;margin:32px auto 80px;padding:0 24px">
-      <h1 style="font-size:2rem;font-weight:900;margin-bottom:12px">📍 ${title}</h1>
-      <p style="color:var(--text-secondary);margin-bottom:28px">Local home loan processing, builder tie-ups &amp; property approval guidelines in NCR.</p>
-      <div class="wizard-card" style="max-width:none">
-        <h3 style="font-weight:800;margin-bottom:12px">NCR Builder Tie-Ups &amp; Approvals</h3>
-        <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;margin-bottom:20px">
-          Explore banks with instant pre-approved projects across Noida Sector 150, Noida Extension, YEIDA authority plots, DLF Phase 5 Gurgaon, and Dwarka Expressway.
-        </p>
-        <button onclick="openApplicationModal()" class="btn-primary">Check Local Loan Eligibility →</button>
-      </div>
-    </div>
-  `;
-}
-
-/* ══════════════════════════════════════════════════
-   CUSTOMER APPLICATION TRACKING DASHBOARD
-   ══════════════════════════════════════════════════ */
-function renderTrackApplication() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:800px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">📍 Track Home Loan Application</h1>
-        <p style="color:var(--text-secondary)">Enter your Application ID (e.g. <strong>HL-2026-8942</strong>) to view real-time stage progress.</p>
-      </div>
-
-      <div class="wizard-card" style="margin-bottom:28px">
-        <div style="display:flex;gap:12px">
-          <input type="text" class="form-input" id="trackAppId" placeholder="e.g. HL-2026-8942" value="HL-2026-8942" style="font-weight:800;font-size:1.05rem">
-          <button onclick="fetchAppStatus()" class="btn-primary" style="margin:0;width:auto;padding:12px 28px;font-weight:800">Track Status</button>
-        </div>
-      </div>
-
-      <div id="trackResult"></div>
-    </div>
-  `;
-
-  fetchAppStatus();
-}
-
-function fetchAppStatus() {
-  const input = document.getElementById('trackAppId');
-  const appId = input ? input.value.trim() : 'HL-2026-8942';
-  const container = document.getElementById('trackResult');
-  if (!container || !appId) return;
-
-  container.innerHTML = `<div class="spinner"></div>`;
-
-  fetch(`/api/lead/track/${appId}`)
-    .then(r => r.json())
-    .then(data => {
-      if (!data.ok) {
-        container.innerHTML = `<div class="wizard-card" style="text-align:center;color:var(--red)"><p>⚠️ ${data.error}</p></div>`;
-        return;
-      }
-
-      const app = data.app;
-      const stages = data.stages;
-
-      container.innerHTML = `
-        <div class="wizard-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px">
-            <div>
-              <span style="font-size:0.75rem;color:var(--text-muted);font-weight:700">APPLICATION ID</span>
-              <h3 style="font-size:1.3rem;font-weight:900;color:var(--accent);margin:2px 0 0">${app.id}</h3>
-            </div>
-            <div style="text-align:right">
-              <span style="background:rgba(99,102,241,0.1);color:var(--accent);font-weight:800;font-size:0.8rem;padding:4px 12px;border-radius:20px">${app.lenderName}</span>
-              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Applicant: ${app.name} (${app.city})</div>
-            </div>
-          </div>
-
-          <div style="background:var(--bg-secondary);padding:14px 18px;border-radius:12px;margin-bottom:24px;font-size:0.85rem">
-            <strong>Current Stage:</strong> <span style="color:#10b981;font-weight:800">${app.statusText}</span><br>
-            <span style="font-size:0.78rem;color:var(--text-muted)">Latest Remark: ${app.notes}</span>
-          </div>
-
-          <h4 style="font-weight:800;margin-bottom:16px">Application Timeline</h4>
-          <div class="timeline-tracker">
-            ${stages.map(s => `
-              <div class="timeline-item ${s.step === app.statusStep ? 'active' : s.step < app.statusStep ? 'done' : ''}">
-                <div class="timeline-title">${s.label}</div>
-                <div class="timeline-desc">${s.desc}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    })
-    .catch(() => {
-      container.innerHTML = `<div class="wizard-card" style="text-align:center;color:var(--red)"><p>Error loading application status.</p></div>`;
-    });
-}
-
-/* ══════════════════════════════════════════════════
-   AI HOME LOAN ASSISTANT
-   ══════════════════════════════════════════════════ */
-function renderAIAssistant() {
-  document.getElementById('appMain').innerHTML = `
-    <div style="max-width:900px;margin:32px auto 80px;padding:0 24px">
-      <div style="text-align:center;margin-bottom:24px">
-        <h1 style="font-size:2rem;font-weight:900;margin-bottom:8px">✨ AI Home Loan Assistant</h1>
-        <p style="color:var(--text-secondary)">Ask questions about Indian home loan eligibility, document checklists, and RBI rules.</p>
-      </div>
-
-      <div class="ai-chat-box">
-        <div class="ai-chat-header">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:1.3rem">🤖</span>
-            <div>
-              <strong style="font-size:0.95rem">FinCalc AI Assistant</strong>
-              <div style="font-size:0.72rem;color:#4ade80">● Online | Guidance only (Subject to lender approval)</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="ai-chat-messages" id="aiChatMsgs">
-          <div class="ai-msg bot">
-            Hello! I am your AI Home Loan Assistant. Ask me anything like:<br>
-            • "What documents are required for salaried borrowers?"<br>
-            • "How does FOIR affect my loan amount?"<br>
-            • "What is the difference between SBI and HDFC home loans?"
-          </div>
-        </div>
-
-        <div style="padding:16px;background:#fff;border-top:1px solid var(--border)">
-          <div style="display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px">
-            <button onclick="sendAIPrompt('What docs are needed for salaried?')" class="form-input" style="width:auto;font-size:0.75rem;padding:4px 10px;cursor:pointer">📋 Required Docs</button>
-            <button onclick="sendAIPrompt('How is FOIR calculated?')" class="form-input" style="width:auto;font-size:0.75rem;padding:4px 10px;cursor:pointer">🧮 FOIR Formula</button>
-            <button onclick="sendAIPrompt('SBI vs HDFC home loan comparison')" class="form-input" style="width:auto;font-size:0.75rem;padding:4px 10px;cursor:pointer">⚖️ SBI vs HDFC</button>
-          </div>
-          <div style="display:flex;gap:10px">
-            <input type="text" class="form-input" id="aiInput" placeholder="Type your home loan question..." onkeypress="if(event.key==='Enter')sendAIMsg()">
-            <button onclick="sendAIMsg()" class="btn-primary" style="margin:0;width:auto;padding:10px 20px">Send</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function sendAIPrompt(txt) {
-  const input = document.getElementById('aiInput');
-  if (input) { input.value = txt; sendAIMsg(); }
-}
-
-function sendAIMsg() {
-  const input = document.getElementById('aiInput');
-  const txt = input ? input.value.trim() : '';
-  if (!txt) return;
-
-  const msgs = document.getElementById('aiChatMsgs');
-  if (!msgs) return;
-
-  // Append user message
-  const uDiv = document.createElement('div');
-  uDiv.className = 'ai-msg user';
-  uDiv.textContent = txt;
-  msgs.appendChild(uDiv);
-  input.value = '';
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // Simulate bot response
-  setTimeout(() => {
-    const bDiv = document.createElement('div');
-    bDiv.className = 'ai-msg bot';
-
-    const lower = txt.toLowerCase();
-    let resp = '';
-
-    if (lower.includes('doc') || lower.includes('document')) {
-      resp = `<strong>Standard Document Checklist for Indian Home Loans:</strong><br>
-        1. <strong>Identity & Address:</strong> PAN Card, Aadhaar Card, Passport/Voter ID.<br>
-        2. <strong>Income Proof (Salaried):</strong> Latest 3 months salary slips, Form 16, 6 months bank statement.<br>
-        3. <strong>Income Proof (Self-Employed):</strong> 2 years ITR with P&L computation, CA audited balance sheet, 6 months bank statement.<br>
-        4. <strong>Property Docs:</strong> Sale agreement, builder allotment letter, approved building plan, link deeds.`;
-    } else if (lower.includes('foir')) {
-      resp = `<strong>Fixed Obligation to Income Ratio (FOIR):</strong><br>
-        Lenders calculate FOIR = (Total Existing EMIs + Proposed EMI) / Gross Monthly Income.<br>
-        • For Income < ₹50k: Max FOIR is ~45-50%.<br>
-        • For Income ₹50k-₹1.5L: Max FOIR is ~55%.<br>
-        • For Income > ₹1.5L: Max FOIR can reach 60-65%.`;
-    } else if (lower.includes('sbi') || lower.includes('hdfc')) {
-      resp = `<strong>SBI vs HDFC Home Loan Comparison:</strong><br>
-        • <strong>SBI:</strong> Starting at 8.50% (EBLR repo linked). Processing fee capped at ₹10,000+GST. Lower rate for women.<br>
-        • <strong>HDFC Bank:</strong> Starting at 8.60%. Faster 48-hr digital sanction & wide builder tie-ups.<br>
-        <em>Note: Final interest rate depends on your CIBIL score (750+ yields best discount).</em>`;
-    } else {
-      resp = `Based on Indian lending practices, your query regarding <strong>"${txt}"</strong> depends on your monthly income, CIBIL score, property type, and lender underwriting.<br><br>
-        💡 <strong>Tip:</strong> Try running our <a href="#" onclick="openCalc('search-wizard');return false;">7-Step Loan Matching Wizard</a> to get personalized match scores!`;
-    }
-
-    bDiv.innerHTML = resp + `<div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px">Indicative response. Final terms subject to lender underwriting.</div>`;
-    msgs.appendChild(bDiv);
-    msgs.scrollTop = msgs.scrollHeight;
-  }, 400);
-}
-
-/* ══════════════════════════════════════════════════
-   APPLICATION MODAL
-   ══════════════════════════════════════════════════ */
-let selectedLenderForModal = 'sbi';
-
-function openApplicationModal(lenderId = 'sbi') {
-  selectedLenderForModal = lenderId;
-  let modal = document.getElementById('appModalOverlay');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.id = 'appModalOverlay';
-    modal.innerHTML = `
-      <div class="modal-card">
-        <button class="modal-close" onclick="closeApplicationModal()">✕</button>
-        <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:6px">🚀 Apply for Home Loan</h2>
-        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:20px">Direct application submission with instant status tracking ID.</p>
-
-        <form onsubmit="submitLoanApplication(event)">
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-weight:700;font-size:0.8rem">Full Name *</label>
-            <input type="text" class="form-input" id="mdName" required placeholder="e.g. Rahul Sharma" style="padding:10px">
-          </div>
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-weight:700;font-size:0.8rem">Mobile Phone *</label>
-            <input type="tel" class="form-input" id="mdPhone" required placeholder="10-digit mobile number" style="padding:10px">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-            <div class="form-group">
-              <label style="font-weight:700;font-size:0.8rem">City</label>
-              <input type="text" class="form-input" id="mdCity" value="Noida" style="padding:10px">
-            </div>
-            <div class="form-group">
-              <label style="font-weight:700;font-size:0.8rem">Loan Amount (₹)</label>
-              <input type="number" class="form-input" id="mdLoanAmt" value="5000000" style="padding:10px">
-            </div>
-          </div>
-          <button type="submit" class="btn-primary" style="width:100%;height:46px;font-weight:800;margin-top:10px">Submit Loan Application →</button>
-        </form>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-
-  setTimeout(() => modal.classList.add('open'), 10);
-}
-
-function closeApplicationModal() {
-  const modal = document.getElementById('appModalOverlay');
-  if (modal) modal.classList.remove('open');
-}
-
-function submitLoanApplication(e) {
-  e.preventDefault();
-  const name = document.getElementById('mdName').value;
-  const phone = document.getElementById('mdPhone').value;
-  const city = document.getElementById('mdCity').value;
-  const loanAmount = document.getElementById('mdLoanAmt').value;
-
-  fetch('/api/lead/apply', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name, phone, city, loanAmount, lenderId: selectedLenderForModal
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    closeApplicationModal();
-    if (res.ok) {
-      alert(`🎉 Application Submitted Successfully!\n\nYour Application ID is: ${res.applicationId}\n\nUse this ID to track your status live in the "Track Application" section.`);
-      openCalc('track-application');
-      const input = document.getElementById('trackAppId');
-      if (input) { input.value = res.applicationId; fetchAppStatus(); }
-    }
-  });
-}
 const CALCS = {
 
   /* ── HOME LOAN EMI ── */
@@ -2467,12 +1339,55 @@ function row(label, val, cls = '') {
   </div>`;
 }
 
+/* ── Gold Loan Panel Updater ─────────────────────── */
+function updateGoldLoanPanel(d) {
+  if (!d?.gold) return;
+  const g = d.gold;
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+  s('glpTs', d.ts);
+  s('glp-g24', '₹' + fmt(g.g24) + '/g');
+  s('glp-g22', '₹' + fmt(g.g22) + '/g');
+  s('glp-g20', '₹' + fmt(g.g20) + '/g');
+  s('glp-g18', '₹' + fmt(g.g18) + '/g');
+  s('glp-silver',   '₹' + fmt(g.silver, 2) + '/g');
+  s('glp-platinum', '₹' + fmt(g.platinum) + '/g');
+
+  // 24K change
+  const ch24El = document.getElementById('glp-ch24');
+  if (ch24El) {
+    const up = g.ch24 >= 0;
+    ch24El.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(g.ch24)} (${up ? '+' : ''}${g.chp24}%)`;
+    ch24El.className = 'glp-rate-change ' + (up ? 'up' : 'down');
+  }
+
+  // Derived changes for lower purities (same % as 24K)
+  [['glp-ch22', g.g22], ['glp-ch20', g.g20], ['glp-ch18', g.g18]].forEach(([id, rate]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const ch = +(rate * g.chp24 / 100).toFixed(0);
+      const up = g.chp24 >= 0;
+      el.textContent = `${up ? '▲' : '▼'} ₹${Math.abs(ch)} (${up ? '+' : ''}${Math.abs(g.chp24).toFixed(2)}%)`;
+      el.className = 'glp-rate-change ' + (up ? 'up' : 'down');
+    }
+  });
+
+  // Sparkline
+  const canvas = document.getElementById('glpSparkCanvas');
+  if (canvas && g.spark) FinCharts.drawSparkline(canvas, g.spark, '#d97706');
+
+  // Recompute the loan calc with latest gold price
+  computeCalc('gold-loan');
+}
+
 /* ══════════════════════════════════════════════════
    CALCULATOR RENDERER
    ══════════════════════════════════════════════════ */
 function renderCalc(id) {
   const cfg = CALCS[id];
   if (!cfg) { navigate('home'); return; }
+
+  const isGoldLoan = id === 'gold-loan';
 
   document.getElementById('appMain').innerHTML = `
     <div class="calc-page">
@@ -2481,7 +1396,7 @@ function renderCalc(id) {
         <h1>${cfg.icon} ${cfg.name}</h1>
         <p>${cfg.desc}</p>
       </div>
-      <div class="calc-body">
+      <div class="calc-body${isGoldLoan ? ' calc-body--gold-loan' : ''}">
         <div class="form-card" id="calcForm">
           ${cfg.fields.map(f => fieldHTML(f)).join('')}
           <button class="btn-primary" id="calcBtn" onclick="computeCalc('${id}')">Calculate</button>
@@ -2492,6 +1407,61 @@ function renderCalc(id) {
             <p style="font-size:0.9rem">Adjust the sliders and hit <strong style="color:var(--text-secondary)">Calculate</strong></p>
           </div>
         </div>
+        ${isGoldLoan ? `
+        <div class="gold-live-panel" id="goldLivePanel">
+          <div class="glp-header">
+            <span class="glp-title">🥇 Live Gold Rates</span>
+            <span class="glp-live"><span class="live-dot" style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;animation:pulse 2s infinite"></span> Live</span>
+          </div>
+          <div class="glp-ts" id="glpTs">—</div>
+
+          <div class="glp-rates">
+            <div class="glp-rate-row glp-rate--g24">
+              <div class="glp-rate-label">24K <span class="glp-purity">(99.9%)</span></div>
+              <div class="glp-rate-val" id="glp-g24">—</div>
+              <div class="glp-rate-change" id="glp-ch24">—</div>
+            </div>
+            <div class="glp-rate-row glp-rate--g22">
+              <div class="glp-rate-label">22K <span class="glp-purity">(91.7%)</span></div>
+              <div class="glp-rate-val" id="glp-g22">—</div>
+              <div class="glp-rate-change" id="glp-ch22">—</div>
+            </div>
+            <div class="glp-rate-row glp-rate--g20">
+              <div class="glp-rate-label">20K <span class="glp-purity">(83.3%)</span></div>
+              <div class="glp-rate-val" id="glp-g20">—</div>
+              <div class="glp-rate-change" id="glp-ch20">—</div>
+            </div>
+            <div class="glp-rate-row glp-rate--g18">
+              <div class="glp-rate-label">18K <span class="glp-purity">(75.0%)</span></div>
+              <div class="glp-rate-val" id="glp-g18">—</div>
+              <div class="glp-rate-change" id="glp-ch18">—</div>
+            </div>
+          </div>
+
+          <div class="glp-divider"></div>
+
+          <div class="glp-section-label">Precious Metals</div>
+          <div class="glp-metals">
+            <div class="glp-metal-row">
+              <span class="glp-metal-name">🥈 Silver (999)</span>
+              <span class="glp-metal-val" id="glp-silver">—</span>
+            </div>
+            <div class="glp-metal-row">
+              <span class="glp-metal-name">💜 Platinum (950)</span>
+              <span class="glp-metal-val" id="glp-platinum">—</span>
+            </div>
+          </div>
+
+          <div class="glp-divider"></div>
+
+          <div class="glp-section-label">Price Chart (24K)</div>
+          <div style="height:70px;margin-top:4px">
+            <canvas id="glpSparkCanvas" style="width:100%;height:70px"></canvas>
+          </div>
+
+          <div class="glp-hint">💡 Rates used live in your loan calculation</div>
+        </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -2520,6 +1490,9 @@ function renderCalc(id) {
 
   // Auto-compute
   computeCalc(id);
+
+  // Populate gold panel immediately if we have data
+  if (isGoldLoan && marketData) updateGoldLoanPanel(marketData);
 }
 
 function fieldHTML(f) {
