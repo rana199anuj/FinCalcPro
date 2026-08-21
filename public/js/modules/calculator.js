@@ -560,7 +560,7 @@ function renderCalc(id) {
           <h1>${cfg.icon} ${cfg.name}</h1>
           <p>${cfg.desc}</p>
         </div>
-        <button class="calc-banner-back" onclick="showHome()">← Back to Home</button>
+        <button class="calc-banner-back" onclick="goBack()">← Back</button>
       </div>
 
       <!-- Main 2-Column Calculator Layout -->

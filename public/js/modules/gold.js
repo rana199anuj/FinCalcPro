@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FinCalc Pro — Gold Rates Page
    Renders the gold rates table and updates live prices.
    ══════════════════════════════════════════════════ */
@@ -6,12 +6,12 @@
 function renderGoldRates() {
   document.getElementById("appMain").innerHTML = `
     <div class="gold-page">
-      <div class="gold-header">
-        <h1>💛 Gold Rates Today</h1>
-        <div class="gold-timestamp">
-          <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 2s infinite"></span>
-          Live · Updated every 3s · <span id="goldTs">—</span>
+      <div class="calc-banner" style="background:linear-gradient(135deg, #b45309 0%, #f59e0b 100%);margin-bottom:28px">
+        <div class="calc-banner-left">
+          <h1>💛 Gold Rates Today</h1>
+          <p>Live MCX &amp; Retail Gold Rates in India (24K, 22K, 20K, 18K) · <span id="goldTs">Live</span></p>
         </div>
+        <button class="calc-banner-back" onclick="goBack()">← Back</button>
       </div>
 
       <div class="gold-grid" id="goldGrid">

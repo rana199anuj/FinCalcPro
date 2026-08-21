@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FinCalc Pro — App Entry Point
    Merges all CALCS definitions and boots the SPA.
    ══════════════════════════════════════════════════ */
@@ -16,4 +16,5 @@ document.getElementById("drawerClose")?.addEventListener("click", closeMobile);
 document.getElementById("drawerOverlay")?.addEventListener("click", closeMobile);
 
 /* ─ Boot ─────────────────────────────────────────── */
-navigate("home");
+const initialView = window.location.hash.replace("#", "") || "home";
+navigate(initialView, false);

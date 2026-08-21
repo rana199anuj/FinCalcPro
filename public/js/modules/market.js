@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FinCalc Pro — Market Dashboard Page
    Renders and updates the NSE/BSE live market view.
    ══════════════════════════════════════════════════ */
@@ -6,8 +6,13 @@
 function renderMarket() {
   document.getElementById("appMain").innerHTML = `
     <div class="market-page">
-      <h1>📊 Live Market Dashboard</h1>
-      <p style="color:var(--text-secondary);margin-bottom:32px">NSE &amp; BSE live indices · <span id="mktTs">—</span></p>
+      <div class="calc-banner" style="background:linear-gradient(135deg, #0f766e 0%, #0d9488 100%);margin-bottom:28px">
+        <div class="calc-banner-left">
+          <h1>📊 Live Market Dashboard</h1>
+          <p>NSE &amp; BSE live indices &amp; commodity rates · <span id="mktTs">Live</span></p>
+        </div>
+        <button class="calc-banner-back" onclick="goBack()">← Back</button>
+      </div>
 
       <div class="market-grid">
         ${["nifty","sensex","bankNifty","niftyIT"].map(k => `
