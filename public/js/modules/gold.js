@@ -61,12 +61,20 @@ function renderGoldRates() {
       <!-- Formula: (Weight * Rate) + Making = Subtotal + GST = Final -->
       <!-- ══════════════════════════════════════════════════ -->
       <div class="calc-form-card" style="margin-bottom:32px;padding:24px">
-        <div class="calc-section-header" style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin-bottom:18px">
-          🧮 Gold Rate & Jewellery Price Calculator (GoodReturns Formula)
+        <div style="margin-bottom:16px">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:8px">🧮 Gold & Jewellery Price Calculator</div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem;font-weight:600">
+            <span style="background:rgba(245,158,11,0.12);color:#b45309;padding:3px 10px;border-radius:20px;border:1px solid rgba(245,158,11,0.3)">Gold Weight × Rate</span>
+            <span style="color:var(--text-muted)">+</span>
+            <span style="background:rgba(99,102,241,0.1);color:var(--accent-light);padding:3px 10px;border-radius:20px;border:1px solid rgba(99,102,241,0.2)">Making Charges</span>
+            <span style="color:var(--text-muted)">=</span>
+            <span style="background:rgba(0,0,0,0.05);color:var(--text-secondary);padding:3px 10px;border-radius:20px;border:1px solid var(--border)">Sub Total</span>
+            <span style="color:var(--text-muted)">+</span>
+            <span style="background:rgba(239,68,68,0.08);color:#dc2626;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,0.2)">GST 3%</span>
+            <span style="color:var(--text-muted)">=</span>
+            <span style="background:rgba(22,163,74,0.1);color:#16a34a;padding:3px 10px;border-radius:20px;border:1px solid rgba(22,163,74,0.2);font-weight:800">Final Amount</span>
+          </div>
         </div>
-        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:20px">
-          Formula: Gold Value (Weight × Rate) + Making Charges = Sub Total + GST (3%) = Final Invoice Amount
-        </p>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
           <!-- Inputs -->
@@ -101,7 +109,10 @@ function renderGoldRates() {
 
             <div class="form-group">
               <label class="form-label">GST Tax Rate</label>
-              <input type="text" class="form-input" value="3% (Standard Govt GST)" readonly style="background:var(--bg-secondary);color:var(--text-muted)"/>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm)">
+                <span style="font-size:1.1rem;font-weight:900;color:#dc2626">3%</span>
+                <span style="font-size:0.8rem;color:var(--text-muted)">Standard GST on Gold Jewellery (Government Fixed)</span>
+              </div>
             </div>
           </div>
 
