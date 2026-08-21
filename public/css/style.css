@@ -1163,6 +1163,140 @@ body {
   background: var(--bg-secondary);
 }
 
+/* ══ GOLD RATES PAGE ═════════════════════════════ */
+.gold-page { max-width: 1300px; margin: 0 auto; padding: 36px 24px 80px; }
+.gold-header { margin-bottom: 28px; }
+.gold-header h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+.gold-timestamp { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+
+.gold-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+
+.gold-card {
+  background: #ffffff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 22px; transition: all var(--ease);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.gold-card:hover { border-color: rgba(245,158,11,0.3); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,158,11,0.08); }
+
+.gold-purity { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 3px; }
+.gold-name   { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; }
+.gold-price  { font-size: 1.75rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em; }
+.gold-unit   { font-size: 0.72rem; color: var(--text-muted); }
+.gold-change { font-size: 0.8rem; font-weight: 600; margin-top: 6px; }
+.gold-change.up   { color: var(--green); }
+.gold-change.down { color: var(--red);   }
+
+.gold-table-section {
+  background: #ffffff; border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.gold-table-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  font-weight: 700; font-size: 0.93rem; color: var(--text-primary);
+}
+.gold-table { width: 100%; border-collapse: collapse; }
+.gold-table th {
+  padding: 11px 22px; text-align: left; font-size: 0.72rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--bg-secondary);
+}
+.gold-table td { padding: 13px 22px; font-size: 0.86rem; border-top: 1px solid var(--border); color: var(--text-secondary); }
+.gold-table td:first-child { color: var(--text-primary); font-weight: 600; }
+.gold-table td.price       { color: var(--text-primary); font-weight: 700; }
+
+/* ══ MARKET PAGE ═════════════════════════════════ */
+.market-page { max-width: 1300px; margin: 0 auto; padding: 36px 24px 80px; }
+.market-page h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+
+.market-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 28px; }
+
+.market-card {
+  background: #ffffff; border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 24px; transition: all var(--ease);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.market-card:hover { border-color: var(--border-active); box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+
+.market-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.market-card-label  { font-size: 0.69rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.market-card-name   { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+.market-card-exch   { font-size: 0.72rem; font-weight: 700; color: var(--accent-light); background: rgba(99,102,241,0.1); padding: 3px 9px; border-radius: 5px; }
+
+.market-card-value  { font-size: 2rem; font-weight: 900; letter-spacing: -0.03em; color: var(--text-primary); }
+.market-card-change { font-size: 0.86rem; font-weight: 600; margin-top: 4px; }
+.market-card-change.up   { color: var(--green); }
+.market-card-change.down { color: var(--red);   }
+
+.market-ohlc {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+}
+.ohlc-item  { text-align: center; }
+.ohlc-label { font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.ohlc-val   { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+
+/* ══ COMPARE TABLE ═══════════════════════════════ */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.compare-table th {
+  padding: 11px 16px; background: var(--bg-secondary);
+  text-align: left; font-size: 0.7rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.compare-table td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text-secondary); }
+.compare-table td:first-child { color: var(--text-primary); font-weight: 600; }
+.compare-table tr:hover td { background: var(--bg-secondary); }
+
+/* ══ FOOTER ══════════════════════════════════════ */
+.footer { background: #f1f5f9; border-top: 1px solid var(--border); }
+.footer-inner { max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+
+.footer-top {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px; padding: 60px 0 40px;
+}
+
+.footer-brand-col p {
+  font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;
+  margin: 12px 0 16px; max-width: 280px;
+}
+.footer-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.footer-badges span {
+  padding: 4px 10px; background: rgba(0,0,0,0.04);
+  border: 1px solid var(--border); border-radius: 20px;
+  font-size: 0.72rem; color: var(--text-muted);
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+
+.footer-links-col h4 {
+  font-size: 0.76rem; font-weight: 700; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 14px;
+}
+.footer-links-col a {
+  display: block; font-size: 0.83rem; color: var(--text-muted);
+  text-decoration: none; padding: 4px 0; transition: color var(--ease);
+}
+.footer-links-col a:hover { color: var(--text-primary); }
+
+.footer-bottom { padding: 18px 0; border-top: 1px solid var(--border); }
+.disclaimer { font-size: 0.73rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 8px; }
+.copyright  { font-size: 0.73rem; color: var(--text-muted); }
+
+/* ══ SPINNER ═════════════════════════════════════ */
+.spinner {
+  width: 30px; height: 30px;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.75s linear infinite; margin: 40px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══ ANIMATIONS ══════════════════════════════════ */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeSlideUp 0.38s ease forwards; }
+
 /* ══ RESPONSIVE MOBILE STYLES (PHONES & TABLETS) ══════════════════ */
 
 /* Tablets & Small Laptops (<= 1080px) */
