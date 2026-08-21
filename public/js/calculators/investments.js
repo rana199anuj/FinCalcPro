@@ -1,4 +1,4 @@
-﻿/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FinCalc Pro — Investment Calculator Definitions
    Each entry defines one calculator:
      icon, name, desc, fields[], calc(), render()
@@ -204,17 +204,26 @@ const CALCS_INVESTMENTS = {
   /* ── FD ── */
   "fd": {
     icon: "🏛️", name: "Fixed Deposit Calculator",
-    desc: "Calculate maturity amount and interest on your FD.",
+    desc: "Calculate maturity amount and interest on your FD with Simple or Compound interest.",
     fields: [
-      { id:"amount",      label:"Principal Amount",       type:"range", min:10000, max:10000000, step:10000, default:500000, fmt:v=>fmtC(v) },
-      { id:"rate",        label:"Interest Rate (p.a.)",   type:"range", min:1, max:15, step:0.1, default:7.1, fmt:v=>v+"%" },
-      { id:"years",       label:"Tenure (Years)",         type:"range", min:1, max:10, step:1,   default:3,   fmt:v=>v+" Yrs" },
-      { id:"compounding", label:"Compounding (per year)", type:"range", min:1, max:12, step:1,   default:4,
+      { id:"amount",      label:"Principal Amount",        type:"range", min:10000, max:10000000, step:10000, default:500000, fmt:v=>fmtC(v) },
+      { id:"rate",        label:"Interest Rate (p.a.)",    type:"range", min:1, max:15, step:0.1, default:7.1, fmt:v=>v+"%" },
+      { id:"years",       label:"Tenure (Years)",          type:"range", min:1, max:10, step:1,   default:3,   fmt:v=>v+" Yrs" },
+      { id:"calcType",    label:"Interest Type",           type:"range", min:0, max:1, step:1,   default:1,   fmt:v=>v===0?"Simple Interest":"Compound Interest" },
+      { id:"compounding", label:"Compounding (if Compound)",type:"range", min:1, max:12, step:1,   default:4,
         fmt: v => ({1:"Annual",2:"Half-Yearly",4:"Quarterly",12:"Monthly"})[v] || v+"/yr" }
     ],
     calc(f) {
-      const maturity = f.amount * Math.pow(1 + (f.rate/100)/f.compounding, f.compounding * f.years);
-      return { maturity, interest: maturity - f.amount, principal: f.amount };
+      let maturity;
+      if (f.calcType === 0) {
+        // Simple Interest = P + (P * R * T / 100)
+        maturity = f.amount + (f.amount * f.rate * f.years) / 100;
+      } else {
+        // Compound Interest
+        const freq = f.compounding || 4;
+        maturity = f.amount * Math.pow(1 + (f.rate/100)/freq, freq * f.years);
+      }
+      return { maturity, interest: maturity - f.amount, principal: f.amount, calcType: f.calcType };
     },
     render(res, el) { savingsHTML(res, el, "Principal Amount"); }
   },
@@ -224,13 +233,23 @@ const CALCS_INVESTMENTS = {
     icon: "📅", name: "Recurring Deposit Calculator",
     desc: "Calculate maturity amount for monthly recurring deposits.",
     fields: [
-      { id:"monthly", label:"Monthly Deposit",       type:"range", min:500, max:100000, step:500, default:10000, fmt:v=>fmtC(v) },
-      { id:"rate",    label:"Interest Rate (p.a.)", type:"range", min:1, max:15, step:0.1, default:7.0, fmt:v=>v+"%" },
-      { id:"years",   label:"Tenure (Years)",        type:"range", min:1, max:10, step:1,   default:3,   fmt:v=>v+" Yrs" }
+      { id:"monthly",  label:"Monthly Deposit",       type:"range", min:500, max:100000, step:500, default:10000, fmt:v=>fmtC(v) },
+      { id:"rate",     label:"Interest Rate (p.a.)",  type:"range", min:1, max:15, step:0.1, default:7.0, fmt:v=>v+"%" },
+      { id:"years",    label:"Tenure (Years)",         type:"range", min:1, max:10, step:1,   default:3,   fmt:v=>v+" Yrs" },
+      { id:"calcType", label:"Interest Type",         type:"range", min:0, max:1, step:1,   default:1,   fmt:v=>v===0?"Simple Interest":"Compound Interest" }
     ],
     calc(f) {
-      const n = f.years * 12, r = f.rate / 400;
-      const maturity = f.monthly * n + f.monthly * n * (n+1) * r / 2;
+      const n = f.years * 12;
+      let maturity;
+      if (f.calcType === 0) {
+        // Simple Interest RD: I = P * N(N+1)/2 * R/1200
+        const interest = f.monthly * n * (n + 1) / 2 * (f.rate / 1200);
+        maturity = f.monthly * n + interest;
+      } else {
+        // Quarterly Compound Interest RD
+        const r = f.rate / 400;
+        maturity = f.monthly * n + f.monthly * n * (n+1) * r / 2;
+      }
       return { maturity, invested: f.monthly * n, interest: maturity - f.monthly * n };
     },
     render(res, el) { savingsHTML(res, el, "Total Deposited"); }
@@ -241,15 +260,27 @@ const CALCS_INVESTMENTS = {
     icon: "🔐", name: "PPF Calculator",
     desc: "Calculate Public Provident Fund returns (EEE Tax Status).",
     fields: [
-      { id:"yearly", label:"Yearly Investment (max ₹1.5L)", type:"range", min:500, max:150000, step:500, default:150000, fmt:v=>fmtC(v) },
-      { id:"rate",   label:"PPF Interest Rate",             type:"range", min:6, max:9, step:0.1, default:7.1, fmt:v=>v+"%" },
-      { id:"years",  label:"Period (Years, min 15)",        type:"range", min:15, max:50, step:5, default:15,  fmt:v=>v+" Yrs" }
+      { id:"yearly",   label:"Yearly Investment (max ₹1.5L)", type:"range", min:500, max:150000, step:500, default:150000, fmt:v=>fmtC(v) },
+      { id:"rate",     label:"PPF Interest Rate",             type:"range", min:6, max:9, step:0.1, default:7.1, fmt:v=>v+"%" },
+      { id:"years",    label:"Period (Years, min 15)",        type:"range", min:15, max:50, step:5, default:15,  fmt:v=>v+" Yrs" },
+      { id:"calcType", label:"Interest Type",                 type:"range", min:0, max:1, step:1,   default:1,   fmt:v=>v===0?"Simple Interest":"Compound Interest" }
     ],
     calc(f) {
-      let bal = 0;
-      for (let i = 0; i < f.years; i++) bal = (bal + f.yearly) * (1 + f.rate/100);
-      const invested = f.yearly * f.years;
-      return { maturity: bal, invested, interest: bal - invested };
+      const totalInvested = f.yearly * f.years;
+      let maturity;
+      if (f.calcType === 0) {
+        // Simple Interest PPF: sum of simple interest per annual deposit
+        let totalInt = 0;
+        for (let i = 0; i < f.years; i++) {
+          totalInt += (f.yearly * f.rate * (f.years - i)) / 100;
+        }
+        maturity = totalInvested + totalInt;
+      } else {
+        let bal = 0;
+        for (let i = 0; i < f.years; i++) bal = (bal + f.yearly) * (1 + f.rate/100);
+        maturity = bal;
+      }
+      return { maturity, invested: totalInvested, interest: maturity - totalInvested };
     },
     render(res, el) {
       el.innerHTML = `
