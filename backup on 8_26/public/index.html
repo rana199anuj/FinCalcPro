@@ -82,8 +82,6 @@
       </div>
       <a class="nav-tab" href="#" onclick="openCalc('gold-rates');return false;" id="tab-gold">Gold Rates</a>
       <a class="nav-tab" href="#" onclick="openCalc('market');return false;" id="tab-market">Market</a>
-      <a class="nav-tab" href="#" onclick="navigate('blog');return false;" id="tab-blog">Blog</a>
-      <a class="nav-tab" href="#" onclick="navigate('about');return false;" id="tab-about">About</a>
     </nav>
 
     <!-- Right: live badge + hamburger -->
@@ -140,8 +138,6 @@
       </details>
       <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">💎 Gold Rates</a>
       <a href="#" onclick="openCalc('market');closeMobile();return false;">📊 Market</a>
-      <a href="#" onclick="navigate('blog');closeMobile();return false;">📰 Blog</a>
-      <a href="#" onclick="navigate('about');closeMobile();return false;">ℹ️ About</a>
     </div>
   </div>
 </div>
@@ -201,53 +197,38 @@
         <a href="#" onclick="openCalc('inflation');return false;">Inflation Calculator</a>
         <a href="#" onclick="openCalc('cagr');return false;">CAGR Calculator</a>
       </div>
-      <div class="footer-links-col">
-        <h4>Company</h4>
-        <a href="#" onclick="navigate('blog');return false;">📰 Blog</a>
-        <a href="#" onclick="navigate('about');return false;">ℹ️ About Us</a>
-        <a href="#" onclick="navigate('privacy');return false;">🛡️ Privacy Policy</a>
-        <a href="#" onclick="navigate('disclaimer');return false;">⚖️ Disclaimer</a>
-        <a href="#" onclick="openCalc('gold-sip');return false;">🥇 Gold SIP</a>
-      </div>
     </div>
     <div class="footer-bottom">
       <p class="disclaimer">⚠️ Disclaimer: All calculations are indicative only. Actual EMIs and returns may vary. Consult a certified financial advisor before making investment decisions. Market data shown is simulated for demonstration purposes.</p>
-      <p class="copyright">© 2026 FinCalc Pro. All rights reserved. | <a href="#" onclick="navigate('privacy');return false;" style="color:inherit;text-decoration:underline;">Privacy Policy</a> | <a href="#" onclick="navigate('disclaimer');return false;" style="color:inherit;text-decoration:underline;">Disclaimer</a></p>
+      <p class="copyright">© 2025 FinCalc Pro. All rights reserved. | Privacy Policy | Terms of Use</p>
     </div>
   </div>
 </footer>
 
 <!-- ── Utilities (no DOM deps) ────────────────────── -->
-<script src="js/utils/formatters.js?v=10"></script>
-
-<!-- ── FAQ Data ──────────────────────────────────── -->
-<script src="js/data/faqs.js?v=10"></script>
+<script src="js/utils/formatters.js?v=8"></script>
 
 <!-- ── Charts & WebSocket Client ──────────────────── -->
-<script src="js/charts.js?v=10"></script>
-<script src="js/websocket.js?v=10"></script>
+<script src="js/charts.js?v=8"></script>
+<script src="js/websocket.js?v=8"></script>
 
 <!-- ── App State & Router ─────────────────────────── -->
-<script src="js/modules/router.js?v=10"></script>
+<script src="js/modules/router.js?v=8"></script>
 
 <!-- ── Calculator Engine (Helpers & Renderers) ────── -->
-<script src="js/modules/calculator.js?v=10"></script>
+<script src="js/modules/calculator.js?v=8"></script>
 
 <!-- ── Calculator Definitions ─────────────────────── -->
-<script src="js/calculators/loans.js?v=10"></script>
-<script src="js/calculators/investments.js?v=10"></script>
+<script src="js/calculators/loans.js?v=8"></script>
+<script src="js/calculators/investments.js?v=8"></script>
 
 <!-- ── Page Modules ───────────────────────────────── -->
-<script src="js/modules/home.js?v=10"></script>
-<script src="js/modules/gold.js?v=10"></script>
-<script src="js/modules/market.js?v=10"></script>
-<script src="js/modules/blog.js?v=10"></script>
-<script src="js/modules/about.js?v=10"></script>
-<script src="js/modules/privacy.js?v=10"></script>
-<script src="js/modules/disclaimer.js?v=10"></script>
-<script src="js/modules/websocket-events.js?v=10"></script>
+<script src="js/modules/home.js?v=8"></script>
+<script src="js/modules/gold.js?v=8"></script>
+<script src="js/modules/market.js?v=8"></script>
+<script src="js/modules/websocket-events.js?v=8"></script>
 
 <!-- ── App Entry Point (boot) ─────────────────────── -->
-<script src="js/app.js?v=10"></script>
+<script src="js/app.js?v=8"></script>
 </body>
 </html>

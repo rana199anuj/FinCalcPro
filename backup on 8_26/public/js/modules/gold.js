@@ -5,24 +5,22 @@
    2. Interactive Gold Rate Purchase Calculator
       (Weight * Rate + Making Charges = Sub Total + GST = Final Amount)
    3. Today's vs Yesterday's Rate Comparison Table
-   4. Major Indian Cities Gold Rates Table
-   5. Gold Weight Conversion & Standard Units Table
-   6. Historical Variations (7-Day, 30-Day, 1-Year Chart & Table)
-   7. Detailed Rate Chart by Weight
+   4. Historical Variations (7-Day, 30-Day, 1-Year Chart & Table)
+   5. Detailed Rate Chart by Weight
    ══════════════════════════════════════════════════ */
 
 let goldChartInstance = null;
 
 function renderGoldRates() {
-  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950, ch24: 25, chp24: 0.27 };
+  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950 };
 
   document.getElementById("appMain").innerHTML = `
     <div class="gold-page">
       <!-- Header Banner -->
       <div class="calc-banner" style="background:linear-gradient(135deg, #b45309 0%, #f59e0b 100%);margin-bottom:28px">
         <div class="calc-banner-left">
-          <h1>💛 Gold Rates &amp; Jewellery Calculator</h1>
-          <p>Live MCX &amp; Retail Rates (24K, 22K, 20K, 18K, Silver, Platinum) · <span id="goldTs">Live</span></p>
+          <h1>💛 Gold Rates & Jewellery Calculator</h1>
+          <p>Live MCX & Retail Rates (24K, 22K, 20K, 18K) · <span id="goldTs">Live</span></p>
         </div>
         <button class="calc-banner-back" onclick="goBack()">← Back</button>
       </div>
@@ -46,7 +44,7 @@ function renderGoldRates() {
           <div class="gold-purity" style="color:#94a3b8">Silver</div>
           <div class="gold-name">Silver · 999 Pure</div>
           <div class="gold-price" id="gpSilver">₹${fmt(g.silver, 2)}</div>
-          <div class="gold-unit">per gram (₹${fmt(g.silver * 1000)}/kg)</div>
+          <div class="gold-unit">per gram</div>
           <div class="gold-change" id="gcSilver">—</div>
         </div>
         <div class="gold-card">
@@ -64,7 +62,7 @@ function renderGoldRates() {
       <!-- ══════════════════════════════════════════════════ -->
       <div class="calc-form-card" style="margin-bottom:32px;padding:24px">
         <div style="margin-bottom:16px">
-          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:8px">🧮 Gold &amp; Jewellery Price Calculator</div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:8px">🧮 Gold & Jewellery Price Calculator</div>
           <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem;font-weight:600">
             <span style="background:rgba(245,158,11,0.12);color:#b45309;padding:3px 10px;border-radius:20px;border:1px solid rgba(245,158,11,0.3)">Gold Weight × Rate</span>
             <span style="color:var(--text-muted)">+</span>
@@ -113,7 +111,7 @@ function renderGoldRates() {
               <label class="form-label">GST Tax Rate</label>
               <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm)">
                 <span style="font-size:1.1rem;font-weight:900;color:#dc2626">3%</span>
-                <span style="font-size:0.8rem;color:var(--text-muted)">Standard GST on Gold Jewellery (Government Mandated)</span>
+                <span style="font-size:0.8rem;color:var(--text-muted)">Standard GST on Gold Jewellery (Government Fixed)</span>
               </div>
             </div>
           </div>
@@ -181,55 +179,7 @@ function renderGoldRates() {
       </div>
 
       <!-- ══════════════════════════════════════════════════ -->
-      <!-- SECTION 3: MAJOR INDIAN CITIES GOLD RATES TABLE     -->
-      <!-- ══════════════════════════════════════════════════ -->
-      <div class="gold-table-section" style="margin-bottom:32px">
-        <div class="gold-table-header">🏙️ Gold Rates in Major Indian Cities Today (10 Grams)</div>
-        <div style="overflow-x:auto">
-          <table class="gold-table">
-            <thead>
-              <tr>
-                <th>City</th>
-                <th>24K Gold (10g)</th>
-                <th>22K Gold (10g)</th>
-                <th>18K Gold (10g)</th>
-                <th>Silver (1 Kg)</th>
-                <th>Daily Trend</th>
-              </tr>
-            </thead>
-            <tbody id="goldCitiesTableBody">
-              <!-- Rendered dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════════════════════════ -->
-      <!-- SECTION 4: GOLD WEIGHT CONVERSION TABLE            -->
-      <!-- ══════════════════════════════════════════════════ -->
-      <div class="gold-table-section" style="margin-bottom:32px">
-        <div class="gold-table-header">⚖️ Standard Gold Weight Conversions &amp; Pricing</div>
-        <div style="overflow-x:auto">
-          <table class="gold-table">
-            <thead>
-              <tr>
-                <th>Standard Unit</th>
-                <th>Grams</th>
-                <th>24K Gold Price</th>
-                <th>22K Gold Price</th>
-                <th>18K Gold Price</th>
-                <th>Common Usage</th>
-              </tr>
-            </thead>
-            <tbody id="goldWeightsTableBody">
-              <!-- Rendered dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════════════════════════ -->
-      <!-- SECTION 5: HISTORICAL VARIATION CHART & TABLE      -->
+      <!-- SECTION 3: HISTORICAL VARIATION CHART & TABLE      -->
       <!-- ══════════════════════════════════════════════════ -->
       <div class="calc-form-card" style="margin-bottom:32px;padding:24px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
@@ -276,17 +226,11 @@ function renderGoldRates() {
           <table class="gold-table">
             <thead>
               <tr>
-                <th>Purity</th>
-                <th>1g</th>
-                <th>8g (1 Sovereign)</th>
-                <th>10g</th>
-                <th>11.66g (1 Tola)</th>
-                <th>100g</th>
-                <th>1 Kg</th>
+                <th>Purity</th><th>1g</th><th>8g (Tola)</th><th>10g</th><th>100g</th><th>1 Kg</th>
               </tr>
             </thead>
             <tbody id="goldTableBody">
-              <tr><td colspan="7" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>
+              <tr><td colspan="6" style="text-align:center;padding:30px"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -307,148 +251,54 @@ function updateGoldRates(d) {
   const ts = document.getElementById("goldTs");
   if (ts) ts.textContent = d.ts;
 
-  const ch24 = g.ch24 !== undefined ? g.ch24 : 25;
-  const chp24 = g.chp24 !== undefined ? g.chp24 : 0.27;
+  const pairs = [["24", g.g24], ["22", g.g22], ["20", g.g20], ["18", g.g18]];
+  pairs.forEach(([id, val]) => {
+    const pEl = document.getElementById(`gp-${id}`);
+    if (pEl) pEl.textContent = "₹" + fmt(val);
 
-  // Rate multipliers
-  const purities = [
-    { id: "24", val: g.g24, mult: 1 },
-    { id: "22", val: g.g22, mult: 0.9167 },
-    { id: "20", val: g.g20, mult: 0.8333 },
-    { id: "18", val: g.g18, mult: 0.75 }
-  ];
-
-  purities.forEach(p => {
-    const pEl = document.getElementById(`gp-${p.id}`);
-    if (pEl) pEl.textContent = "₹" + fmt(p.val);
-
-    const cEl = document.getElementById(`gc-${p.id}`);
-    if (cEl) {
-      const chVal = Math.round(ch24 * p.mult);
-      const up = ch24 >= 0;
-      cEl.textContent = `${up ? "▲ +" : "▼ "}₹${Math.abs(chVal)} (${up ? "+" : ""}${chp24}%)`;
-      cEl.className = "gold-change " + (up ? "up" : "down");
+    const cEl = document.getElementById(`gc-${id}`);
+    if (cEl && id === "24") {
+      const up = g.ch24 >= 0;
+      cEl.textContent = `${up ? "▲" : "▼"} ₹${Math.abs(g.ch24)} (${up ? "+" : ""}${g.chp24}%)`;
+      cEl.className   = "gold-change " + (up ? "up" : "down");
     }
   });
 
-  // Silver & Platinum Cards
   const sv = document.getElementById("gpSilver");   if (sv) sv.textContent   = "₹" + fmt(g.silver, 2);
   const pt = document.getElementById("gpPlatinum"); if (pt) pt.textContent   = "₹" + fmt(g.platinum);
-
-  const scEl = document.getElementById("gcSilver");
-  if (scEl) {
-    const chSil = g.chSilver !== undefined ? g.chSilver : 0.45;
-    const chpSil = g.chpSilver !== undefined ? g.chpSilver : 0.43;
-    const up = chSil >= 0;
-    scEl.textContent = `${up ? "▲ +" : "▼ "}₹${Math.abs(chSil).toFixed(2)} (${up ? "+" : ""}${chpSil}%)`;
-    scEl.className = "gold-change " + (up ? "up" : "down");
-  }
-
-  const pcEl = document.getElementById("gcPlatinum");
-  if (pcEl) {
-    const chPlat = g.chPlat !== undefined ? g.chPlat : 15;
-    const chpPlat = g.chpPlat !== undefined ? g.chpPlat : 0.51;
-    const up = chPlat >= 0;
-    pcEl.textContent = `${up ? "▲ +" : "▼ "}₹${Math.abs(chPlat)} (${up ? "+" : ""}${chpPlat}%)`;
-    pcEl.className = "gold-change " + (up ? "up" : "down");
-  }
 
   // Update Today vs Yesterday Comparison Table
   const compBody = document.getElementById("goldCompareTableBody");
   if (compBody) {
     const compRows = [
-      { name: "24K Gold (99.9% Pure)", today: g.g24, yest: g.g24 - ch24 },
-      { name: "22K Gold (91.7% Standard)", today: g.g22, yest: g.g22 - Math.round(ch24 * 0.9167) },
-      { name: "20K Gold (83.3% Modern)", today: g.g20, yest: g.g20 - Math.round(ch24 * 0.8333) },
-      { name: "18K Gold (75.0% Jewellery)", today: g.g18, yest: g.g18 - Math.round(ch24 * 0.75) },
-      { name: "Silver 999 Pure", today: g.silver, yest: g.silver - (g.chSilver || 0.45) },
-      { name: "Platinum 950 Pure", today: g.platinum, yest: g.platinum - (g.chPlat || 15) }
+      { name: "24K Gold (99.9%)", today: g.g24, yest: g.g24 - (g.ch24 || 25) },
+      { name: "22K Gold (91.7%)", today: g.g22, yest: g.g22 - Math.round((g.ch24 || 25) * 0.917) },
+      { name: "20K Gold (83.3%)", today: g.g20, yest: g.g20 - Math.round((g.ch24 || 25) * 0.833) },
+      { name: "18K Gold (75.0%)", today: g.g18, yest: g.g18 - Math.round((g.ch24 || 25) * 0.75) },
+      { name: "Silver 999 Pure",  today: g.silver, yest: g.silver - (g.chSilver || 0.7) },
+      { name: "Platinum 950 Pure",today: g.platinum, yest: g.platinum - (g.chPlat || 20) }
     ];
 
     compBody.innerHTML = compRows.map(r => {
       const diff = r.today - r.yest;
       const diffPct = (diff / r.yest) * 100;
       const up = diff >= 0;
-      const isDecimal = r.today < 500;
       return `
         <tr>
           <td style="font-weight:700;color:var(--text-primary)">${r.name}</td>
-          <td class="price">₹${fmt(r.today, isDecimal ? 2 : 0)}</td>
-          <td style="color:var(--text-secondary)">₹${fmt(r.yest, isDecimal ? 2 : 0)}</td>
+          <td class="price">₹${fmt(r.today, r.today < 500 ? 2 : 0)}</td>
+          <td style="color:var(--text-secondary)">₹${fmt(r.yest, r.yest < 500 ? 2 : 0)}</td>
           <td style="font-weight:700;color:${up ? "var(--green)" : "var(--red)"}">
-            ${up ? "▲ +" : "▼ "}${fmt(Math.abs(diff), isDecimal ? 2 : 0)}
+            ${up ? "▲ +" : "▼ "}${fmt(Math.abs(diff), r.today < 500 ? 2 : 0)}
           </td>
           <td style="font-weight:700;color:${up ? "var(--green)" : "var(--red)"}">
             ${up ? "+" : ""}${diffPct.toFixed(2)}%
           </td>
-          <td class="price">₹${fmt(r.today * 10, isDecimal ? 2 : 0)}</td>
-          <td style="color:var(--text-secondary)">₹${fmt(r.yest * 10, isDecimal ? 2 : 0)}</td>
+          <td class="price">₹${fmt(r.today * 10, r.today < 500 ? 2 : 0)}</td>
+          <td style="color:var(--text-secondary)">₹${fmt(r.yest * 10, r.yest < 500 ? 2 : 0)}</td>
         </tr>
       `;
     }).join("");
-  }
-
-  // Update Major Cities Gold Rates Table
-  const citiesBody = document.getElementById("goldCitiesTableBody");
-  if (citiesBody) {
-    const cityOffsets = [
-      { city: "Mumbai", off24: 0, offSil: 0 },
-      { city: "Delhi", off24: 15, offSil: 50 },
-      { city: "Chennai", off24: 25, offSil: 100 },
-      { city: "Kolkata", off24: 0, offSil: 0 },
-      { city: "Bengaluru", off24: 10, offSil: -50 },
-      { city: "Hyderabad", off24: 10, offSil: 50 },
-      { city: "Ahmedabad", off24: 5, offSil: 0 },
-      { city: "Pune", off24: 0, offSil: 0 },
-      { city: "Jaipur", off24: 15, offSil: 50 },
-      { city: "Lucknow", off24: 15, offSil: 50 },
-      { city: "Kerala", off24: 10, offSil: 50 },
-      { city: "Patna", off24: 12, offSil: 40 }
-    ];
-
-    citiesBody.innerHTML = cityOffsets.map(c => {
-      const c24 = (g.g24 + c.off24) * 10;
-      const c22 = Math.round((g.g24 + c.off24) * 0.9167) * 10;
-      const c18 = Math.round((g.g24 + c.off24) * 0.75) * 10;
-      const cSilKg = (g.silver * 1000) + c.offSil;
-      const up = ch24 >= 0;
-      return `
-        <tr>
-          <td style="font-weight:700;color:var(--text-primary)">📍 ${c.city}</td>
-          <td class="price">₹${fmt(c24)}</td>
-          <td class="price">₹${fmt(c22)}</td>
-          <td style="color:var(--text-secondary)">₹${fmt(c18)}</td>
-          <td style="color:var(--text-secondary)">₹${fmt(cSilKg)}</td>
-          <td style="font-weight:700;color:${up ? "var(--green)" : "var(--red)"}">
-            ${up ? "▲ Bullish" : "▼ Bearish"}
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  // Update Standard Weight Conversions Table
-  const weightsBody = document.getElementById("goldWeightsTableBody");
-  if (weightsBody) {
-    const weightsList = [
-      { unit: "1 Gram", g: 1, usage: "Small coins, digital gold" },
-      { unit: "8 Grams (1 Sovereign / Pavam)", g: 8, usage: "Traditional wedding jewellery, gold coins" },
-      { unit: "10 Grams (Standard 1 Bhari)", g: 10, usage: "Standard retail trading unit" },
-      { unit: "11.66 Grams (1 Traditional Tola)", g: 11.6638, usage: "Vedic / Historical bullion measure" },
-      { unit: "100 Grams", g: 100, usage: "Investment mint bars" },
-      { unit: "1 Kilogram (1,000g / 100 Tolas)", g: 1000, usage: "Wholesale bullion & institutional bars" }
-    ];
-
-    weightsBody.innerHTML = weightsList.map(w => `
-      <tr>
-        <td style="font-weight:700;color:var(--text-primary)">${w.unit}</td>
-        <td>${w.g}g</td>
-        <td class="price">₹${fmt(Math.round(g.g24 * w.g))}</td>
-        <td class="price">₹${fmt(Math.round(g.g22 * w.g))}</td>
-        <td style="color:var(--text-secondary)">₹${fmt(Math.round(g.g18 * w.g))}</td>
-        <td style="font-size:0.8rem;color:var(--text-muted)">${w.usage}</td>
-      </tr>
-    `).join("");
   }
 
   // Update Detailed Rate Table by Weight
@@ -466,7 +316,6 @@ function updateGoldRates(d) {
         <td class="price">₹${fmt(r.rate)}</td>
         <td class="price">₹${fmt(r.rate * 8)}</td>
         <td class="price">₹${fmt(r.rate * 10)}</td>
-        <td class="price">₹${fmt(Math.round(r.rate * 11.6638))}</td>
         <td class="price">₹${fmt(r.rate * 100)}</td>
         <td class="price">₹${fmt(r.rate * 1000)}</td>
       </tr>
@@ -497,13 +346,12 @@ function calculateGoldPrice() {
   const makingPct = parseFloat(document.getElementById("goldMakingNum")?.value || 10);
 
   const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065 };
-  const ratePerGram = g["g" + purityKey] || Math.round(9420 * { "24": 1, "22": 0.9167, "20": 0.8333, "18": 0.75 }[purityKey]);
+  const ratePerGram = g["g" + purityKey] || (9420 * { "24": 1, "22": 0.917, "20": 0.833, "18": 0.75 }[purityKey]);
 
-  // Exact rounded integer accounting
-  const goldValue = Math.round(weight * ratePerGram);
-  const makingCharges = Math.round(goldValue * (makingPct / 100));
+  const goldValue = weight * ratePerGram;
+  const makingCharges = goldValue * (makingPct / 100);
   const subTotal = goldValue + makingCharges;
-  const gst = Math.round(subTotal * 0.03);
+  const gst = subTotal * 0.03;
   const finalAmount = subTotal + gst;
 
   if (document.getElementById("goldFinalAmount")) {

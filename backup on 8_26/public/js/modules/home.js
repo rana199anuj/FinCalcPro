@@ -1,4 +1,4 @@
-/* ══════════════════════════════════════════════════
+﻿/* ══════════════════════════════════════════════════
    FinCalc Pro — Home Page
    Renders the hero, market tickers, and calculator grid.
    ══════════════════════════════════════════════════ */
@@ -29,19 +29,14 @@ function renderHome() {
 
     <!-- Stock Ticker -->
     <div class="market-ticker market-ticker--stocks" id="homeTicker">
-      ${[
-        { k: "nifty", label: "Nifty 50", exch: "NSE", val: "24,853.15", chg: "▲ +127.40 (+0.51%)", up: true },
-        { k: "sensex", label: "Sensex", exch: "BSE", val: "81,463.09", chg: "▼ -43.20 (-0.05%)", up: false },
-        { k: "bankNifty", label: "Bank Nifty", exch: "NSE", val: "53,420.80", chg: "▲ +170.80 (+0.32%)", up: true },
-        { k: "niftyIT", label: "Nifty IT", exch: "NSE", val: "40,125.50", chg: "▲ +145.50 (+0.36%)", up: true }
-      ].map(item => `
+      ${["nifty","sensex","bankNifty","niftyIT"].map(k => `
         <div class="ticker-card" onclick="openCalc('market')">
-          <div class="ticker-label" id="tc-exch-${item.k}">${item.exch}</div>
-          <div class="ticker-name"  id="tc-name-${item.k}">${item.label}</div>
-          <div class="ticker-val"   id="tc-val-${item.k}">${item.val}</div>
-          <div class="ticker-change ${item.up ? "up" : "down"}" id="tc-chg-${item.k}">${item.chg}</div>
+          <div class="ticker-label" id="tc-exch-${k}">NSE</div>
+          <div class="ticker-name"  id="tc-name-${k}">Loading…</div>
+          <div class="ticker-val"   id="tc-val-${k}">—</div>
+          <div class="ticker-change" id="tc-chg-${k}">—</div>
           <div class="ticker-spark">
-            <canvas data-spark="${item.k}" style="width:100%;height:40px"></canvas>
+            <canvas data-spark="${k}" style="width:100%;height:40px"></canvas>
           </div>
         </div>
       `).join("")}
@@ -52,33 +47,33 @@ function renderHome() {
       <div class="ticker-card ticker-card--gold24" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · GOLD</div>
         <div class="ticker-name">Gold 24K (99.9%)</div>
-        <div class="ticker-val" id="tc-val-gold24">₹9,420</div>
+        <div class="ticker-val" id="tc-val-gold24">—</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-gold24">▲ +₹25 (+0.27%)</div>
+        <div class="ticker-change" id="tc-chg-gold24">—</div>
         <div class="ticker-spark"><canvas data-spark-metal="gold24" style="width:100%;height:40px"></canvas></div>
       </div>
       <div class="ticker-card ticker-card--gold22" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · GOLD</div>
         <div class="ticker-name">Gold 22K (91.7%)</div>
-        <div class="ticker-val" id="tc-val-gold22">₹8,635</div>
+        <div class="ticker-val" id="tc-val-gold22">—</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-gold22">▲ +₹23 (+0.27%)</div>
+        <div class="ticker-change" id="tc-chg-gold22">—</div>
         <div class="ticker-spark"><canvas data-spark-metal="gold22" style="width:100%;height:40px"></canvas></div>
       </div>
       <div class="ticker-card ticker-card--silver" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · SILVER</div>
         <div class="ticker-name">Silver 999 Pure</div>
-        <div class="ticker-val" id="tc-val-silver">₹105.50</div>
+        <div class="ticker-val" id="tc-val-silver">—</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-silver">▲ +₹0.70 (+0.67%)</div>
+        <div class="ticker-change" id="tc-chg-silver">—</div>
         <div class="ticker-spark"><canvas data-spark-metal="silver" style="width:100%;height:40px"></canvas></div>
       </div>
       <div class="ticker-card ticker-card--platinum" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · PLATINUM</div>
         <div class="ticker-name">Platinum 950</div>
-        <div class="ticker-val" id="tc-val-platinum">₹2,950</div>
+        <div class="ticker-val" id="tc-val-platinum">—</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-platinum">▲ +₹20 (+0.68%)</div>
+        <div class="ticker-change" id="tc-chg-platinum">—</div>
         <div class="ticker-spark"><canvas data-spark-metal="platinum" style="width:100%;height:40px"></canvas></div>
       </div>
     </div>
@@ -110,7 +105,6 @@ function renderHome() {
     </div>
     <div class="calc-grid">
       ${cc("sip","📈","SIP Calculator","Systematic Investment Plan")}
-      ${cc("gold-sip","🥇","Gold SIP","SIP in gold with live rates")}
       ${cc("lumpsum","💵","Lumpsum","One-time investment returns")}
       ${cc("lumpsum-sip","🎯","Lumpsum + SIP","Combined investment")}
       ${cc("sip-delay","⏱️","SIP Delay Cost","Cost of procrastination")}

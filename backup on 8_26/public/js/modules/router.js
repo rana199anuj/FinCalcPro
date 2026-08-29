@@ -47,20 +47,6 @@ function navigate(view, push = true) {
       document.getElementById("tab-market")?.classList.add("active");
       renderMarket();
       break;
-    case "blog":
-      document.getElementById("tab-blog")?.classList.add("active");
-      if (typeof renderBlog === 'function') renderBlog();
-      break;
-    case "about":
-      document.getElementById("tab-about")?.classList.add("active");
-      if (typeof renderAbout === 'function') renderAbout();
-      break;
-    case "privacy":
-      if (typeof renderPrivacy === 'function') renderPrivacy();
-      break;
-    case "disclaimer":
-      if (typeof renderDisclaimer === 'function') renderDisclaimer();
-      break;
     default:
       renderCalc(view);
       break;

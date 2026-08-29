@@ -21,7 +21,6 @@ const CALC_TABS = [
   { id:"compare-bank",         icon:"🏦", label:"Compare Banks" },
   { id:"loan-against-property",icon:"🏗️", label:"Loan vs Property" },
   { id:"sip",                  icon:"📈", label:"SIP" },
-  { id:"gold-sip",             icon:"🥇", label:"Gold SIP" },
   { id:"lumpsum",              icon:"💵", label:"Lumpsum" },
   { id:"lumpsum-sip",          icon:"🎯", label:"Lumpsum+SIP" },
   { id:"sip-delay",            icon:"⏱️", label:"SIP Delay" },
@@ -35,7 +34,7 @@ const CALC_TABS = [
   { id:"gratuity",             icon:"🎁", label:"Gratuity" }
 ];
 
-/* ─ Current active calculator state ───────────── */
+/* ─ Current active calculator state ── */
 let currentCalcId = "home-loan";
 let currentCurrency = "INR";
 let currentTenureUnit = "years"; // 'years' or 'months'
@@ -135,22 +134,17 @@ function emiHTML(res, el, cfg = {}, fields = {}) {
       <!-- 1. Loan Summary -->
       <div class="summary-card">
         <div class="summary-card-header">📋 Loan Summary</div>
-        <div class="summary-breakdown" style="gap:0">
-          <div class="lap-dual-col">
-            <div class="lap-col-item">
-              <div class="lap-col-label">Principal Amount</div>
-              <div class="lap-col-value">${fmtC(res.principal)}</div>
-            </div>
-            <div class="lap-col-divider"></div>
-            <div class="lap-col-item">
-              <div class="lap-col-label">Monthly EMI</div>
-              <div class="lap-col-value accent">${fmtC(res.emi)}</div>
-            </div>
-          </div>
+        <div class="summary-hero">
+          <div class="summary-hero-label">Monthly EMI</div>
+          <div class="summary-hero-value">${fmtC(res.emi)}</div>
+          <div class="summary-hero-sub">Payable every month</div>
+        </div>
+        <div class="summary-breakdown">
+          ${row("Principal Amount", fmtC(res.principal))}
           ${row("Total Interest",   fmtC(res.interest), "red")}
           ${row("Total Amount",     fmtC(res.total), "green")}
           ${res.processingFee ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
-          ${row("Interest Ratio",   ((res.interest / (res.principal||1)) * 100).toFixed(1) + "%", "red")}
+          ${row("Interest Ratio",   ((res.interest / res.principal) * 100).toFixed(1) + "%", "red")}
         </div>
       </div>
 
@@ -532,38 +526,6 @@ function setTenureUnit(fieldId, unit) {
   numInput?.dispatchEvent(new Event("input"));
 }
 
-/* ─ Render FAQ Accordion for a Calculator ─────────── */
-function renderFAQSection(calcId) {
-  if (typeof CALC_FAQS === 'undefined') return '';
-  const faqs = CALC_FAQS[calcId];
-  if (!faqs || faqs.length === 0) return '';
-  return `
-    <div class="faq-section">
-      <div class="faq-section-title">❓ Frequently Asked Questions</div>
-      <div class="faq-list">
-        ${faqs.map((faq, i) => `
-          <div class="faq-item" id="faq-${calcId}-${i}">
-            <button class="faq-question" onclick="toggleFAQ('faq-${calcId}-${i}')">
-              <span>${faq.q}</span>
-              <span class="faq-chevron">▼</span>
-            </button>
-            <div class="faq-answer">${faq.a}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function toggleFAQ(id) {
-  const item = document.getElementById(id);
-  if (!item) return;
-  const isOpen = item.classList.contains('open');
-  // Close all FAQs in the same list
-  item.closest('.faq-list')?.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
-
 /* ─ Render a Calculator Page ─────────────────────── */
 function renderCalc(id) {
   currentCalcId = id;
@@ -624,8 +586,7 @@ function renderCalc(id) {
           <!-- Dynamic Form Fields -->
           ${cfg.fields.map(f => fieldHTML(f)).join("")}
 
-          <!-- Advanced Options (always visible on loan calculators) -->
-          ${isLoan ? `
+          <!-- Advanced Options (Collapsible) -->
           <div class="advanced-options-card">
             <div class="advanced-options-header" onclick="toggleAdvancedOptions()">
               <span>⚙️ Advanced Options</span>
@@ -634,14 +595,14 @@ function renderCalc(id) {
             <div class="advanced-options-body" id="advOptionsBody" style="display:none">
               <div>
                 <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Processing Fee (%)</label>
-                <input type="number" id="advProcessingFee" value="0" step="0.1" min="0" max="5" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
+                <input type="number" id="advProcessingFee" value="1" step="0.1" min="0" max="5" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
               </div>
               <div>
                 <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Prepayment (Yearly ₹)</label>
                 <input type="number" id="advPrepayment" value="0" step="5000" min="0" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
               </div>
             </div>
-          </div>` : ''}
+          </div>
 
           <button class="btn-calc-action" id="calcBtn" onclick="computeCalc('${id}')">Calculate</button>
         </div>
@@ -652,12 +613,6 @@ function renderCalc(id) {
         </div>
 
       </div>
-
-      <!-- FAQ Section -->
-      <div id="calcFAQSection">
-        ${renderFAQSection(id)}
-      </div>
-
     </div>
 
     <!-- Amortization Schedule Modal -->
@@ -695,7 +650,7 @@ function renderCalc(id) {
   const activeTab = tabScroll?.querySelector(".calc-tab-item.active");
   if (activeTab) setTimeout(() => activeTab.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }), 100);
 
-  // Wire up sliders & number inputs with auto-calculation
+  // Wire up sliders & number inputs
   cfg.fields.forEach(f => {
     const slider   = document.getElementById(`sl-${f.id}`);
     const numInput = document.getElementById(`ni-${f.id}`);
@@ -703,21 +658,18 @@ function renderCalc(id) {
 
     if (!slider || !numInput) return;
 
-    function sync(v, skipCalc = false) {
-      const parsed = parseFloat(v);
-      const safeV = isNaN(parsed) ? 0 : Math.min(Math.max(parsed, f.min), f.max);
-      slider.value   = safeV;
-      numInput.value = safeV;
-      if (valEl) valEl.textContent = f.fmt ? f.fmt(safeV) : safeV;
+    function sync(v) {
+      v = Math.min(Math.max(v, f.min), f.max);
+      slider.value   = v;
+      numInput.value = v;
+      if (valEl) valEl.textContent = f.fmt ? f.fmt(v) : v;
       updateFill(slider, f);
-      if (!skipCalc) computeCalc(id); // Auto-calculate on every input change
     }
 
-    slider.addEventListener("input",   () => sync(slider.value));
-    numInput.addEventListener("input", () => sync(numInput.value));
-    numInput.addEventListener("change",() => sync(numInput.value));
+    slider.addEventListener("input",   () => sync(parseFloat(slider.value)));
+    numInput.addEventListener("input", () => sync(parseFloat(numInput.value) || f.default));
 
-    sync(f.default, true); // initialize without triggering calc
+    sync(f.default);
   });
 
   // Auto-compute on load
