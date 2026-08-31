@@ -16,18 +16,62 @@ const CALCS_INVESTMENTS = {
       { id:"years",   label:"Investment Period (Years)", type:"range", min:1,   max:40,     step:1,   default:15,    fmt:v=>v+" Yrs" }
     ],
     calc(f) {
-      const r = f.rate / 12 / 100, n = f.years * 12;
-      const maturity = f.monthly * (Math.pow(1+r,n)-1) / r * (1+r);
-      const invested = f.monthly * n;
-      return { maturity, invested, gains: maturity - invested, rate: f.rate, years: f.years, monthly: f.monthly };
+      const stepUp = (f.stepUpPct || 0) / 100;
+      const inflation = (f.inflationRate || 0) / 100;
+      const r = f.rate / 12 / 100;
+      const totalYears = f.years;
+      
+      let invested = 0;
+      let maturity = 0;
+      let currentMonthly = f.monthly;
+
+      if (stepUp > 0) {
+        for (let y = 1; y <= totalYears; y++) {
+          const remainingYears = totalYears - y;
+          const yearFV = currentMonthly * (Math.pow(1+r, 12) - 1) / r * (1+r);
+          maturity += yearFV * Math.pow(1 + f.rate/100, remainingYears);
+          invested += currentMonthly * 12;
+          currentMonthly = currentMonthly * (1 + stepUp);
+        }
+      } else {
+        const n = totalYears * 12;
+        maturity = f.monthly * (Math.pow(1+r,n)-1) / r * (1+r);
+        invested = f.monthly * n;
+      }
+
+      const realPurchasingPower = inflation > 0 ? maturity / Math.pow(1 + inflation, totalYears) : maturity;
+      const realGain = realPurchasingPower - invested;
+
+      return {
+        maturity, invested, gains: maturity - invested, rate: f.rate, years: f.years, monthly: f.monthly,
+        stepUpPct: f.stepUpPct || 0,
+        inflationRate: f.inflationRate || 0,
+        realPurchasingPower,
+        realGain
+      };
     },
     render(res, el) {
       const labels = [], inv = [], val = [];
+      let curMonthly = res.monthly;
+      let runningInv = 0;
+      let runningMat = 0;
+      const stepUp = (res.stepUpPct || 0) / 100;
+      const r = res.rate / 12 / 100;
+
       for (let y = 1; y <= res.years; y++) {
-        const r = res.rate / 12 / 100, n = y * 12;
         labels.push(`${y}Y`);
-        inv.push(res.monthly * n);
-        val.push(res.monthly * (Math.pow(1+r,n)-1)/r*(1+r));
+        if (stepUp > 0) {
+          const yearFV = curMonthly * (Math.pow(1+r, 12) - 1) / r * (1+r);
+          runningMat = (runningMat * (1 + res.rate/100)) + yearFV;
+          runningInv += curMonthly * 12;
+          curMonthly = curMonthly * (1 + stepUp);
+          inv.push(runningInv);
+          val.push(runningMat);
+        } else {
+          const n = y * 12;
+          inv.push(res.monthly * n);
+          val.push(res.monthly * (Math.pow(1+r,n)-1)/r*(1+r));
+        }
       }
       growthHTML(res, el, labels, inv, val);
     }
@@ -44,7 +88,15 @@ const CALCS_INVESTMENTS = {
     ],
     calc(f) {
       const maturity = f.amount * Math.pow(1 + f.rate/100, f.years);
-      return { maturity, invested: f.amount, gains: maturity - f.amount, rate: f.rate, years: f.years };
+      const inflation = (f.inflationRate || 0) / 100;
+      const realPurchasingPower = inflation > 0 ? maturity / Math.pow(1 + inflation, f.years) : maturity;
+      const realGain = realPurchasingPower - f.amount;
+      return {
+        maturity, invested: f.amount, gains: maturity - f.amount, rate: f.rate, years: f.years,
+        inflationRate: f.inflationRate || 0,
+        realPurchasingPower,
+        realGain
+      };
     },
     render(res, el) {
       const labels = [], inv = [], val = [];

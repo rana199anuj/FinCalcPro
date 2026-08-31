@@ -111,9 +111,9 @@ function emiCalc(principal, rate, months, processingFeePct = 0, prepayment = 0) 
 }
 
 /**
- * Builds Year-by-Year Amortization Schedule Data
+ * Builds Year-by-Year Amortization Schedule Data (with prepayment support)
  */
-function buildAmortizationSchedule(principal, rate, months) {
+function buildAmortizationSchedule(principal, rate, months, prepayment = 0) {
   const r = rate / 12 / 100;
   const emi = calcEMI(principal, rate, months);
   let balance = principal;
@@ -122,6 +122,7 @@ function buildAmortizationSchedule(principal, rate, months) {
   const totalYears = Math.ceil(months / 12);
 
   for (let y = 1; y <= totalYears; y++) {
+    if (balance <= 0) break;
     const openingBal = balance;
     let yearInterest = 0;
     let yearPrincipal = 0;
@@ -131,10 +132,16 @@ function buildAmortizationSchedule(principal, rate, months) {
       if (monthIdx > months || balance <= 0) break;
 
       const intPart = balance * r;
-      const prinPart = Math.min(balance, emi - intPart);
+      const prinPart = Math.min(balance, Math.max(0, emi - intPart));
       yearInterest += intPart;
       yearPrincipal += prinPart;
       balance = Math.max(0, balance - prinPart);
+    }
+
+    if (prepayment > 0 && balance > 0) {
+      const extra = Math.min(balance, prepayment);
+      yearPrincipal += extra;
+      balance = Math.max(0, balance - extra);
     }
 
     totalPrincipalPaid += yearPrincipal;
@@ -160,7 +167,8 @@ function emiHTML(res, el, cfg = {}, fields = {}) {
   const principal = res.principal || res.loan || res.loanAmount || 3000000;
   const rate = (fields && fields.rate !== undefined) ? fields.rate : (res.rate || 8.5);
   const months = res.months || (fields && fields.tenure ? fields.tenure * 12 : 240);
-  const schedule = buildAmortizationSchedule(principal, rate, months);
+  const prepay = res.prepayment !== undefined ? res.prepayment : (fields?.prepayment || 0);
+  const schedule = buildAmortizationSchedule(principal, rate, months, prepay);
   const labels = schedule.map(s => `Year ${s.year}`);
   const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
   const balanceData = schedule.map(s => s.closing);
@@ -356,6 +364,9 @@ function emiHTML(res, el, cfg = {}, fields = {}) {
  * Standard Growth Chart result (SIP / Lumpsum).
  */
 function growthHTML(res, el, labels, inv, val, mainLabel = "Maturity Value") {
+  const hasStepUp = (res.stepUpPct > 0);
+  const hasInflation = (res.inflationRate > 0);
+
   el.innerHTML = `
     <div class="results-top-grid">
       <div class="summary-card">
@@ -368,8 +379,8 @@ function growthHTML(res, el, labels, inv, val, mainLabel = "Maturity Value") {
         <div class="summary-breakdown">
           ${row("Total Invested", fmtC(res.invested))}
           ${row("Wealth Gained",  fmtC(res.gains),  "green")}
-          ${row("Return %",       ((res.gains / res.invested) * 100).toFixed(1) + "%", "green")}
-          ${row("Wealth Ratio",   ((res.maturity ?? res.total) / res.invested).toFixed(2) + "x", "green")}
+          ${row("Return %",       ((res.gains / (res.invested || 1)) * 100).toFixed(1) + "%", "green")}
+          ${row("Wealth Ratio",   ((res.maturity ?? res.total) / (res.invested || 1)).toFixed(2) + "x", "green")}
         </div>
       </div>
 
@@ -404,6 +415,31 @@ function growthHTML(res, el, labels, inv, val, mainLabel = "Maturity Value") {
         <canvas id="chartGrowth" style="width:100%;height:220px"></canvas>
       </div>
     </div>
+
+    ${(hasStepUp || hasInflation) ? `
+    <!-- Advanced Investment Analysis Card -->
+    <div class="compare-options-card" style="margin-top:12px;border:2px solid #2563eb22">
+      <div class="compare-options-header" style="color:#2563eb">📊 Advanced Wealth Analysis</div>
+      <div style="display:grid;grid-template-columns:${hasStepUp && hasInflation ? '1fr 1fr 1fr' : '1fr 1fr'};gap:12px;padding:16px">
+        ${hasStepUp ? `
+        <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">STEP-UP RATE</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#2563eb">+${res.stepUpPct}% / yr</div>
+          <div style="font-size:0.68rem;color:#94a3b8">Higher wealth compounding</div>
+        </div>` : ''}
+        ${hasInflation ? `
+        <div style="text-align:center;padding:14px;background:rgba(239,68,68,0.07);border-radius:10px;border:1px solid #ef444433">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">REAL VALUE (AFTER ${res.inflationRate}% INFLATION)</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#ef4444">${fmtC(res.realPurchasingPower)}</div>
+          <div style="font-size:0.68rem;color:#94a3b8">Today's purchasing power</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">REAL WEALTH GAIN</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.realGain)}</div>
+          <div style="font-size:0.68rem;color:#94a3b8">Net of inflation & invested capital</div>
+        </div>` : ''}
+      </div>
+    </div>` : ''}
   `;
 
   setTimeout(() => {
@@ -733,7 +769,18 @@ function renderCalc(id) {
   const cfg = CALCS[id];
   if (!cfg) { navigate("home"); return; }
 
-  const isLoan = id.includes("loan") || id.includes("emi") || id.includes("credit-card") || id.includes("durable") || id.includes("affordability") || id.includes("eligibility") || id.includes("balance");
+  const loanCalcIds = [
+    "home-loan", "car-loan", "education-loan", "two-wheeler", "credit-card",
+    "gold-loan", "consumer-durable", "home-eligibility", "home-affordability",
+    "home-balance-transfer", "loan-to-value", "compare-bank", "loan-against-property"
+  ];
+  const isLoan = loanCalcIds.includes(id);
+
+  const investmentCalcIds = [
+    "sip", "gold-sip", "lumpsum", "lumpsum-sip", "sip-delay", "target-value",
+    "cagr", "fd", "rd", "ppf", "retirement", "inflation", "gratuity"
+  ];
+  const isInvestment = investmentCalcIds.includes(id);
 
   // Top Calculator Tab Slider
   const tabBarHTML = `
@@ -787,11 +834,11 @@ function renderCalc(id) {
           <!-- Dynamic Form Fields -->
           ${cfg.fields.map(f => fieldHTML(f)).join("")}
 
-          <!-- Advanced Options (always visible on loan calculators) -->
+          <!-- Advanced Options for Loans -->
           ${isLoan ? `
           <div class="advanced-options-card">
             <div class="advanced-options-header" onclick="toggleAdvancedOptions()">
-              <span>⚙️ Advanced Options</span>
+              <span>⚙️ Advanced Options (Prepayment & Fees)</span>
               <span id="advToggleIcon">▼</span>
             </div>
             <div class="advanced-options-body" id="advOptionsBody" style="display:none">
@@ -800,8 +847,27 @@ function renderCalc(id) {
                 <input type="number" id="advProcessingFee" value="0" step="0.1" min="0" max="5" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
               </div>
               <div>
-                <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Prepayment (Yearly ₹)</label>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Yearly Prepayment (₹)</label>
                 <input type="number" id="advPrepayment" value="0" step="5000" min="0" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
+              </div>
+            </div>
+          </div>` : ''}
+
+          <!-- Advanced Options for Investments -->
+          ${isInvestment ? `
+          <div class="advanced-options-card">
+            <div class="advanced-options-header" onclick="toggleAdvancedOptions()">
+              <span>⚙️ Advanced Options (Step-Up & Inflation)</span>
+              <span id="advToggleIcon">▼</span>
+            </div>
+            <div class="advanced-options-body" id="advOptionsBody" style="display:none">
+              <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Annual Step-Up (% / year)</label>
+                <input type="number" id="advStepUp" value="0" step="1" min="0" max="50" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
+              </div>
+              <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Expected Inflation (% p.a.)</label>
+                <input type="number" id="advInflation" value="0" step="0.5" min="0" max="15" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
               </div>
             </div>
           </div>` : ''}
@@ -990,8 +1056,12 @@ function computeCalc(id) {
   // Advanced options
   const feePct = parseFloat(document.getElementById("advProcessingFee")?.value) || 0;
   const prepay = parseFloat(document.getElementById("advPrepayment")?.value) || 0;
+  const stepUp = parseFloat(document.getElementById("advStepUp")?.value) || 0;
+  const inflation = parseFloat(document.getElementById("advInflation")?.value) || 0;
   fields.processingFeePct = feePct;
   fields.prepayment = prepay;
+  fields.stepUpPct = stepUp;
+  fields.inflationRate = inflation;
 
   const res = cfg.calc(fields);
   const el  = document.getElementById("calcResult");

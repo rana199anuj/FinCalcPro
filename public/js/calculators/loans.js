@@ -220,28 +220,37 @@ const CALCS_LOANS = {
       const months = Math.round(f.tenureMonths || f.tenure * 12);
       const oldEMI = calcEMI(f.outstanding, f.currentRate, months);
       const newEMI = calcEMI(f.outstanding, f.newRate,     months);
-      const totalOld = oldEMI * months;
-      const totalNew = newEMI * months;
-      const processingFee = (f.outstanding * (f.processingFeePct || 0)) / 100;
+      const feePct = f.processingFeePct || 0;
+      const prepay = f.prepayment || 0;
+      const processingFee = (f.outstanding * feePct) / 100;
+      
+      const oldRes = emiCalc(f.outstanding, f.currentRate, months, 0, 0);
+      const newRes = emiCalc(f.outstanding, f.newRate, months, feePct, prepay);
+
       return {
         oldEMI, newEMI,
         emiSaving: oldEMI - newEMI,
-        totalSaving: Math.max(0, totalOld - totalNew - processingFee),
-        grossSaving: totalOld - totalNew,
+        totalSaving: Math.max(0, oldRes.interest - newRes.interest - processingFee),
+        grossSaving: oldRes.interest - newRes.interest,
         processingFee,
-        totalOld, totalNew,
-        interestOld: totalOld - f.outstanding,
-        interestNew: totalNew - f.outstanding,
+        totalOld: oldRes.total,
+        totalNew: newRes.total,
+        interestOld: oldRes.interest,
+        interestNew: newRes.interest,
         outstanding: f.outstanding,
         currentRate: f.currentRate,
         newRate: f.newRate,
-        months
+        months,
+        prepayment: prepay,
+        savedInterest: newRes.savedInterest,
+        reducedMonths: newRes.reducedMonths,
+        newTotalMonths: newRes.newTotalMonths
       };
     },
     render(res, el) {
       // Build amortization schedules for both rates
-      const schedOld = buildAmortizationSchedule(res.outstanding, res.currentRate, res.months);
-      const schedNew = buildAmortizationSchedule(res.outstanding, res.newRate, res.months);
+      const schedOld = buildAmortizationSchedule(res.outstanding, res.currentRate, res.months, 0);
+      const schedNew = buildAmortizationSchedule(res.outstanding, res.newRate, res.months, res.prepayment);
       window._currentSchedule = schedOld; // modal shows current rate schedule
       const labels = schedOld.map(s => `Year ${s.year}`);
       const balOld  = schedOld.map(s => s.closing);
@@ -288,11 +297,32 @@ const CALCS_LOANS = {
           <div class="amortization-footer">
             <div class="chart-custom-legend" style="margin:0">
               <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Balance @ ${res.currentRate}% (Current)</span></div>
-              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Balance @ ${res.newRate}% (New Rate)</span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Balance @ ${res.newRate}% ${res.prepayment > 0 ? '+ Prepay' : ''}</span></div>
             </div>
             <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
           </div>
-        </div>`;
+        </div>
+        ${res.prepayment > 0 ? `
+        <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+          <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact on New Loan (₹${fmt(res.prepayment)}/year)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+            <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">EXTRA INTEREST SAVED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs early closure)</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.newTotalMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.months} original)</div>
+            </div>
+          </div>
+        </div>` : ""}
+      `;
       setTimeout(() => {
         FinCharts.createDonut("chartDonut", res.interestOld - res.interestNew, res.interestNew);
         // Custom dual-line chart: two balance curves
@@ -353,12 +383,14 @@ const CALCS_LOANS = {
       { id:"rate4",  label:"Bank D Rate",    type:"range", min:1, max:20, step:0.05, default:9.0,  fmt:v=>v+"%" }
     ],
     calc(f) {
-      const months = f.tenure * 12;
+      const months = Math.round(f.tenureMonths || f.tenure * 12);
       const names  = ["SBI","HDFC","ICICI","Axis"];
+      const fee = (f.amount * (f.processingFeePct || 0)) / 100;
       return {
+        processingFee: fee,
         banks: [f.rate1, f.rate2, f.rate3, f.rate4].map((r, i) => {
           const emi = calcEMI(f.amount, r, months);
-          return { name: names[i], rate: r, emi, interest: emi * months - f.amount };
+          return { name: names[i], rate: r, emi, interest: emi * months - f.amount + fee };
         })
       };
     },
@@ -373,6 +405,7 @@ const CALCS_LOANS = {
               <div class="summary-hero-value">${fmtC(minEMI)}</div>
               <div class="summary-hero-sub">${res.banks.find(b => b.emi === minEMI).name} · ${res.banks.find(b => b.emi === minEMI).rate}%</div>
             </div>
+            ${res.processingFee > 0 ? `<div style="font-size:0.78rem;color:#f59e0b;font-weight:600;margin-bottom:10px">Processing Fee included: ${fmtC(res.processingFee)}</div>` : ''}
             <div style="overflow:auto;border-radius:var(--radius-md);border:1px solid var(--border)">
               <table class="compare-table">
                 <thead><tr><th>Bank</th><th>Rate</th><th>EMI</th><th>Total Interest</th><th>vs Best</th></tr></thead>
@@ -409,69 +442,11 @@ const CALCS_LOANS = {
       const months = Math.round((f.tenureMonths || f.tenure * 12));
       const result = emiCalc(loan, f.rate, months, f.processingFeePct, f.prepayment);
       result.loan = loan;
+      result.principal = loan;
       return result;
     },
     render(res, el, cfg, fields) {
-      // For Loan vs Property, show principal and EMI in same column
-      const schedule = buildAmortizationSchedule(res.principal || res.loan, fields?.rate || 10.5, res.months || 240);
-      const labels = schedule.map(s => `Year ${s.year}`);
-      const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
-      const balanceData = schedule.map(s => s.closing);
-
-      el.innerHTML = `
-        <div class="results-top-grid">
-          <div class="summary-card">
-            <div class="summary-card-header">🏗️ Loan Summary</div>
-            <div class="summary-breakdown" style="gap:0">
-              <div class="lap-dual-col">
-                <div class="lap-col-item">
-                  <div class="lap-col-label">Principal Amount</div>
-                  <div class="lap-col-value">${fmtC(res.principal || res.loan)}</div>
-                </div>
-                <div class="lap-col-divider"></div>
-                <div class="lap-col-item">
-                  <div class="lap-col-label">Monthly EMI</div>
-                  <div class="lap-col-value accent">${fmtC(res.emi)}</div>
-                </div>
-              </div>
-              ${row("Total Interest", fmtC(res.interest), "red")}
-              ${row("Total Amount",   fmtC(res.total),    "green")}
-              ${res.processingFee ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
-              ${row("Interest Ratio", ((res.interest / (res.principal || res.loan)) * 100).toFixed(1) + "%", "red")}
-            </div>
-          </div>
-          <div class="breakdown-chart-card">
-            <div class="chart-card-header">📊 Breakdown Chart</div>
-            <div class="donut-wrap">
-              <canvas id="chartDonut" style="max-width:180px;max-height:180px"></canvas>
-              <div class="donut-center-text">
-                <div class="center-label">Total Amount</div>
-                <div class="center-val">${fmtC(res.total)}</div>
-              </div>
-            </div>
-            <div class="chart-custom-legend">
-              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal: <strong>${fmtC(res.principal||res.loan)}</strong></span></div>
-              <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Interest: <strong>${fmtC(res.interest)}</strong></span></div>
-            </div>
-          </div>
-        </div>
-        <div class="amortization-card">
-          <div class="amortization-header"><div class="amortization-title">📈 Loan Amortization</div></div>
-          <div class="amortization-canvas-wrap"><canvas id="chartAmortization" style="width:100%;height:220px"></canvas></div>
-          <div class="amortization-footer">
-            <div class="chart-custom-legend" style="margin:0">
-              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal Paid</span></div>
-              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Remaining Balance</span></div>
-            </div>
-            <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
-          </div>
-        </div>
-      `;
-      window._currentSchedule = schedule;
-      setTimeout(() => {
-        FinCharts.createDonut("chartDonut", res.principal || res.loan, res.interest);
-        FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
-      }, 60);
+      emiHTML(res, el, cfg, fields);
     }
   },
 
@@ -496,7 +471,7 @@ const CALCS_LOANS = {
     icon: "🏍️", name: "Two-Wheeler Loan Calculator",
     desc: "Calculate monthly EMI for bike or scooter loans. Default tenure: 7 years.",
     fields: [
-      { id:"principal", label:"Loan Amount",         type:"range", min:0,  max:500000, step:5000, default:100000, fmt:v=>fmtC(v) },
+      { id:"principal", label:"Loan Amount",         type:"range", min:0,  max:500000, step:5000, default:10000, fmt:v=>fmtC(v) },
       { id:"rate",      label:"Interest Rate (p.a.)", type:"range", min:1,  max:24,     step:0.1, default:10.5,   fmt:v=>v+"%" },
       { id:"tenure",    label:"Tenure (Years)",       type:"range", min:0,  max:7,      step:1,   default:7,      fmt:v=>v===0?"0 Yrs":v+" Yrs" }
     ],
@@ -566,17 +541,23 @@ const CALCS_LOANS = {
     },
     render(res, el) {
       // Build monthly amortization for gold loan (tenure in months)
-      const totalMonths = res.months || 12;
       const r = (res.rate || 8.8) / 12 / 100;
       const principal = res.principal || res.loanAmount;
       const emi = res.emi;
+      const prepay = res.prepayment || 0;
       let balance = principal, cumPrincipal = 0;
       const monthlySchedule = [];
-      for (let m = 1; m <= totalMonths; m++) {
+      for (let m = 1; m <= (res.months || 12) * 2; m++) {
+        if (balance <= 0) break;
         const intPart = balance * r;
         const prinPart = Math.min(balance, Math.max(0, emi - intPart));
         cumPrincipal += prinPart;
         balance = Math.max(0, balance - prinPart);
+        if (m % 12 === 0 && prepay > 0 && balance > 0) {
+          const extra = Math.min(balance, prepay);
+          cumPrincipal += extra;
+          balance = Math.max(0, balance - extra);
+        }
         monthlySchedule.push({ year: m, opening: balance + prinPart, emiPaid: emi, principalPaid: prinPart, interestPaid: intPart, cumPrincipalPaid: cumPrincipal, closing: balance });
       }
       window._currentSchedule = monthlySchedule;
@@ -640,7 +621,28 @@ const CALCS_LOANS = {
             </div>
             <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Repayment Schedule</button>
           </div>
-        </div>`;
+        </div>
+        ${res.prepayment > 0 ? `
+        <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+          <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact (₹${fmt(res.prepayment)}/year)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+            <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">INTEREST SAVED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs early closure)</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.newTotalMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.months} original)</div>
+            </div>
+          </div>
+        </div>` : ""}
+      `;
       setTimeout(() => {
         FinCharts.createDonut("chartDonut", principal, res.interest);
         FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
