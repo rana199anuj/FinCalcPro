@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="FinCalc Pro — India's most complete free financial calculator. Home Loan EMI, SIP, FD, Gold Rates, NSE/BSE live data and 25+ calculators."/>
+  <meta name="keywords" content="EMI calculator, SIP calculator, home loan, gold rates, NSE, BSE, FD calculator, PPF, financial planning India"/>
+  <title>FinCalc Pro | India's #1 Financial Calculator — EMI, SIP, Gold Rates</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=17"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     STICKY NAVBAR
+══════════════════════════════════════ -->
+<header class="navbar" id="navbar">
+  <div class="nav-inner">
+
+    <!-- Brand -->
+    <a class="brand" href="#" onclick="showHome();return false;">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      </div>
+      <span class="brand-text">FinCalc<span class="brand-accent">Pro</span></span>
+    </a>
+
+    <!-- Desktop Nav Tabs -->
+    <nav class="nav-tabs" id="navTabs">
+      <a class="nav-tab active" href="#" onclick="showHome();return false;" id="tab-home">Home</a>
+      <div class="nav-tab-dropdown">
+        <a class="nav-tab" href="#" id="tab-emi">EMI Loans <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <div class="dropdown-panel">
+          <div class="dp-col">
+            <span class="dp-heading">🏠 Home Loan</span>
+            <a href="#" onclick="openCalc('home-loan');return false;">Home Loan EMI</a>
+            <a href="#" onclick="openCalc('home-eligibility');return false;">Eligibility Calculator</a>
+            <a href="#" onclick="openCalc('home-affordability');return false;">Affordability Calculator</a>
+            <a href="#" onclick="openCalc('home-balance-transfer');return false;">Balance Transfer</a>
+            <a href="#" onclick="openCalc('loan-to-value');return false;">Loan to Value (LTV)</a>
+            <a href="#" onclick="openCalc('compare-bank');return false;">Compare Bank EMI</a>
+            <a href="#" onclick="openCalc('loan-against-property');return false;">Loan Against Property</a>
+          </div>
+          <div class="dp-col">
+            <span class="dp-heading">🚗 Other Loans</span>
+            <a href="#" onclick="openCalc('car-loan');return false;">Car Loan</a>
+            <a href="#" onclick="openCalc('two-wheeler');return false;">Two-Wheeler Loan</a>
+            <a href="#" onclick="openCalc('education-loan');return false;">Education Loan</a>
+            <a href="#" onclick="openCalc('gold-loan');return false;">Gold Loan</a>
+            <a href="#" onclick="openCalc('credit-card');return false;">Credit Card Loan</a>
+            <a href="#" onclick="openCalc('consumer-durable');return false;">Consumer Durable</a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-tab-dropdown">
+        <a class="nav-tab" href="#" id="tab-investment">Investment <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <div class="dropdown-panel">
+          <div class="dp-col">
+            <span class="dp-heading">📈 Mutual Funds</span>
+            <a href="#" onclick="openCalc('sip');return false;">SIP Calculator</a>
+            <a href="#" onclick="openCalc('lumpsum');return false;">Lumpsum Calculator</a>
+            <a href="#" onclick="openCalc('lumpsum-sip');return false;">Lumpsum + SIP</a>
+            <a href="#" onclick="openCalc('sip-delay');return false;">SIP Delay Cost</a>
+            <a href="#" onclick="openCalc('target-value');return false;">Target Value</a>
+            <a href="#" onclick="openCalc('cagr');return false;">CAGR Calculator</a>
+          </div>
+          <div class="dp-col">
+            <span class="dp-heading">💰 Savings & Planning</span>
+            <a href="#" onclick="openCalc('fd');return false;">FD Calculator</a>
+            <a href="#" onclick="openCalc('rd');return false;">RD Calculator</a>
+            <a href="#" onclick="openCalc('ppf');return false;">PPF Calculator</a>
+            <a href="#" onclick="openCalc('retirement');return false;">Retirement Planner</a>
+            <a href="#" onclick="openCalc('inflation');return false;">Inflation Calculator</a>
+            <a href="#" onclick="openCalc('gratuity');return false;">Gratuity Calculator</a>
+          </div>
+        </div>
+      </div>
+      <a class="nav-tab" href="#" onclick="openCalc('gold-rates');return false;" id="tab-gold">Gold Rates</a>
+      <a class="nav-tab" href="#" onclick="openCalc('market');return false;" id="tab-market">Market</a>
+      <a class="nav-tab" href="#" onclick="navigate('blog');return false;" id="tab-blog">Blog</a>
+      <a class="nav-tab" href="#" onclick="navigate('about');return false;" id="tab-about">About</a>
+    </nav>
+
+    <!-- Right: live badge + hamburger -->
+    <div class="nav-right">
+      <div class="live-badge" id="navLiveBadge">
+        <span class="live-dot" id="navLiveDot"></span>
+        <span id="navNifty">NSE —</span>
+        <span class="live-sep">|</span>
+        <span id="navSensex">BSE —</span>
+        <span class="live-sep">|</span>
+        <span id="navGold">Gold —</span>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Nav Drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-inner">
+    <button class="drawer-close" id="drawerClose">✕</button>
+    <div class="mobile-nav-links">
+      <a href="#" onclick="showHome();closeMobile();return false;">🏠 Home</a>
+      <details><summary>EMI Loans</summary>
+        <a href="#" onclick="openCalc('home-loan');closeMobile();return false;">Home Loan EMI</a>
+        <a href="#" onclick="openCalc('home-eligibility');closeMobile();return false;">Eligibility</a>
+        <a href="#" onclick="openCalc('home-affordability');closeMobile();return false;">Affordability</a>
+        <a href="#" onclick="openCalc('home-balance-transfer');closeMobile();return false;">Balance Transfer</a>
+        <a href="#" onclick="openCalc('loan-to-value');closeMobile();return false;">LTV Calculator</a>
+        <a href="#" onclick="openCalc('compare-bank');closeMobile();return false;">Compare Bank EMI</a>
+        <a href="#" onclick="openCalc('loan-against-property');closeMobile();return false;">Loan Against Property</a>
+        <a href="#" onclick="openCalc('car-loan');closeMobile();return false;">Car Loan</a>
+        <a href="#" onclick="openCalc('two-wheeler');closeMobile();return false;">Two-Wheeler</a>
+        <a href="#" onclick="openCalc('education-loan');closeMobile();return false;">Education Loan</a>
+        <a href="#" onclick="openCalc('gold-loan');closeMobile();return false;">Gold Loan</a>
+        <a href="#" onclick="openCalc('credit-card');closeMobile();return false;">Credit Card Loan</a>
+        <a href="#" onclick="openCalc('consumer-durable');closeMobile();return false;">Consumer Durable</a>
+      </details>
+      <details><summary>Investment</summary>
+        <a href="#" onclick="openCalc('sip');closeMobile();return false;">SIP Calculator</a>
+        <a href="#" onclick="openCalc('lumpsum');closeMobile();return false;">Lumpsum</a>
+        <a href="#" onclick="openCalc('lumpsum-sip');closeMobile();return false;">Lumpsum + SIP</a>
+        <a href="#" onclick="openCalc('sip-delay');closeMobile();return false;">SIP Delay Cost</a>
+        <a href="#" onclick="openCalc('target-value');closeMobile();return false;">Target Value</a>
+        <a href="#" onclick="openCalc('cagr');closeMobile();return false;">CAGR</a>
+        <a href="#" onclick="openCalc('fd');closeMobile();return false;">FD Calculator</a>
+        <a href="#" onclick="openCalc('rd');closeMobile();return false;">RD Calculator</a>
+        <a href="#" onclick="openCalc('ppf');closeMobile();return false;">PPF Calculator</a>
+        <a href="#" onclick="openCalc('retirement');closeMobile();return false;">Retirement</a>
+        <a href="#" onclick="openCalc('inflation');closeMobile();return false;">Inflation</a>
+        <a href="#" onclick="openCalc('gratuity');closeMobile();return false;">Gratuity</a>
+      </details>
+      <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">💎 Gold Rates</a>
+      <a href="#" onclick="openCalc('market');closeMobile();return false;">📊 Market</a>
+      <a href="#" onclick="navigate('blog');closeMobile();return false;">📰 Blog</a>
+      <a href="#" onclick="navigate('about');closeMobile();return false;">ℹ️ About</a>
+    </div>
+  </div>
+</div>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<!-- ══════════════════════════════════════
+     MAIN PAGE CONTENT (SPA container)
+══════════════════════════════════════ -->
+<main id="appMain">
+  <!-- Home page rendered by JS -->
+</main>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand-col">
+        <div class="footer-brand">
+          <div class="brand-icon white">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <span class="brand-text white">FinCalc<span class="brand-accent">Pro</span></span>
+        </div>
+        <p>India's most complete free financial calculator suite. Trusted by 1M+ users for accurate EMI, SIP, and gold rate calculations.</p>
+        <div class="footer-badges">
+          <span>🇮🇳 Made for India</span>
+          <span>🔒 100% Free</span>
+          <span>📡 Live Data</span>
+        </div>
+      </div>
+      <div class="footer-links-col">
+        <h4>EMI Calculators</h4>
+        <a href="#" onclick="openCalc('home-loan');return false;">Home Loan EMI</a>
+        <a href="#" onclick="openCalc('car-loan');return false;">Car Loan</a>
+        <a href="#" onclick="openCalc('two-wheeler');return false;">Two-Wheeler</a>
+        <a href="#" onclick="openCalc('education-loan');return false;">Education Loan</a>
+        <a href="#" onclick="openCalc('gold-loan');return false;">Gold Loan</a>
+        <a href="#" onclick="openCalc('credit-card');return false;">Credit Card</a>
+      </div>
+      <div class="footer-links-col">
+        <h4>Investment Tools</h4>
+        <a href="#" onclick="openCalc('sip');return false;">SIP Calculator</a>
+        <a href="#" onclick="openCalc('lumpsum');return false;">Lumpsum</a>
+        <a href="#" onclick="openCalc('fd');return false;">FD Calculator</a>
+        <a href="#" onclick="openCalc('ppf');return false;">PPF Calculator</a>
+        <a href="#" onclick="openCalc('retirement');return false;">Retirement Planner</a>
+        <a href="#" onclick="openCalc('gratuity');return false;">Gratuity</a>
+      </div>
+      <div class="footer-links-col">
+        <h4>Live Data</h4>
+        <a href="#" onclick="openCalc('gold-rates');return false;">Gold Rates Today</a>
+        <a href="#" onclick="openCalc('market');return false;">NSE/BSE Market</a>
+        <a href="#" onclick="openCalc('loan-to-value');return false;">LTV Calculator</a>
+        <a href="#" onclick="openCalc('compare-bank');return false;">Compare Bank EMI</a>
+        <a href="#" onclick="openCalc('inflation');return false;">Inflation Calculator</a>
+        <a href="#" onclick="openCalc('cagr');return false;">CAGR Calculator</a>
+      </div>
+      <div class="footer-links-col">
+        <h4>Company</h4>
+        <a href="#" onclick="navigate('blog');return false;">📰 Blog</a>
+        <a href="#" onclick="navigate('about');return false;">ℹ️ About Us</a>
+        <a href="#" onclick="navigate('privacy');return false;">🛡️ Privacy Policy</a>
+        <a href="#" onclick="navigate('disclaimer');return false;">⚖️ Disclaimer</a>
+        <a href="#" onclick="openCalc('gold-sip');return false;">🥇 Gold SIP</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="disclaimer">⚠️ Disclaimer: All calculations are indicative only. Actual EMIs and returns may vary. Consult a certified financial advisor before making investment decisions. Market data shown is simulated for demonstration purposes.</p>
+      <p class="copyright">© 2026 FinCalc Pro. All rights reserved. | <a href="#" onclick="navigate('privacy');return false;" style="color:inherit;text-decoration:underline;">Privacy Policy</a> | <a href="#" onclick="navigate('disclaimer');return false;" style="color:inherit;text-decoration:underline;">Disclaimer</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- ── Utilities (no DOM deps) ────────────────────── -->
+<script src="js/utils/formatters.js?v=17"></script>
+
+<!-- ── FAQ Data ──────────────────────────────────── -->
+<script src="js/data/faqs.js?v=17"></script>
+
+<!-- ── Charts & WebSocket Client ──────────────────── -->
+<script src="js/charts.js?v=17"></script>
+<script src="js/websocket.js?v=17"></script>
+
+<!-- ── App State & Router ─────────────────────────── -->
+<script src="js/modules/router.js?v=17"></script>
+
+<!-- ── Calculator Engine (Helpers & Renderers) ────── -->
+<script src="js/modules/calculator.js?v=17"></script>
+
+<!-- ── Calculator Definitions ─────────────────────── -->
+<script src="js/calculators/loans.js?v=17"></script>
+<script src="js/calculators/investments.js?v=17"></script>
+
+<!-- ── Page Modules ───────────────────────────────── -->
+<script src="js/modules/home.js?v=17"></script>
+<script src="js/modules/gold.js?v=17"></script>
+<script src="js/modules/market.js?v=17"></script>
+<script src="js/modules/blog.js?v=17"></script>
+<script src="js/modules/about.js?v=17"></script>
+<script src="js/modules/privacy.js?v=17"></script>
+<script src="js/modules/disclaimer.js?v=17"></script>
+<script src="js/modules/websocket-events.js?v=17"></script>
+
+<!-- ── App Entry Point (boot) ─────────────────────── -->
+<script src="js/app.js?v=17"></script>
+</body>
+</html>
