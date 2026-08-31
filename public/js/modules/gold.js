@@ -13,12 +13,13 @@
 
 let goldChartInstance = null;
 let emeraldMetal = "gold";
-let emeraldCity = "Meerut";
+let emeraldCity = "Greater Noida";
 let emeraldPurity = "22";
 
 const CITIES_LIST = [
-  { city: "Meerut", off24: 15, offSil: 50 },
+  { city: "Greater Noida", off24: 15, offSil: 50 },
   { city: "Delhi", off24: 15, offSil: 50 },
+  { city: "Noida", off24: 15, offSil: 50 },
   { city: "Mumbai", off24: 0, offSil: 0 },
   { city: "Chennai", off24: 25, offSil: 100 },
   { city: "Kolkata", off24: 0, offSil: 0 },
@@ -60,14 +61,14 @@ function renderGoldRates() {
           </div>
 
           <div class="egw-metal-tabs">
-            <button type="button" class="egw-metal-btn ${emeraldMetal==='gold'?'active':''}" id="btnMetalGold" onclick="setEmeraldMetal('gold')">Gold</button>
-            <button type="button" class="egw-metal-btn ${emeraldMetal==='silver'?'active':''}" id="btnMetalSilver" onclick="setEmeraldMetal('silver')">Silver</button>
-            <button type="button" class="egw-metal-btn ${emeraldMetal==='platinum'?'active':''}" id="btnMetalPlatinum" onclick="setEmeraldMetal('platinum')">Platinum</button>
+            <button type="button" class="egw-metal-btn ${emeraldMetal === 'gold' ? 'active' : ''}" id="btnMetalGold" onclick="setEmeraldMetal('gold')">Gold</button>
+            <button type="button" class="egw-metal-btn ${emeraldMetal === 'silver' ? 'active' : ''}" id="btnMetalSilver" onclick="setEmeraldMetal('silver')">Silver</button>
+            <button type="button" class="egw-metal-btn ${emeraldMetal === 'platinum' ? 'active' : ''}" id="btnMetalPlatinum" onclick="setEmeraldMetal('platinum')">Platinum</button>
           </div>
 
           <div class="egw-city-select-wrap">
             <select class="egw-city-select" id="egwCitySelect" onchange="setEmeraldCity(this.value)">
-              ${CITIES_LIST.map(c => `<option value="${c.city}" ${c.city===emeraldCity?'selected':''}>${c.city}</option>`).join('')}
+              ${CITIES_LIST.map(c => `<option value="${c.city}" ${c.city === emeraldCity ? 'selected' : ''}>${c.city}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -96,9 +97,9 @@ function renderGoldRates() {
           <div class="egw-field-group" id="egwPurityGroup">
             <label>Purity</label>
             <div class="egw-purity-pills">
-              <button type="button" class="egw-purity-btn ${emeraldPurity==='24'?'active':''}" id="btnPurity24" onclick="setEmeraldPurity('24')">24K</button>
-              <button type="button" class="egw-purity-btn ${emeraldPurity==='22'?'active':''}" id="btnPurity22" onclick="setEmeraldPurity('22')">22K</button>
-              <button type="button" class="egw-purity-btn ${emeraldPurity==='18'?'active':''}" id="btnPurity18" onclick="setEmeraldPurity('18')">18K</button>
+              <button type="button" class="egw-purity-btn ${emeraldPurity === '24' ? 'active' : ''}" id="btnPurity24" onclick="setEmeraldPurity('24')">24K</button>
+              <button type="button" class="egw-purity-btn ${emeraldPurity === '22' ? 'active' : ''}" id="btnPurity22" onclick="setEmeraldPurity('22')">22K</button>
+              <button type="button" class="egw-purity-btn ${emeraldPurity === '18' ? 'active' : ''}" id="btnPurity18" onclick="setEmeraldPurity('18')">18K</button>
             </div>
           </div>
 
@@ -502,8 +503,8 @@ function updateGoldRates(d) {
   });
 
   // Silver & Platinum Cards
-  const sv = document.getElementById("gpSilver");   if (sv) sv.textContent   = "₹" + fmt(g.silver, 2);
-  const pt = document.getElementById("gpPlatinum"); if (pt) pt.textContent   = "₹" + fmt(g.platinum);
+  const sv = document.getElementById("gpSilver"); if (sv) sv.textContent = "₹" + fmt(g.silver, 2);
+  const pt = document.getElementById("gpPlatinum"); if (pt) pt.textContent = "₹" + fmt(g.platinum);
 
   const scEl = document.getElementById("gcSilver");
   if (scEl) {
@@ -706,7 +707,7 @@ function renderGoldTrendChart(days) {
 
   const points = days === 7 ? 7 : days === 30 ? 15 : 12;
   for (let i = points - 1; i >= 0; i--) {
-    const label = days === 365 ? `M${12 - i}` : days === 30 ? `Day ${30 - i*2}` : `Day ${7 - i}`;
+    const label = days === 365 ? `M${12 - i}` : days === 30 ? `Day ${30 - i * 2}` : `Day ${7 - i}`;
     labels.push(label);
     const noise = Math.sin(i * 0.5) * (baseRate * 0.015) + (i * 12);
     data.push(Math.round(baseRate - noise));
@@ -714,8 +715,8 @@ function renderGoldTrendChart(days) {
 
   const minVal = Math.min(...data);
   const maxVal = Math.max(...data);
-  const avgVal = Math.round(data.reduce((a,b)=>a+b,0) / data.length);
-  const netChg = (((data[data.length-1] - data[0]) / data[0]) * 100).toFixed(2);
+  const avgVal = Math.round(data.reduce((a, b) => a + b, 0) / data.length);
+  const netChg = (((data[data.length - 1] - data[0]) / data[0]) * 100).toFixed(2);
 
   document.getElementById("histMin").textContent = "₹" + fmt(minVal);
   document.getElementById("histMax").textContent = "₹" + fmt(maxVal);
