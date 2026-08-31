@@ -418,8 +418,8 @@ const CALCS_INVESTMENTS = {
       { id:"purity",  label:"Gold Purity",             type:"range", min:22,  max:24,     step:2,   default:24,    fmt:v=>v+"K Digital Gold" }
     ],
     calc(f) {
-      const liveRate24K = marketData?.gold?.g24 || 9420;
-      const pureMult    = f.purity === 22 ? 0.917 : 1;
+      const liveRate24K = marketData?.gold?.g24 || 15692;
+      const pureMult    = { 24: 1, 22: 0.917, 18: 0.75 }[Math.round(f.purity)] || 0.917;
       const goldRate    = liveRate24K * pureMult;
       const r = f.rate / 12 / 100, n = f.years * 12;
       const maturity = f.monthly * (Math.pow(1+r,n)-1) / r * (1+r);

@@ -13,28 +13,28 @@
 
 let goldChartInstance = null;
 let emeraldMetal = "gold";
-let emeraldCity = "Greater Noida";
+let emeraldCity = "Noida";
 let emeraldPurity = "22";
 
 const CITIES_LIST = [
-  { city: "Greater Noida", off24: 15, offSil: 50 },
-  { city: "Delhi", off24: 15, offSil: 50 },
-  { city: "Noida", off24: 15, offSil: 50 },
-  { city: "Mumbai", off24: 0, offSil: 0 },
-  { city: "Chennai", off24: 25, offSil: 100 },
-  { city: "Kolkata", off24: 0, offSil: 0 },
-  { city: "Bengaluru", off24: 10, offSil: -50 },
-  { city: "Hyderabad", off24: 10, offSil: 50 },
-  { city: "Ahmedabad", off24: 5, offSil: 0 },
-  { city: "Pune", off24: 0, offSil: 0 },
-  { city: "Jaipur", off24: 15, offSil: 50 },
-  { city: "Lucknow", off24: 15, offSil: 50 },
-  { city: "Kerala", off24: 10, offSil: 50 },
-  { city: "Patna", off24: 12, offSil: 40 }
+  { city: "Noida", off24: 0, offSil: 0 },
+  { city: "Greater Noida", off24: 0, offSil: 0 },
+  { city: "Delhi", off24: 0, offSil: 0 },
+  { city: "Mumbai", off24: -120, offSil: -50 },
+  { city: "Chennai", off24: 150, offSil: 100 },
+  { city: "Kolkata", off24: -50, offSil: 0 },
+  { city: "Bengaluru", off24: 80, offSil: -50 },
+  { city: "Hyderabad", off24: 80, offSil: 50 },
+  { city: "Ahmedabad", off24: 40, offSil: 0 },
+  { city: "Pune", off24: -30, offSil: 0 },
+  { city: "Jaipur", off24: 60, offSil: 50 },
+  { city: "Lucknow", off24: 60, offSil: 50 },
+  { city: "Kerala", off24: 50, offSil: 50 },
+  { city: "Patna", off24: 70, offSil: 40 }
 ];
 
 function renderGoldRates() {
-  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950, ch24: 25, chp24: 0.27 };
+  const g = marketData?.gold || { g24: 15692, g22: 14385, g20: 13077, g18: 11773, silver: 105.5, platinum: 2950, ch24: -147, chp24: -0.93 };
   const todayDateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   document.getElementById("appMain").innerHTML = `
@@ -49,7 +49,7 @@ function renderGoldRates() {
       </div>
 
       <!-- ══════════════════════════════════════════════════ -->
-      <!-- EMERALD DARK GOLD & JEWELLERY WIDGET (Image Match) -->
+      <!-- EMERALD DARK/LIGHT GOLD & JEWELLERY WIDGET        -->
       <!-- ══════════════════════════════════════════════════ -->
       <div class="emerald-gold-widget">
         
@@ -73,19 +73,28 @@ function renderGoldRates() {
           </div>
         </div>
 
-        <!-- 3 Top Rate Cards -->
+        <!-- 3 Top Rate Cards with Live Change Badges -->
         <div class="egw-rate-cards" id="egwRateCards">
           <div class="egw-rate-card">
             <div class="egw-rate-card-label" id="egwCard1Label">24K Gold /g</div>
-            <div class="egw-rate-card-price" id="egwCard1Price">₹9,435</div>
+            <div class="egw-rate-card-main">
+              <div class="egw-rate-card-price" id="egwCard1Price">₹15,692</div>
+              <div class="egw-rate-card-chg down" id="egwCard1Chg">- 147 ▼</div>
+            </div>
           </div>
           <div class="egw-rate-card">
             <div class="egw-rate-card-label" id="egwCard2Label">22K Gold /g</div>
-            <div class="egw-rate-card-price" id="egwCard2Price">₹8,650</div>
+            <div class="egw-rate-card-main">
+              <div class="egw-rate-card-price" id="egwCard2Price">₹14,385</div>
+              <div class="egw-rate-card-chg down" id="egwCard2Chg">- 135 ▼</div>
+            </div>
           </div>
           <div class="egw-rate-card">
             <div class="egw-rate-card-label" id="egwCard3Label">18K Gold /g</div>
-            <div class="egw-rate-card-price" id="egwCard3Price">₹7,076</div>
+            <div class="egw-rate-card-main">
+              <div class="egw-rate-card-price" id="egwCard3Price">₹11,773</div>
+              <div class="egw-rate-card-chg down" id="egwCard3Chg">- 110 ▼</div>
+            </div>
           </div>
         </div>
 
@@ -352,50 +361,119 @@ function setEmeraldPurity(purity) {
 }
 
 function getEmeraldRates() {
-  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950 };
-  const cityObj = CITIES_LIST.find(c => c.city === emeraldCity) || { off24: 15, offSil: 50 };
+  const g = marketData?.gold || { g24: 15692, g22: 14385, g20: 13077, g18: 11773, silver: 105.5, platinum: 2950, ch24: -147, chp24: -0.93, chSilver: 0.45, chpSilver: 0.43, chPlat: 15, chpPlat: 0.51 };
+  const cityObj = CITIES_LIST.find(c => c.city === emeraldCity) || { off24: 0, offSil: 0 };
 
-  const r24 = g.g24 + cityObj.off24;
+  const r24 = (g.g24 || 15692) + (cityObj.off24 || 0);
   const r22 = Math.round(r24 * 0.9167);
   const r18 = Math.round(r24 * 0.75);
-  const rSilver = g.silver + (cityObj.offSil / 1000);
-  const rPlat = g.platinum;
+  const rSilver = (g.silver || 105.5) + ((cityObj.offSil || 0) / 1000);
+  const rPlat = g.platinum || 2950;
 
-  return { r24, r22, r18, rSilver, rPlat };
+  const ch24 = g.ch24 !== undefined ? g.ch24 : -147;
+  const ch22 = Math.round(ch24 * 0.9167);
+  const ch18 = Math.round(ch24 * 0.75);
+  const chSilver = g.chSilver !== undefined ? g.chSilver : 0.45;
+  const chPlat = g.chPlat !== undefined ? g.chPlat : 15;
+
+  return { r24, r22, r18, rSilver, rPlat, ch24, ch22, ch18, chSilver, chPlat };
 }
 
 function updateEmeraldWidget() {
   const rates = getEmeraldRates();
   const card1Label = document.getElementById("egwCard1Label");
   const card1Price = document.getElementById("egwCard1Price");
+  const card1Chg = document.getElementById("egwCard1Chg");
   const card2Label = document.getElementById("egwCard2Label");
   const card2Price = document.getElementById("egwCard2Price");
+  const card2Chg = document.getElementById("egwCard2Chg");
   const card3Label = document.getElementById("egwCard3Label");
   const card3Price = document.getElementById("egwCard3Price");
+  const card3Chg = document.getElementById("egwCard3Chg");
 
   if (!card1Label || !card1Price) return;
+
+  function fmtChg(val, isDecimal = false) {
+    const isUp = val >= 0;
+    const sign = isUp ? "+ " : "- ";
+    const absVal = Math.abs(val);
+    const text = sign + (isDecimal ? absVal.toFixed(2) : Math.round(absVal)) + (isUp ? " ▲" : " ▼");
+    const cls = isUp ? "egw-rate-card-chg up" : "egw-rate-card-chg down";
+    return { text, cls };
+  }
 
   if (emeraldMetal === "gold") {
     card1Label.textContent = "24K Gold /g";
     card1Price.textContent = "₹" + fmt(rates.r24);
+    if (card1Chg) {
+      const c = fmtChg(rates.ch24);
+      card1Chg.textContent = c.text;
+      card1Chg.className = c.cls;
+    }
+
     card2Label.textContent = "22K Gold /g";
     card2Price.textContent = "₹" + fmt(rates.r22);
+    if (card2Chg) {
+      const c = fmtChg(rates.ch22);
+      card2Chg.textContent = c.text;
+      card2Chg.className = c.cls;
+    }
+
     card3Label.textContent = "18K Gold /g";
     card3Price.textContent = "₹" + fmt(rates.r18);
+    if (card3Chg) {
+      const c = fmtChg(rates.ch18);
+      card3Chg.textContent = c.text;
+      card3Chg.className = c.cls;
+    }
   } else if (emeraldMetal === "silver") {
     card1Label.textContent = "Fine Silver (1g)";
     card1Price.textContent = "₹" + fmt(rates.rSilver, 2);
+    if (card1Chg) {
+      const c = fmtChg(rates.chSilver, true);
+      card1Chg.textContent = c.text;
+      card1Chg.className = c.cls;
+    }
+
     card2Label.textContent = "Silver (100g)";
     card2Price.textContent = "₹" + fmt(Math.round(rates.rSilver * 100));
+    if (card2Chg) {
+      const c = fmtChg(rates.chSilver * 100);
+      card2Chg.textContent = c.text;
+      card2Chg.className = c.cls;
+    }
+
     card3Label.textContent = "Silver (1 Kg)";
     card3Price.textContent = "₹" + fmt(Math.round(rates.rSilver * 1000));
+    if (card3Chg) {
+      const c = fmtChg(rates.chSilver * 1000);
+      card3Chg.textContent = c.text;
+      card3Chg.className = c.cls;
+    }
   } else if (emeraldMetal === "platinum") {
     card1Label.textContent = "Platinum 950 (1g)";
     card1Price.textContent = "₹" + fmt(rates.rPlat);
+    if (card1Chg) {
+      const c = fmtChg(rates.chPlat);
+      card1Chg.textContent = c.text;
+      card1Chg.className = c.cls;
+    }
+
     card2Label.textContent = "Platinum (10g)";
     card2Price.textContent = "₹" + fmt(rates.rPlat * 10);
+    if (card2Chg) {
+      const c = fmtChg(rates.chPlat * 10);
+      card2Chg.textContent = c.text;
+      card2Chg.className = c.cls;
+    }
+
     card3Label.textContent = "Platinum (100g)";
     card3Price.textContent = "₹" + fmt(rates.rPlat * 100);
+    if (card3Chg) {
+      const c = fmtChg(rates.chPlat * 100);
+      card3Chg.textContent = c.text;
+      card3Chg.className = c.cls;
+    }
   }
 }
 
@@ -667,8 +745,8 @@ function calculateGoldPrice() {
   const weight = parseFloat(document.getElementById("goldWeightNum")?.value || 10);
   const makingPct = parseFloat(document.getElementById("goldMakingNum")?.value || 10);
 
-  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065 };
-  const ratePerGram = g["g" + purityKey] || Math.round(9420 * { "24": 1, "22": 0.9167, "20": 0.8333, "18": 0.75 }[purityKey]);
+  const g = marketData?.gold || { g24: 15692, g22: 14385, g20: 13077, g18: 11773 };
+  const ratePerGram = g["g" + purityKey] || Math.round(15692 * { "24": 1, "22": 0.9167, "20": 0.8333, "18": 0.75 }[purityKey]);
 
   // Exact rounded integer accounting
   const goldValue = Math.round(weight * ratePerGram);
@@ -701,7 +779,7 @@ function renderGoldTrendChart(days) {
   const ctx = document.getElementById("goldTrendChart")?.getContext("2d");
   if (!ctx) return;
 
-  const baseRate = marketData?.gold?.g24 || 9420;
+  const baseRate = marketData?.gold?.g24 || 15692;
   const labels = [];
   const data = [];
 

@@ -15,10 +15,10 @@ const base = {
   sensex:   { value: 81463.09, open: 81520.00, high: 81780.00, low: 81200.00, prev: 81506.29 },
   bankNifty:{ value: 53420.80, open: 53300.00, high: 53650.00, low: 53100.00, prev: 53250.00 },
   niftyIT:  { value: 40125.50, open: 40000.00, high: 40300.00, low: 39850.00, prev: 39980.00 },
-  gold24k:  { value: 9420,  prev: 9395 },
-  gold22k:  { value: 8635,  prev: 8612 },
-  gold20k:  { value: 7850,  prev: 7830 },
-  gold18k:  { value: 7065,  prev: 7048 },
+  gold24k:  { value: 15692, prev: 15839 },
+  gold22k:  { value: 14385, prev: 14520 },
+  gold20k:  { value: 13077, prev: 13200 },
+  gold18k:  { value: 11773, prev: 11883 },
   silver:   { value: 105.50, prev: 104.80 },
   platinum: { value: 2950,   prev: 2930 }
 };

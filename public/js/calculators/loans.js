@@ -476,7 +476,7 @@ const CALCS_LOANS = {
       { id:"tenure", label:"Loan Tenure (Months)",  type:"range", min:1,  max:36,   step:1,   default:12,  fmt:v=>v+" Mo" }
     ],
     calc(f) {
-      const liveRate24K = (typeof marketData !== 'undefined' && marketData?.gold?.g24) || 9420;
+      const liveRate24K = (typeof marketData !== 'undefined' && marketData?.gold?.g24) || 15692;
       const pureMult    = { 18: 0.75, 20: 0.833, 22: 0.917, 24: 1 }[Math.round(f.purity)] || 0.917;
       const ratePerGram = liveRate24K * pureMult;
       const goldValue   = f.weight * ratePerGram;

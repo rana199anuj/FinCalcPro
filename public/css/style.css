@@ -1329,11 +1329,38 @@ body {
   margin-bottom: 8px;
 }
 
+.egw-rate-card-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .egw-rate-card-price {
   font-size: 1.85rem;
   font-weight: 900;
   color: #0f172a;
   letter-spacing: -0.02em;
+}
+
+.egw-rate-card-chg {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.egw-rate-card-chg.down {
+  background: rgba(225, 29, 72, 0.1);
+  color: #e11d48;
+}
+
+.egw-rate-card-chg.up {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
 }
 
 /* Calculator Section */
