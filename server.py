@@ -13,7 +13,7 @@ import math
 import random
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import uvicorn
@@ -30,10 +30,10 @@ PUBLIC_DIR = Path(__file__).parent / "public"
 
 # ─── Market Base Values ────────────────────────────────────────────────────────
 base = {
-    "nifty":     {"value": 24853.15, "open": 24780.00, "high": 24920.60, "low": 24710.30, "prev": 24725.75},
-    "sensex":    {"value": 81463.09, "open": 81520.00, "high": 81780.00, "low": 81200.00, "prev": 81506.29},
-    "bankNifty": {"value": 53420.80, "open": 53300.00, "high": 53650.00, "low": 53100.00, "prev": 53250.00},
-    "niftyIT":   {"value": 40125.50, "open": 40000.00, "high": 40300.00, "low": 39850.00, "prev": 39980.00},
+    "nifty":     {"value": 24080.40, "open": 24180.00, "high": 24250.55, "low": 23984.60, "prev": 24347.60},
+    "sensex":    {"value": 76957.27, "open": 79800.00, "high": 80100.00, "low": 79100.00, "prev": 79468.01},
+    "bankNifty": {"value": 51650.80, "open": 51800.00, "high": 52100.00, "low": 51420.00, "prev": 51880.00},
+    "niftyIT":   {"value": 39456.50, "open": 39600.00, "high": 39820.00, "low": 39100.00, "prev": 39650.00},
     "gold24k":   {"value": 15692.0,  "prev": 15839.0},
     "gold22k":   {"value": 14385.0,  "prev": 14520.0},
     "gold20k":   {"value": 13077.0,  "prev": 13200.0},
@@ -70,6 +70,19 @@ _HIST_MAP = {
 clients: set[WebSocket] = set()
 
 
+# ─── Market Hours Check (IST) ─────────────────────────────────────────────────
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def is_market_open() -> bool:
+    """NSE/BSE: Mon-Fri, 09:15–15:30 IST only."""
+    now = datetime.now(IST)
+    if now.weekday() >= 5:          # Saturday=5, Sunday=6
+        return False
+    market_open  = now.replace(hour=9,  minute=15, second=0, microsecond=0)
+    market_close = now.replace(hour=15, minute=30, second=0, microsecond=0)
+    return market_open <= now <= market_close
+
+
 # ─── Random Walk ───────────────────────────────────────────────────────────────
 def rw(v: float, vol: float = 0.0004) -> float:
     return round(v + v * vol * (random.random() - 0.5) * 2, 2)
@@ -77,11 +90,13 @@ def rw(v: float, vol: float = 0.0004) -> float:
 
 # ─── Snap Index (update price + history) ───────────────────────────────────────
 def snap_idx(key: str, vol: float) -> dict:
-    base[key]["value"] = rw(base[key]["value"], vol)
-    if base[key]["value"] > base[key]["high"]:
-        base[key]["high"] = base[key]["value"]
-    if base[key]["value"] < base[key]["low"]:
-        base[key]["low"] = base[key]["value"]
+    # Only apply random walk during market hours
+    if is_market_open():
+        base[key]["value"] = rw(base[key]["value"], vol)
+        if base[key]["value"] > base[key]["high"]:
+            base[key]["high"] = base[key]["value"]
+        if base[key]["value"] < base[key]["low"]:
+            base[key]["low"] = base[key]["value"]
 
     bucket = _HIST_MAP[key]
     hist[bucket].append(base[key]["value"])
@@ -101,10 +116,12 @@ def snap_idx(key: str, vol: float) -> dict:
 
 # ─── Build Market Payload ──────────────────────────────────────────────────────
 def build_payload() -> dict:
-    now = datetime.now().strftime("%I:%M:%S %p")
+    now = datetime.now(IST).strftime("%I:%M:%S %p")
+    market_open = is_market_open()
     return {
         "type": "market",
         "ts":   now,
+        "marketOpen": market_open,
         "indices": {
             "nifty":     {"label": "Nifty 50",   "exchange": "NSE", "color": "blue",   **snap_idx("nifty",     0.0005), "spark": list(hist["nifty"])},
             "sensex":    {"label": "Sensex",      "exchange": "BSE", "color": "orange", **snap_idx("sensex",    0.0005), "spark": list(hist["sensex"])},
@@ -134,12 +151,21 @@ def build_payload() -> dict:
 
 # ─── Update Gold Prices (called every 3s) ─────────────────────────────────────
 def update_gold():
-    base["gold24k"]["value"]  = rw(base["gold24k"]["value"], 0.0002)
-    base["gold22k"]["value"]  = round(base["gold24k"]["value"] * 0.9167, 0)
-    base["gold20k"]["value"]  = round(base["gold24k"]["value"] * 0.8333, 0)
-    base["gold18k"]["value"]  = round(base["gold24k"]["value"] * 0.75,   0)
-    base["silver"]["value"]   = rw(base["silver"]["value"],   0.0008)
-    base["platinum"]["value"] = rw(base["platinum"]["value"], 0.0004)
+    # Only apply random walk ticks during market/commodity hours
+    # Gold/silver MCX: Mon-Fri 9:00 AM - 11:30 PM IST (extended hours)
+    now = datetime.now(IST)
+    mcx_open  = now.replace(hour=9,  minute=0,  second=0, microsecond=0)
+    mcx_close = now.replace(hour=23, minute=30, second=0, microsecond=0)
+    mcx_live  = (now.weekday() < 5) and (mcx_open <= now <= mcx_close)
+
+    if mcx_live:
+        base["gold24k"]["value"]  = rw(base["gold24k"]["value"], 0.0002)
+        base["gold22k"]["value"]  = round(base["gold24k"]["value"] * 0.9167, 0)
+        base["gold20k"]["value"]  = round(base["gold24k"]["value"] * 0.8333, 0)
+        base["gold18k"]["value"]  = round(base["gold24k"]["value"] * 0.75,   0)
+        base["silver"]["value"]   = rw(base["silver"]["value"],   0.0008)
+        base["platinum"]["value"] = rw(base["platinum"]["value"], 0.0004)
+
     hist["gold"].append(base["gold24k"]["value"])
     if len(hist["gold"]) > 30:
         hist["gold"].pop(0)

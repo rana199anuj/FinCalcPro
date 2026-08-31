@@ -27,31 +27,43 @@ const CALCS_LOANS = {
     icon: "✅", name: "Home Loan Eligibility Calculator",
     desc: "Find the maximum loan amount you qualify for based on income and FOIR.",
     fields: [
-      { id:"income",      label:"Monthly Net Income",       type:"range", min:0, max:500000, step:5000, default:75000, fmt:v=>fmtC(v) },
-      { id:"obligations", label:"Existing EMI Obligations", type:"range", min:0, max:100000, step:1000, default:5000,  fmt:v=>fmtC(v) },
-      { id:"rate",        label:"Expected Interest Rate",   type:"range", min:1, max:20,     step:0.1,  default:8.5,   fmt:v=>v+"%" },
-      { id:"tenure",      label:"Loan Tenure (Years)",      type:"range", min:5, max:30,     step:1,    default:20,    fmt:v=>v+" Yrs" },
+      { id:"incomeType",  label:"Income Type",
+        type:"select",
+        options:[
+          {value:"net",   label:"Net Income (Take-Home)"},
+          {value:"gross", label:"Gross Income (CTC / Pre-Tax)"},
+        ],
+        default:"net", fmt:v=>v==="gross"?"Gross Income":"Net Income" },
+      { id:"income",      label:"Monthly Income",           type:"range", min:0, max:2000000, step:10000, default:500000, fmt:v=>fmtC(v) },
+      { id:"obligations", label:"Existing EMI Obligations", type:"range", min:0, max:1000000, step:5000,  default:100000, fmt:v=>fmtC(v) },
+      { id:"rate",        label:"Expected Interest Rate",   type:"range", min:1, max:20,      step:0.1,   default:8.5,    fmt:v=>v+"%" },
+      { id:"tenure",      label:"Loan Tenure (Years)",      type:"range", min:5, max:30,      step:1,     default:20,     fmt:v=>v+" Yrs" },
       { id:"foir",        label:"FOIR — Fixed Obligation to Income Ratio",
         type:"select",
         options:[
           {value:50, label:"50% FOIR"},
           {value:55, label:"55% FOIR"},
           {value:60, label:"60% FOIR"},
-          {value:65, label:"65% FOIR"},
-          {value:70, label:"70% FOIR (Maximum)"},
+          {value:65, label:"65% FOIR (Net Income only)"},
+          {value:70, label:"70% FOIR (Net Income only — Maximum)"},
         ],
         default:50, fmt:v=>v+"% FOIR" }
     ],
     calc(f) {
-      const foirPct = parseFloat(f.foir) || 50;
+      // Gross Income: bank considers ~70% of gross as effective net (deducting tax/PF)
+      // FOIR for gross income: bank caps at 50/55/60% only (no 65/70%)
+      const isGross = (f.incomeType === "gross");
+      const effectiveIncome = isGross ? f.income * 0.70 : f.income;
+      let foirPct = parseFloat(f.foir) || 50;
+      if (isGross && foirPct > 60) foirPct = 60; // cap FOIR at 60% for gross income
       const n = Math.round(f.tenureMonths || f.tenure * 12);
-      const availEMI = f.income * (foirPct / 100) - f.obligations;
-      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
+      const availEMI = effectiveIncome * (foirPct / 100) - f.obligations;
+      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, effectiveIncome, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
       const r = f.rate / 12 / 100;
       const eligible = availEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
       const estimatedEMI = calcEMI(eligible, f.rate, n);
       const totalInterest = Math.max(0, estimatedEMI * n - eligible);
-      return { eligible, availEMI, income: f.income, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
+      return { eligible, availEMI, income: f.income, effectiveIncome, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
     },
     render(res, el) {
       if (res.eligible <= 0) {
@@ -70,6 +82,7 @@ const CALCS_LOANS = {
       const labels = schedule.map(s => `Year ${s.year}`);
       const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
       const balanceData = schedule.map(s => s.closing);
+      const grossNote = res.isGross ? `<div style="font-size:0.72rem;color:#f59e0b;margin-top:4px">⚡ Gross income: effective income = ${fmtC(res.effectiveIncome)}/mo (30% tax deduction applied by bank)</div>` : "";
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -80,13 +93,15 @@ const CALCS_LOANS = {
               <div class="summary-hero-sub">${inLakhsCr(res.eligible)}</div>
             </div>
             <div class="summary-breakdown">
-              ${row("Monthly Income",           fmtC(res.income))}
+              ${row(res.isGross ? "Gross Monthly Income" : "Monthly Net Income", fmtC(res.income))}
+              ${res.isGross ? row("Effective Income (post-tax)", fmtC(res.effectiveIncome), "gold") : ""}
               ${row("Existing EMIs",            fmtC(res.obligations), "red")}
-              ${row("FOIR Applied",             res.foir + "%", "green")}
+              ${row("FOIR Applied",             res.foir + "% " + (res.isGross ? "(Gross cap 60%)" : ""), "green")}
               ${row("Available EMI",            fmtC(Math.max(0, res.availEMI)), "green")}
               ${row("Estimated Monthly EMI",    fmtC(res.estimatedEMI))}
               ${row("Total Interest (est.)",    fmtC(res.totalInterest), "red")}
             </div>
+            ${grossNote}
           </div>
           <div class="breakdown-chart-card">
             <div class="chart-card-header">📊 Loan Composition</div>
@@ -206,12 +221,35 @@ const CALCS_LOANS = {
       { id:"tenure",      label:"Remaining Tenure (Years)", type:"range", min:1, max:30, step:1,   default:15,  fmt:v=>v+" Yrs" }
     ],
     calc(f) {
-      const months = f.tenure * 12;
+      const months = Math.round(f.tenureMonths || f.tenure * 12);
       const oldEMI = calcEMI(f.outstanding, f.currentRate, months);
       const newEMI = calcEMI(f.outstanding, f.newRate,     months);
-      return { oldEMI, newEMI, emiSaving: oldEMI - newEMI, totalSaving: (oldEMI - newEMI) * months };
+      const totalOld = oldEMI * months;
+      const totalNew = newEMI * months;
+      const processingFee = (f.outstanding * (f.processingFeePct || 0)) / 100;
+      return {
+        oldEMI, newEMI,
+        emiSaving: oldEMI - newEMI,
+        totalSaving: Math.max(0, totalOld - totalNew - processingFee),
+        grossSaving: totalOld - totalNew,
+        processingFee,
+        totalOld, totalNew,
+        interestOld: totalOld - f.outstanding,
+        interestNew: totalNew - f.outstanding,
+        outstanding: f.outstanding,
+        currentRate: f.currentRate,
+        newRate: f.newRate,
+        months
+      };
     },
     render(res, el) {
+      // Build amortization schedules for both rates
+      const schedOld = buildAmortizationSchedule(res.outstanding, res.currentRate, res.months);
+      const schedNew = buildAmortizationSchedule(res.outstanding, res.newRate, res.months);
+      window._currentSchedule = schedOld; // modal shows current rate schedule
+      const labels = schedOld.map(s => `Year ${s.year}`);
+      const balOld  = schedOld.map(s => s.closing);
+      const balNew  = schedNew.map(s => s.closing);
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -222,13 +260,51 @@ const CALCS_LOANS = {
               <div class="summary-hero-sub">over remaining tenure</div>
             </div>
             <div class="summary-breakdown">
-              ${row("Current EMI",     fmtC(res.oldEMI), "red")}
-              ${row("New EMI",         fmtC(res.newEMI), "green")}
-              ${row("Monthly Savings", fmtC(res.emiSaving), "green")}
-              ${row("Total Saved",     fmtC(res.totalSaving), "green")}
+              ${row("Current EMI",          fmtC(res.oldEMI), "red")}
+              ${row("New EMI",              fmtC(res.newEMI), "green")}
+              ${row("Monthly Savings",      fmtC(res.emiSaving), "green")}
+              ${row("Interest @ Current Rate", fmtC(res.interestOld), "red")}
+              ${row("Interest @ New Rate",     fmtC(res.interestNew), "green")}
+              ${res.processingFee > 0 ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
+              ${row("Net Savings",          fmtC(res.totalSaving), "green")}
             </div>
           </div>
+          <div class="breakdown-chart-card">
+            <div class="chart-card-header">📊 EMI Comparison</div>
+            <div class="donut-wrap">
+              <canvas id="chartDonut" style="max-width:180px;max-height:180px"></canvas>
+              <div class="donut-center-text">
+                <div class="center-label">You Save</div>
+                <div class="center-val" style="color:var(--green);font-size:1rem">${fmtC(res.totalSaving)}</div>
+              </div>
+            </div>
+            <div class="chart-custom-legend">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Old Total: <strong>${fmtC(res.totalOld)}</strong></span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>New Total: <strong>${fmtC(res.totalNew)}</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="amortization-card">
+          <div class="amortization-header">
+            <div class="amortization-title">📈 Balance Comparison (Current Rate vs New Rate)</div>
+          </div>
+          <div class="amortization-canvas-wrap"><canvas id="chartAmortization" style="width:100%;height:240px"></canvas></div>
+          <div class="amortization-footer">
+            <div class="chart-custom-legend" style="margin:0">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Balance @ ${res.currentRate}% (Current)</span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Balance @ ${res.newRate}% (New Rate)</span></div>
+            </div>
+            <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
+          </div>
         </div>`;
+      setTimeout(() => {
+        FinCharts.createDonut("chartDonut", res.interestOld - res.interestNew, res.interestNew);
+        // Custom dual-line chart: two balance curves
+        FinCharts.createDualLineChart
+          ? FinCharts.createDualLineChart("chartAmortization", labels, balOld, balNew, `${res.currentRate}% Rate`, `${res.newRate}% Rate`)
+          : FinCharts.createAmortizationChart("chartAmortization", labels,
+              schedOld.map(s => s.cumPrincipalPaid), balOld);
+      }, 60);
     }
   },
 
@@ -470,6 +546,7 @@ const CALCS_LOANS = {
           {value:65, label:"65% LTV"},
           {value:75, label:"75% LTV — RBI Mandated Max"},
           {value:85, label:"85% LTV — Special Scheme"},
+          {value:90, label:"90% LTV — Bullet/OD Scheme"},
         ],
         default:75, fmt:v=>v+"% LTV" },
       { id:"rate",   label:"Interest Rate (p.a.)",  type:"range", min:7,  max:30,   step:0.5, default:8.8, fmt:v=>v+"%" },

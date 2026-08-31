@@ -150,7 +150,15 @@ function renderMarket() {
 function updateMarketPage(d) {
   if (!d?.indices) return;
   const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  s("mktTs", d.ts);
+
+  // Market status badge
+  const tsEl = document.getElementById("mktTs");
+  if (tsEl) {
+    const isOpen = d.marketOpen !== false; // default open if flag missing
+    tsEl.innerHTML = isOpen
+      ? `${d.ts} &nbsp;<span style="background:#16a34a;color:#fff;font-size:0.65rem;padding:2px 7px;border-radius:20px;font-weight:700">● LIVE</span>`
+      : `${d.ts} &nbsp;<span style="background:#dc2626;color:#fff;font-size:0.65rem;padding:2px 7px;border-radius:20px;font-weight:700">● MARKET CLOSED</span>`;
+  }
 
   // Update Benchmark Index Cards
   Object.entries(d.indices).forEach(([k, idx]) => {

@@ -1,24 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="FinCalc Pro — India's most complete free financial calculator. Home Loan EMI, SIP, FD, Gold Rates, NSE/BSE live data and 25+ calculators."/>
+  <meta name="description" content="FinCalc Pro â€” India's most complete free financial calculator. Home Loan EMI, SIP, FD, Gold Rates, NSE/BSE live data and 25+ calculators."/>
   <meta name="keywords" content="EMI calculator, SIP calculator, home loan, gold rates, NSE, BSE, FD calculator, PPF, financial planning India"/>
-  <title>FinCalc Pro | India's #1 Financial Calculator — EMI, SIP, Gold Rates</title>
+  <title>FinCalc Pro | India's #1 Financial Calculator â€” EMI, SIP, Gold Rates</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="css/style.css?v=17"/>
+  <link rel="stylesheet" href="css/style.css?v=18"/>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      STICKY NAVBAR
-══════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <header class="navbar" id="navbar">
   <div class="nav-inner">
 
@@ -37,7 +37,7 @@
         <a class="nav-tab" href="#" id="tab-emi">EMI Loans <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
         <div class="dropdown-panel">
           <div class="dp-col">
-            <span class="dp-heading">🏠 Home Loan</span>
+            <span class="dp-heading">ðŸ  Home Loan</span>
             <a href="#" onclick="openCalc('home-loan');return false;">Home Loan EMI</a>
             <a href="#" onclick="openCalc('home-eligibility');return false;">Eligibility Calculator</a>
             <a href="#" onclick="openCalc('home-affordability');return false;">Affordability Calculator</a>
@@ -47,7 +47,7 @@
             <a href="#" onclick="openCalc('loan-against-property');return false;">Loan Against Property</a>
           </div>
           <div class="dp-col">
-            <span class="dp-heading">🚗 Other Loans</span>
+            <span class="dp-heading">ðŸš— Other Loans</span>
             <a href="#" onclick="openCalc('car-loan');return false;">Car Loan</a>
             <a href="#" onclick="openCalc('two-wheeler');return false;">Two-Wheeler Loan</a>
             <a href="#" onclick="openCalc('education-loan');return false;">Education Loan</a>
@@ -61,7 +61,7 @@
         <a class="nav-tab" href="#" id="tab-investment">Investment <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></a>
         <div class="dropdown-panel">
           <div class="dp-col">
-            <span class="dp-heading">📈 Mutual Funds</span>
+            <span class="dp-heading">ðŸ“ˆ Mutual Funds</span>
             <a href="#" onclick="openCalc('sip');return false;">SIP Calculator</a>
             <a href="#" onclick="openCalc('lumpsum');return false;">Lumpsum Calculator</a>
             <a href="#" onclick="openCalc('lumpsum-sip');return false;">Lumpsum + SIP</a>
@@ -70,7 +70,7 @@
             <a href="#" onclick="openCalc('cagr');return false;">CAGR Calculator</a>
           </div>
           <div class="dp-col">
-            <span class="dp-heading">💰 Savings & Planning</span>
+            <span class="dp-heading">ðŸ’° Savings & Planning</span>
             <a href="#" onclick="openCalc('fd');return false;">FD Calculator</a>
             <a href="#" onclick="openCalc('rd');return false;">RD Calculator</a>
             <a href="#" onclick="openCalc('ppf');return false;">PPF Calculator</a>
@@ -90,11 +90,11 @@
     <div class="nav-right">
       <div class="live-badge" id="navLiveBadge">
         <span class="live-dot" id="navLiveDot"></span>
-        <span id="navNifty">NSE —</span>
+        <span id="navNifty">NSE â€”</span>
         <span class="live-sep">|</span>
-        <span id="navSensex">BSE —</span>
+        <span id="navSensex">BSE â€”</span>
         <span class="live-sep">|</span>
-        <span id="navGold">Gold —</span>
+        <span id="navGold">Gold â€”</span>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -106,9 +106,9 @@
 <!-- Mobile Nav Drawer -->
 <div class="mobile-drawer" id="mobileDrawer">
   <div class="mobile-drawer-inner">
-    <button class="drawer-close" id="drawerClose">✕</button>
+    <button class="drawer-close" id="drawerClose">âœ•</button>
     <div class="mobile-nav-links">
-      <a href="#" onclick="showHome();closeMobile();return false;">🏠 Home</a>
+      <a href="#" onclick="showHome();closeMobile();return false;">ðŸ  Home</a>
       <details><summary>EMI Loans</summary>
         <a href="#" onclick="openCalc('home-loan');closeMobile();return false;">Home Loan EMI</a>
         <a href="#" onclick="openCalc('home-eligibility');closeMobile();return false;">Eligibility</a>
@@ -138,25 +138,25 @@
         <a href="#" onclick="openCalc('inflation');closeMobile();return false;">Inflation</a>
         <a href="#" onclick="openCalc('gratuity');closeMobile();return false;">Gratuity</a>
       </details>
-      <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">💎 Gold Rates</a>
-      <a href="#" onclick="openCalc('market');closeMobile();return false;">📊 Market</a>
-      <a href="#" onclick="navigate('blog');closeMobile();return false;">📰 Blog</a>
-      <a href="#" onclick="navigate('about');closeMobile();return false;">ℹ️ About</a>
+      <a href="#" onclick="openCalc('gold-rates');closeMobile();return false;">ðŸ’Ž Gold Rates</a>
+      <a href="#" onclick="openCalc('market');closeMobile();return false;">ðŸ“Š Market</a>
+      <a href="#" onclick="navigate('blog');closeMobile();return false;">ðŸ“° Blog</a>
+      <a href="#" onclick="navigate('about');closeMobile();return false;">â„¹ï¸ About</a>
     </div>
   </div>
 </div>
 <div class="drawer-overlay" id="drawerOverlay"></div>
 
-<!-- ══════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      MAIN PAGE CONTENT (SPA container)
-══════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <main id="appMain">
   <!-- Home page rendered by JS -->
 </main>
 
-<!-- ══════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      FOOTER
-══════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-top">
@@ -169,9 +169,9 @@
         </div>
         <p>India's most complete free financial calculator suite. Trusted by 1M+ users for accurate EMI, SIP, and gold rate calculations.</p>
         <div class="footer-badges">
-          <span>🇮🇳 Made for India</span>
-          <span>🔒 100% Free</span>
-          <span>📡 Live Data</span>
+          <span>ðŸ‡®ðŸ‡³ Made for India</span>
+          <span>ðŸ”’ 100% Free</span>
+          <span>ðŸ“¡ Live Data</span>
         </div>
       </div>
       <div class="footer-links-col">
@@ -203,51 +203,52 @@
       </div>
       <div class="footer-links-col">
         <h4>Company</h4>
-        <a href="#" onclick="navigate('blog');return false;">📰 Blog</a>
-        <a href="#" onclick="navigate('about');return false;">ℹ️ About Us</a>
-        <a href="#" onclick="navigate('privacy');return false;">🛡️ Privacy Policy</a>
-        <a href="#" onclick="navigate('disclaimer');return false;">⚖️ Disclaimer</a>
-        <a href="#" onclick="openCalc('gold-sip');return false;">🥇 Gold SIP</a>
+        <a href="#" onclick="navigate('blog');return false;">ðŸ“° Blog</a>
+        <a href="#" onclick="navigate('about');return false;">â„¹ï¸ About Us</a>
+        <a href="#" onclick="navigate('privacy');return false;">ðŸ›¡ï¸ Privacy Policy</a>
+        <a href="#" onclick="navigate('disclaimer');return false;">âš–ï¸ Disclaimer</a>
+        <a href="#" onclick="openCalc('gold-sip');return false;">ðŸ¥‡ Gold SIP</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p class="disclaimer">⚠️ Disclaimer: All calculations are indicative only. Actual EMIs and returns may vary. Consult a certified financial advisor before making investment decisions. Market data shown is simulated for demonstration purposes.</p>
-      <p class="copyright">© 2026 FinCalc Pro. All rights reserved. | <a href="#" onclick="navigate('privacy');return false;" style="color:inherit;text-decoration:underline;">Privacy Policy</a> | <a href="#" onclick="navigate('disclaimer');return false;" style="color:inherit;text-decoration:underline;">Disclaimer</a></p>
+      <p class="disclaimer">âš ï¸ Disclaimer: All calculations are indicative only. Actual EMIs and returns may vary. Consult a certified financial advisor before making investment decisions. Market data shown is simulated for demonstration purposes.</p>
+      <p class="copyright">Â© 2026 FinCalc Pro. All rights reserved. | <a href="#" onclick="navigate('privacy');return false;" style="color:inherit;text-decoration:underline;">Privacy Policy</a> | <a href="#" onclick="navigate('disclaimer');return false;" style="color:inherit;text-decoration:underline;">Disclaimer</a></p>
     </div>
   </div>
 </footer>
 
-<!-- ── Utilities (no DOM deps) ────────────────────── -->
-<script src="js/utils/formatters.js?v=17"></script>
+<!-- â”€â”€ Utilities (no DOM deps) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/utils/formatters.js?v=18"></script>
 
-<!-- ── FAQ Data ──────────────────────────────────── -->
-<script src="js/data/faqs.js?v=17"></script>
+<!-- â”€â”€ FAQ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/data/faqs.js?v=18"></script>
 
-<!-- ── Charts & WebSocket Client ──────────────────── -->
-<script src="js/charts.js?v=17"></script>
-<script src="js/websocket.js?v=17"></script>
+<!-- â”€â”€ Charts & WebSocket Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/charts.js?v=18"></script>
+<script src="js/websocket.js?v=18"></script>
 
-<!-- ── App State & Router ─────────────────────────── -->
-<script src="js/modules/router.js?v=17"></script>
+<!-- â”€â”€ App State & Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/modules/router.js?v=18"></script>
 
-<!-- ── Calculator Engine (Helpers & Renderers) ────── -->
-<script src="js/modules/calculator.js?v=17"></script>
+<!-- â”€â”€ Calculator Engine (Helpers & Renderers) â”€â”€â”€â”€â”€â”€ -->
+<script src="js/modules/calculator.js?v=18"></script>
 
-<!-- ── Calculator Definitions ─────────────────────── -->
-<script src="js/calculators/loans.js?v=17"></script>
-<script src="js/calculators/investments.js?v=17"></script>
+<!-- â”€â”€ Calculator Definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/calculators/loans.js?v=18"></script>
+<script src="js/calculators/investments.js?v=18"></script>
 
-<!-- ── Page Modules ───────────────────────────────── -->
-<script src="js/modules/home.js?v=17"></script>
-<script src="js/modules/gold.js?v=17"></script>
-<script src="js/modules/market.js?v=17"></script>
-<script src="js/modules/blog.js?v=17"></script>
-<script src="js/modules/about.js?v=17"></script>
-<script src="js/modules/privacy.js?v=17"></script>
-<script src="js/modules/disclaimer.js?v=17"></script>
-<script src="js/modules/websocket-events.js?v=17"></script>
+<!-- â”€â”€ Page Modules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/modules/home.js?v=18"></script>
+<script src="js/modules/gold.js?v=18"></script>
+<script src="js/modules/market.js?v=18"></script>
+<script src="js/modules/blog.js?v=18"></script>
+<script src="js/modules/about.js?v=18"></script>
+<script src="js/modules/privacy.js?v=18"></script>
+<script src="js/modules/disclaimer.js?v=18"></script>
+<script src="js/modules/websocket-events.js?v=18"></script>
 
-<!-- ── App Entry Point (boot) ─────────────────────── -->
-<script src="js/app.js?v=17"></script>
+<!-- â”€â”€ App Entry Point (boot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="js/app.js?v=18"></script>
 </body>
 </html>
+

@@ -48,18 +48,65 @@ function row(label, val, cls = "") {
   </div>`;
 }
 
-/** Compute EMI result object */
+/** Compute EMI result object — with prepayment simulation */
 function emiCalc(principal, rate, months, processingFeePct = 0, prepayment = 0) {
-  const emi   = calcEMI(principal, rate, months);
-  const total = emi * months;
+  const emi = calcEMI(principal, rate, months);
   const processingFee = (principal * processingFeePct) / 100;
+
+  if (!prepayment || prepayment <= 0) {
+    // Standard calculation
+    return {
+      emi,
+      total: emi * months + processingFee,
+      interest: emi * months - principal,
+      principal,
+      processingFee,
+      months,
+      prepayment: 0,
+      savedInterest: 0,
+      reducedMonths: 0,
+      newTotalMonths: months
+    };
+  }
+
+  // ── Prepayment Simulation (month-by-month) ──
+  // Without prepayment
+  const totalWithout = emi * months - principal;
+
+  // With yearly prepayment
+  const r = rate / 12 / 100;
+  let balance = principal;
+  let monthsWithPrepay = 0;
+  let totalInterestWithPrepay = 0;
+
+  for (let m = 1; m <= months * 2; m++) {  // safety cap
+    if (balance <= 0) break;
+    const intPart  = balance * r;
+    const prinPart = Math.min(balance, Math.max(0, emi - intPart));
+    totalInterestWithPrepay += intPart;
+    balance = Math.max(0, balance - prinPart);
+    monthsWithPrepay++;
+
+    // Apply lump-sum prepayment at end of each year
+    if (m % 12 === 0 && balance > 0) {
+      balance = Math.max(0, balance - prepayment);
+    }
+  }
+
+  const savedInterest  = Math.max(0, totalWithout - totalInterestWithPrepay);
+  const reducedMonths  = Math.max(0, months - monthsWithPrepay);
+
   return {
     emi,
-    total: total + processingFee,
-    interest: total - principal,
+    total: emi * monthsWithPrepay + prepayment * Math.floor(monthsWithPrepay / 12) + processingFee,
+    interest: totalInterestWithPrepay,
     principal,
     processingFee,
-    months
+    months,
+    prepayment,
+    savedInterest,
+    reducedMonths,
+    newTotalMonths: monthsWithPrepay
   };
 }
 
@@ -271,6 +318,28 @@ function emiHTML(res, el, cfg = {}, fields = {}) {
         </div>
       </div>
     </div>
+
+    ${res.prepayment > 0 ? `
+    <!-- Prepayment Impact Card -->
+    <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+      <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact (₹${fmt(res.prepayment)}/year)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+        <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">INTEREST SAVED</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+          <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs early closure)</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+          <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.newTotalMonths} Months</div>
+          <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.months} original)</div>
+        </div>
+      </div>
+    </div>` : ""}
   `;
 
   // Store schedule globally for modal

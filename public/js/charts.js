@@ -292,5 +292,79 @@ const FinCharts = (() => {
     return chart;
   }
 
-  return { drawSparkline, createDonut, createSavingsDonut, createGrowthChart, createAmortizationChart, colorFor };
+  /* ─ Dual-Line Chart — Balance Transfer (Current Rate vs New Rate) ─ */
+  function createDualLineChart(canvasId, labels, data1, data2, label1, label2) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    destroyChart(canvas);
+
+    const chart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: label1 || 'Current Rate Balance',
+            data: data1,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.08)',
+            borderWidth: 2.5,
+            pointRadius: labels.length > 20 ? 0 : 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#ef4444',
+            fill: true,
+            tension: 0.25
+          },
+          {
+            label: label2 || 'New Rate Balance',
+            data: data2,
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,0.08)',
+            borderWidth: 2.5,
+            borderDash: [5, 4],
+            pointRadius: labels.length > 20 ? 0 : 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#16a34a',
+            fill: true,
+            tension: 0.25
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ₹${Number(ctx.parsed.y).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: { maxTicksLimit: 8, color: C.muted, font: { size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: {
+              color: C.muted,
+              font: { size: 11 },
+              callback: v =>
+                v >= 1e7 ? `₹${(v/1e7).toFixed(1)}Cr` :
+                v >= 1e5 ? `₹${(v/1e5).toFixed(0)}L`  :
+                v >= 1e3 ? `₹${(v/1e3).toFixed(0)}K`  : `₹${v}`
+            }
+          }
+        }
+      }
+    });
+
+    canvas._fcChart = chart;
+    return chart;
+  }
+
+  return { drawSparkline, createDonut, createSavingsDonut, createGrowthChart, createAmortizationChart, createDualLineChart, colorFor };
 })();
