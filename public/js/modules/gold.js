@@ -39,7 +39,7 @@ function renderGoldRates() {
   document.getElementById("appMain").innerHTML = `
     <div class="gold-page">
       <!-- Header Banner -->
-      <div class="calc-banner" style="background:linear-gradient(135deg, #064e3b 0%, #059669 100%);margin-bottom:28px">
+      <div class="calc-banner" style="background:linear-gradient(135deg, #b45309 0%, #d97706 100%);margin-bottom:28px">
         <div class="calc-banner-left">
           <h1>💛 Gold Rates &amp; Jewellery Calculator</h1>
           <p>Live MCX &amp; City Retail Rates (24K, 22K, 18K, Silver, Platinum) · <span id="goldTs">Live</span></p>

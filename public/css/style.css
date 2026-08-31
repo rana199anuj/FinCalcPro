@@ -1198,16 +1198,16 @@ body {
 .gold-timestamp { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
 
 /* ══════════════════════════════════════════════════
-   EMERALD DARK GOLD & JEWELLERY WIDGET (Exact Image Match)
+   LIGHT ELEGANT GOLD & JEWELLERY WIDGET
    ══════════════════════════════════════════════════ */
 .emerald-gold-widget {
-  background: #0b1719;
-  border: 1px solid #1c3236;
+  background: #ffffff;
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 24px 28px;
-  color: #e2e8f0;
+  color: var(--text-primary);
   margin-bottom: 32px;
-  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
   font-family: var(--font);
 }
 
@@ -1224,25 +1224,25 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .egw-date-box .egw-date-val {
-  color: #f1f5f9;
+  color: #0f172a;
   font-weight: 700;
 }
 
 .egw-metal-tabs {
   display: flex;
   align-items: center;
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 4px;
   gap: 4px;
@@ -1251,7 +1251,7 @@ body {
 .egw-metal-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #64748b;
   padding: 8px 22px;
   font-size: 0.92rem;
   font-weight: 700;
@@ -1262,13 +1262,13 @@ body {
 }
 
 .egw-metal-btn:hover {
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .egw-metal-btn.active {
-  background: #00c853;
-  color: #032b1d;
-  box-shadow: 0 2px 10px rgba(0,200,83,0.3);
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.25);
 }
 
 .egw-city-select-wrap {
@@ -1276,10 +1276,10 @@ body {
 }
 
 .egw-city-select {
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
   border-radius: 10px;
-  color: #f1f5f9;
+  color: #0f172a;
   font-size: 0.92rem;
   font-weight: 700;
   padding: 10px 36px 10px 18px;
@@ -1288,14 +1288,16 @@ body {
   font-family: inherit;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .egw-city-select:focus {
-  border-color: #00c853;
+  border-color: #16a34a;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
 }
 
 /* Rate Cards Row */
@@ -1307,29 +1309,30 @@ body {
 }
 
 .egw-rate-card {
-  background: #122326;
-  border: 1px solid #1e393e;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 18px 20px;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .egw-rate-card:hover {
   transform: translateY(-2px);
-  border-color: #2b535a;
+  border-color: rgba(22,163,74,0.4);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
 }
 
 .egw-rate-card-label {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 700;
+  color: #64748b;
   margin-bottom: 8px;
 }
 
 .egw-rate-card-price {
   font-size: 1.85rem;
   font-weight: 900;
-  color: #ffffff;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
@@ -1337,7 +1340,7 @@ body {
 .egw-calc-title {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #0f172a;
   margin-bottom: 16px;
 }
 
@@ -1353,14 +1356,14 @@ body {
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #475569;
   margin-bottom: 8px;
 }
 
 .egw-purity-pills {
   display: flex;
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 4px;
   gap: 4px;
@@ -1371,7 +1374,7 @@ body {
   flex: 1;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 700;
   font-size: 0.85rem;
   border-radius: 6px;
@@ -1381,37 +1384,39 @@ body {
 }
 
 .egw-purity-btn.active {
-  background: #00c853;
-  color: #032b1d;
+  background: #16a34a;
+  color: #ffffff;
   font-weight: 800;
 }
 
 .egw-input {
   width: 100%;
   height: 44px;
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
   border-radius: 10px;
-  color: #ffffff;
+  color: #0f172a;
   font-size: 0.95rem;
   font-weight: 700;
   padding: 0 14px;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .egw-input:focus {
-  border-color: #00c853;
+  border-color: #16a34a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
 }
 
 .egw-select {
   width: 100%;
   height: 44px;
-  background: #132426;
-  border: 1px solid #233e42;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
   border-radius: 10px;
-  color: #ffffff;
+  color: #0f172a;
   font-size: 0.92rem;
   font-weight: 700;
   padding: 0 34px 0 14px;
@@ -1420,14 +1425,16 @@ body {
   font-family: inherit;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .egw-select:focus {
-  border-color: #00c853;
+  border-color: #16a34a;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
 }
 
 /* Bottom Results Row */
@@ -1438,21 +1445,22 @@ body {
 }
 
 .egw-breakdown-card {
-  background: #102123;
-  border: 1px solid #1a363a;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
   border-radius: 14px;
   padding: 20px 24px;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 20px;
   align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .egw-breakdown-table {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-right: 1px solid #1a363a;
+  border-right: 1px solid #e2e8f0;
   padding-right: 20px;
 }
 
@@ -1464,12 +1472,12 @@ body {
 }
 
 .egw-breakdown-label {
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 600;
 }
 
 .egw-breakdown-val {
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 800;
 }
 
@@ -1483,14 +1491,14 @@ body {
 .egw-total-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: #64748b;
   margin-bottom: 4px;
 }
 
 .egw-total-val {
   font-size: 2.1rem;
   font-weight: 900;
-  color: #00c853;
+  color: #16a34a;
   letter-spacing: -0.02em;
   line-height: 1.1;
   margin-bottom: 4px;
@@ -1498,14 +1506,14 @@ body {
 
 .egw-total-sub {
   font-size: 0.78rem;
-  color: #64748b;
+  color: #94a3b8;
   font-weight: 600;
 }
 
 /* Worth Card (Right Box) */
 .egw-worth-card {
-  background: #102123;
-  border: 1px solid #1a363a;
+  background: linear-gradient(135deg, rgba(22,163,74,0.04) 0%, rgba(22,163,74,0.08) 100%);
+  border: 1.5px solid rgba(22,163,74,0.25);
   border-radius: 14px;
   padding: 20px 24px;
   display: flex;
@@ -1516,13 +1524,13 @@ body {
 .egw-worth-title {
   font-size: 0.98rem;
   font-weight: 800;
-  color: #cbd5e1;
+  color: #0f172a;
   margin-bottom: 4px;
 }
 
 .egw-worth-sub {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #64748b;
   margin-bottom: 16px;
 }
 
@@ -1535,20 +1543,25 @@ body {
 .egw-worth-input {
   flex: 1;
   height: 42px;
-  background: #14282a;
-  border: 1px solid #233e42;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
   border-radius: 8px;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 700;
   font-size: 0.92rem;
   padding: 0 12px;
   outline: none;
   font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.egw-worth-input:focus {
+  border-color: #16a34a;
 }
 
 .egw-worth-btn {
-  background: #00c853;
-  color: #032b1d;
+  background: #16a34a;
+  color: #ffffff;
   border: none;
   font-weight: 800;
   font-size: 0.9rem;
@@ -1562,14 +1575,14 @@ body {
 }
 
 .egw-worth-btn:hover {
-  background: #00e676;
+  background: #15803d;
   transform: translateY(-1px);
 }
 
 .egw-worth-result {
   margin-top: 10px;
   font-size: 0.82rem;
-  color: #00c853;
+  color: #16a34a;
   font-weight: 700;
 }
 
@@ -1578,7 +1591,7 @@ body {
   .egw-calc-controls { grid-template-columns: 1fr 1fr; }
   .egw-results-row { grid-template-columns: 1fr; }
   .egw-breakdown-card { grid-template-columns: 1fr; border-right: none; }
-  .egw-breakdown-table { border-right: none; border-bottom: 1px solid #1a363a; padding-right: 0; padding-bottom: 16px; }
+  .egw-breakdown-table { border-right: none; border-bottom: 1px solid #e2e8f0; padding-right: 0; padding-bottom: 16px; }
   .egw-total-box { padding-left: 0; }
 }
 
