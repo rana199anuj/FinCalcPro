@@ -475,6 +475,20 @@ function updateFill(slider, f) {
 function fieldHTML(f) {
   const isTenure = f.id === "tenure" || f.id === "years";
 
+  // ── Select / Dropdown type (e.g. FOIR %, LTV %) ──
+  if (f.type === "select") {
+    return `
+    <div class="form-group">
+      <div class="form-group-header">
+        <label><span>${f.label}</span></label>
+        <span class="form-val-badge" id="vl-${f.id}">${f.fmt ? f.fmt(f.default) : f.default}</span>
+      </div>
+      <select class="form-select" id="ni-${f.id}">
+        ${(f.options||[]).map(o => `<option value="${o.value}"${o.value==f.default?' selected':''}>${o.label}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+
   return `
     <div class="form-group">
       <div class="form-group-header">
@@ -482,18 +496,18 @@ function fieldHTML(f) {
           <span>${f.label}</span>
         </label>
         <div style="display:flex;align-items:center;gap:6px">
+          <span class="form-val-badge" id="vl-${f.id}">${f.fmt ? f.fmt(f.default) : f.default}</span>
           ${isTenure ? `
           <div class="tenure-toggle-group">
-            <button type="button" class="tenure-toggle-btn active" id="btnYears-${f.id}" onclick="setTenureUnit('${f.id}', 'years')">Years</button>
-            <button type="button" class="tenure-toggle-btn" id="btnMonths-${f.id}" onclick="setTenureUnit('${f.id}', 'months')">Months</button>
+            <button type="button" class="tenure-toggle-btn active" id="btnYears-${f.id}" onclick="setTenureUnit('${f.id}', 'years')">Yrs</button>
+            <button type="button" class="tenure-toggle-btn" id="btnMonths-${f.id}" onclick="setTenureUnit('${f.id}', 'months')">Mo</button>
           </div>
           ` : ""}
-          <span class="form-val-badge" id="vl-${f.id}">${f.fmt ? f.fmt(f.default) : f.default}</span>
         </div>
       </div>
       <div class="form-input-row">
-        <input type="number" class="form-input" id="ni-${f.id}"
-          min="${f.min}" max="${f.max}" step="${f.step}" value="${f.default}">
+        <input type="text" inputmode="decimal" class="form-input" id="ni-${f.id}"
+          value="${f.default}" autocomplete="off">
       </div>
       <input type="range" class="range-slider" id="sl-${f.id}"
         min="${f.min}" max="${f.max}" step="${f.step}" value="${f.default}">
@@ -695,29 +709,93 @@ function renderCalc(id) {
   const activeTab = tabScroll?.querySelector(".calc-tab-item.active");
   if (activeTab) setTimeout(() => activeTab.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }), 100);
 
-  // Wire up sliders & number inputs with auto-calculation
+  // Wire up sliders, number inputs & selects with auto-calculation
   cfg.fields.forEach(f => {
     const slider   = document.getElementById(`sl-${f.id}`);
     const numInput = document.getElementById(`ni-${f.id}`);
     const valEl    = document.getElementById(`vl-${f.id}`);
 
-    if (!slider || !numInput) return;
-
-    function sync(v, skipCalc = false) {
-      const parsed = parseFloat(v);
-      const safeV = isNaN(parsed) ? 0 : Math.min(Math.max(parsed, f.min), f.max);
-      slider.value   = safeV;
-      numInput.value = safeV;
-      if (valEl) valEl.textContent = f.fmt ? f.fmt(safeV) : safeV;
-      updateFill(slider, f);
-      if (!skipCalc) computeCalc(id); // Auto-calculate on every input change
+    // ── Select (dropdown) fields ──
+    if (f.type === "select") {
+      if (numInput) {
+        numInput.addEventListener("change", () => {
+          const v = parseFloat(numInput.value);
+          if (valEl && f.fmt) valEl.textContent = f.fmt(v);
+          computeCalc(id);
+        });
+      }
+      return; // no slider wiring needed
     }
 
-    slider.addEventListener("input",   () => sync(slider.value));
-    numInput.addEventListener("input", () => sync(numInput.value));
-    numInput.addEventListener("change",() => sync(numInput.value));
+    if (!slider || !numInput) return;
 
-    sync(f.default, true); // initialize without triggering calc
+    function updateFillAndBadge(val) {
+      if (!isNaN(val)) {
+        const safeSliderVal = Math.min(Math.max(val, f.min), f.max);
+        slider.value = safeSliderVal;
+        updateFill(slider, f);
+        if (valEl) valEl.textContent = f.fmt ? f.fmt(val) : val;
+      }
+    }
+
+    // Slider dragged -> updates text input and calculates
+    slider.addEventListener("input", () => {
+      const v = parseFloat(slider.value);
+      numInput.value = v;
+      if (valEl) valEl.textContent = f.fmt ? f.fmt(v) : v;
+      updateFill(slider, f);
+      computeCalc(id);
+    });
+
+    // User types in text input (e.g. 4.5, 6.5, .4)
+    numInput.addEventListener("input", () => {
+      let raw = numInput.value;
+      // Allow only digits and a single decimal point
+      let sanitized = raw.replace(/[^0-9.]/g, '');
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        sanitized = parts[0] + '.' + parts.slice(1).join('');
+      }
+      if (sanitized !== raw) {
+        numInput.value = sanitized;
+        raw = sanitized;
+      }
+
+      if (raw === "" || raw === ".") {
+        if (valEl) valEl.textContent = f.fmt ? f.fmt(0) : "0";
+        return;
+      }
+
+      const parsed = parseFloat(raw);
+      if (!isNaN(parsed)) {
+        updateFillAndBadge(parsed);
+        computeCalc(id);
+      }
+    });
+
+    // On blur / change -> clamp to limits if needed
+    function handleBlur() {
+      let raw = numInput.value.trim();
+      let parsed = parseFloat(raw);
+      if (isNaN(parsed)) {
+        parsed = f.default;
+      } else if (f.min > 0 && parsed < f.min) {
+        parsed = f.min;
+      } else if (parsed > f.max) {
+        parsed = f.max;
+      }
+      numInput.value = parsed;
+      updateFillAndBadge(parsed);
+      computeCalc(id);
+    }
+
+    numInput.addEventListener("change", handleBlur);
+    numInput.addEventListener("blur", handleBlur);
+
+    // Initial fill setup
+    slider.value = f.default;
+    updateFill(slider, f);
+    if (valEl) valEl.textContent = f.fmt ? f.fmt(f.default) : f.default;
   });
 
   // Auto-compute on load
@@ -746,7 +824,8 @@ function computeCalc(id) {
   const fields = {};
   cfg.fields.forEach(f => {
     const el = document.getElementById(`ni-${f.id}`);
-    fields[f.id] = parseFloat(el?.value ?? f.default);
+    const val = parseFloat(el?.value);
+    fields[f.id] = isNaN(val) ? (f.default ?? 0) : val;
   });
 
   // Account for tenure in months if toggled

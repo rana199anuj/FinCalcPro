@@ -11,7 +11,7 @@ const CALCS_LOANS = {
     icon: "🏠", name: "Home Loan EMI Calculator",
     desc: "Calculate your monthly EMI, total interest and payment schedule.",
     fields: [
-      { id:"principal", label:"Loan Amount",         type:"range", min:0,  max:10000000, step:50000, default:3000000, fmt:v=>v===0?"₹0":fmtC(v) },
+      { id:"principal", label:"Loan Amount",         type:"range", min:0,  max:100000000, step:100000, default:3000000, fmt:v=>v===0?"₹0":fmtC(v) },
       { id:"rate",      label:"Annual Interest Rate", type:"range", min:0,  max:20,       step:0.1,   default:8.5,     fmt:v=>v+"%"  },
       { id:"tenure",    label:"Loan Tenure (Years)",  type:"range", min:0,  max:30,       step:1,     default:20,      fmt:v=>v+" Yrs" }
     ],
@@ -25,38 +25,99 @@ const CALCS_LOANS = {
   /* ── ELIGIBILITY ── */
   "home-eligibility": {
     icon: "✅", name: "Home Loan Eligibility Calculator",
-    desc: "Find the maximum loan you can get based on your income.",
+    desc: "Find the maximum loan amount you qualify for based on income and FOIR.",
     fields: [
       { id:"income",      label:"Monthly Net Income",       type:"range", min:0, max:500000, step:5000, default:75000, fmt:v=>fmtC(v) },
       { id:"obligations", label:"Existing EMI Obligations", type:"range", min:0, max:100000, step:1000, default:5000,  fmt:v=>fmtC(v) },
       { id:"rate",        label:"Expected Interest Rate",   type:"range", min:1, max:20,     step:0.1,  default:8.5,   fmt:v=>v+"%" },
-      { id:"tenure",      label:"Loan Tenure (Years)",      type:"range", min:5, max:30,     step:1,    default:20,    fmt:v=>v+" Yrs" }
+      { id:"tenure",      label:"Loan Tenure (Years)",      type:"range", min:5, max:30,     step:1,    default:20,    fmt:v=>v+" Yrs" },
+      { id:"foir",        label:"FOIR — Fixed Obligation to Income Ratio",
+        type:"select",
+        options:[
+          {value:50, label:"50% FOIR"},
+          {value:55, label:"55% FOIR"},
+          {value:60, label:"60% FOIR"},
+          {value:65, label:"65% FOIR"},
+          {value:70, label:"70% FOIR (Maximum)"},
+        ],
+        default:50, fmt:v=>v+"% FOIR" }
     ],
     calc(f) {
-      const availEMI = f.income * 0.5 - f.obligations;
-      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, obligations: f.obligations };
-      const r = f.rate / 12 / 100, n = f.tenure * 12;
+      const foirPct = parseFloat(f.foir) || 50;
+      const n = Math.round(f.tenureMonths || f.tenure * 12);
+      const availEMI = f.income * (foirPct / 100) - f.obligations;
+      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
+      const r = f.rate / 12 / 100;
       const eligible = availEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
-      return { eligible, availEMI, income: f.income, obligations: f.obligations };
+      const estimatedEMI = calcEMI(eligible, f.rate, n);
+      const totalInterest = Math.max(0, estimatedEMI * n - eligible);
+      return { eligible, availEMI, income: f.income, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
     },
     render(res, el) {
+      if (res.eligible <= 0) {
+        el.innerHTML = `
+          <div class="summary-card" style="padding:28px">
+            <div class="summary-hero">
+              <div class="summary-hero-label">⚠️ Not Eligible</div>
+              <div class="summary-hero-value" style="color:var(--red)">No Loan</div>
+              <div class="summary-hero-sub">Existing EMIs exceed the ${res.foir}% FOIR limit at your income. Reduce existing EMIs or select a higher FOIR.</div>
+            </div>
+          </div>`;
+        return;
+      }
+      const schedule = buildAmortizationSchedule(res.eligible, res.rate || 8.5, res.months || 240);
+      window._currentSchedule = schedule;
+      const labels = schedule.map(s => `Year ${s.year}`);
+      const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
+      const balanceData = schedule.map(s => s.closing);
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
-            <div class="summary-card-header">📋 Eligibility Summary</div>
+            <div class="summary-card-header">✅ Eligibility Summary</div>
             <div class="summary-hero">
               <div class="summary-hero-label">Maximum Eligible Loan</div>
               <div class="summary-hero-value">${fmtC(Math.max(0, res.eligible))}</div>
-              <div class="summary-hero-sub">${res.eligible > 0 ? inLakhsCr(res.eligible) : "Reduce your existing obligations"}</div>
+              <div class="summary-hero-sub">${inLakhsCr(res.eligible)}</div>
             </div>
             <div class="summary-breakdown">
               ${row("Monthly Income",           fmtC(res.income))}
               ${row("Existing EMIs",            fmtC(res.obligations), "red")}
-              ${row("EMI Available (50% FOIR)", fmtC(Math.max(0, res.availEMI)), "green")}
-              ${row("FOIR Used",                ((res.obligations/res.income)*100).toFixed(1)+"%")}
+              ${row("FOIR Applied",             res.foir + "%", "green")}
+              ${row("Available EMI",            fmtC(Math.max(0, res.availEMI)), "green")}
+              ${row("Estimated Monthly EMI",    fmtC(res.estimatedEMI))}
+              ${row("Total Interest (est.)",    fmtC(res.totalInterest), "red")}
             </div>
           </div>
+          <div class="breakdown-chart-card">
+            <div class="chart-card-header">📊 Loan Composition</div>
+            <div class="donut-wrap">
+              <canvas id="chartDonut" style="max-width:180px;max-height:180px"></canvas>
+              <div class="donut-center-text">
+                <div class="center-label">Total Cost</div>
+                <div class="center-val">${fmtC(res.eligible + res.totalInterest)}</div>
+              </div>
+            </div>
+            <div class="chart-custom-legend">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal: <strong>${fmtC(res.eligible)}</strong></span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Interest: <strong>${fmtC(res.totalInterest)}</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="amortization-card">
+          <div class="amortization-header"><div class="amortization-title">📈 Loan Amortization (Estimated)</div></div>
+          <div class="amortization-canvas-wrap"><canvas id="chartAmortization" style="width:100%;height:220px"></canvas></div>
+          <div class="amortization-footer">
+            <div class="chart-custom-legend" style="margin:0">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal Paid</span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Remaining Balance</span></div>
+            </div>
+            <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
+          </div>
         </div>`;
+      setTimeout(() => {
+        FinCharts.createDonut("chartDonut", res.eligible, res.totalInterest);
+        FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
+      }, 60);
     }
   },
 
@@ -72,11 +133,18 @@ const CALCS_LOANS = {
     ],
     calc(f) {
       const maxEMI = f.income * 0.4;
-      const r = f.rate / 12 / 100, n = f.tenure * 12;
+      const r = f.rate / 12 / 100;
+      const n = Math.round(f.tenureMonths || f.tenure * 12);
       const maxLoan = maxEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
-      return { affordable: maxLoan + f.downPayment, maxLoan, dp: f.downPayment, maxEMI };
+      const totalInterest = Math.max(0, maxEMI * n - maxLoan);
+      return { affordable: maxLoan + f.downPayment, maxLoan, dp: f.downPayment, maxEMI, rate: f.rate, months: n, totalInterest };
     },
     render(res, el) {
+      const schedule = buildAmortizationSchedule(res.maxLoan, res.rate || 8.5, res.months || 240);
+      window._currentSchedule = schedule;
+      const labels = schedule.map(s => `Year ${s.year}`);
+      const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
+      const balanceData = schedule.map(s => s.closing);
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -90,10 +158,40 @@ const CALCS_LOANS = {
               ${row("Maximum Home Loan", fmtC(res.maxLoan))}
               ${row("Down Payment",      fmtC(res.dp), "green")}
               ${row("Max Monthly EMI",   fmtC(res.maxEMI))}
+              ${row("Total Interest",    fmtC(res.totalInterest), "red")}
               ${row("Down Payment %",    ((res.dp/res.affordable)*100).toFixed(1)+"%")}
             </div>
           </div>
+          <div class="breakdown-chart-card">
+            <div class="chart-card-header">📊 Cost Breakdown</div>
+            <div class="donut-wrap">
+              <canvas id="chartDonut" style="max-width:180px;max-height:180px"></canvas>
+              <div class="donut-center-text">
+                <div class="center-label">Home Price</div>
+                <div class="center-val">${fmtC(res.affordable)}</div>
+              </div>
+            </div>
+            <div class="chart-custom-legend">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Loan: <strong>${fmtC(res.maxLoan)}</strong></span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Down Payment: <strong>${fmtC(res.dp)}</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="amortization-card">
+          <div class="amortization-header"><div class="amortization-title">📈 Loan Amortization</div></div>
+          <div class="amortization-canvas-wrap"><canvas id="chartAmortization" style="width:100%;height:220px"></canvas></div>
+          <div class="amortization-footer">
+            <div class="chart-custom-legend" style="margin:0">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal Paid</span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Remaining Balance</span></div>
+            </div>
+            <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
+          </div>
         </div>`;
+      setTimeout(() => {
+        FinCharts.createSavingsDonut("chartDonut", res.maxLoan, res.dp);
+        FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
+      }, 60);
     }
   },
 
@@ -139,7 +237,7 @@ const CALCS_LOANS = {
     icon: "📐", name: "Loan to Value (LTV) Calculator",
     desc: "Calculate LTV ratio — key metric banks use for loan approval.",
     fields: [
-      { id:"propertyValue", label:"Property Value", type:"range", min:500000, max:50000000, step:100000, default:5000000,  fmt:v=>fmtC(v) },
+      { id:"propertyValue", label:"Property Value", type:"range", min:0, max:200000000, step:500000, default:10000000, fmt:v=>fmtC(v) },
       { id:"loanAmount",    label:"Loan Amount",    type:"range", min:100000, max:10000000, step:50000,  default:4000000, fmt:v=>fmtC(v) }
     ],
     calc(f) {
@@ -175,7 +273,7 @@ const CALCS_LOANS = {
     icon: "🏦", name: "Compare Bank EMI",
     desc: "Compare EMIs across 4 banks to find the best deal.",
     fields: [
-      { id:"amount", label:"Loan Amount",    type:"range", min:100000, max:10000000, step:50000, default:3000000, fmt:v=>fmtC(v) },
+      { id:"amount", label:"Loan Amount",    type:"range", min:100000, max:100000000, step:100000, default:3000000, fmt:v=>fmtC(v) },
       { id:"tenure", label:"Tenure (Years)", type:"range", min:1, max:30, step:1,    default:20, fmt:v=>v+" Yrs" },
       { id:"rate1",  label:"Bank A Rate",    type:"range", min:1, max:20, step:0.05, default:8.35, fmt:v=>v+"%" },
       { id:"rate2",  label:"Bank B Rate",    type:"range", min:1, max:20, step:0.05, default:8.5,  fmt:v=>v+"%" },
@@ -362,34 +460,65 @@ const CALCS_LOANS = {
   /* ── GOLD LOAN (Bank of Baroda reference) ── */
   "gold-loan": {
     icon: "💎", name: "Gold Loan Calculator",
-    desc: "Calculate loan amount against your gold jewellery. Uses live gold rates. Reference: Bank of Baroda model.",
+    desc: "Calculate loan amount against your gold jewellery. Uses live MCX gold rates. Bank of Baroda reference model.",
     fields: [
-      { id:"weight", label:"Gold Weight (grams)", type:"range", min:0,  max:1000, step:1,   default:50, fmt:v=>v+"g" },
-      { id:"purity", label:"Gold Purity (Karat)",  type:"range", min:18, max:24,   step:2,   default:22, fmt:v=>v+"K" },
-      { id:"rate",   label:"Interest Rate (p.a.)", type:"range", min:7,  max:30,   step:0.5, default:8.8, fmt:v=>v+"%" },
-      { id:"tenure", label:"Tenure (Months)",      type:"range", min:1,  max:36,   step:1,   default:12, fmt:v=>v+" Mo" }
+      { id:"weight", label:"Gold Weight (grams)",   type:"range", min:0,  max:1000, step:1,   default:50,  fmt:v=>v+"g" },
+      { id:"purity", label:"Gold Purity (Karat)",   type:"range", min:18, max:24,   step:2,   default:22,  fmt:v=>v+"K" },
+      { id:"ltv",    label:"LTV Ratio",
+        type:"select",
+        options:[
+          {value:65, label:"65% LTV"},
+          {value:75, label:"75% LTV — RBI Mandated Max"},
+          {value:85, label:"85% LTV — Special Scheme"},
+        ],
+        default:75, fmt:v=>v+"% LTV" },
+      { id:"rate",   label:"Interest Rate (p.a.)",  type:"range", min:7,  max:30,   step:0.5, default:8.8, fmt:v=>v+"%" },
+      { id:"tenure", label:"Loan Tenure (Months)",  type:"range", min:1,  max:36,   step:1,   default:12,  fmt:v=>v+" Mo" }
     ],
     calc(f) {
-      const liveRate24K = marketData?.gold?.g24 || 9420;
+      const liveRate24K = (typeof marketData !== 'undefined' && marketData?.gold?.g24) || 9420;
       const pureMult    = { 18: 0.75, 20: 0.833, 22: 0.917, 24: 1 }[Math.round(f.purity)] || 0.917;
       const ratePerGram = liveRate24K * pureMult;
       const goldValue   = f.weight * ratePerGram;
-      const loanAmount  = goldValue * 0.75; // RBI mandated 75% LTV for gold loans
+      const ltvPct      = parseFloat(f.ltv) || 75;
+      const loanAmount  = goldValue * ltvPct / 100;
       const res         = emiCalc(loanAmount, f.rate, f.tenure, f.processingFeePct, f.prepayment);
       res.goldValue     = goldValue;
       res.ratePerGram   = ratePerGram;
       res.liveRate24K   = liveRate24K;
       res.loanAmount    = loanAmount;
+      res.ltvPct        = ltvPct;
+      res.rate          = f.rate;
       return res;
     },
-    render(res, el, cfg, fields) {
-      // Show live gold rate banner + loan details with dual-column principal/EMI
+    render(res, el) {
+      // Build monthly amortization for gold loan (tenure in months)
+      const totalMonths = res.months || 12;
+      const r = (res.rate || 8.8) / 12 / 100;
+      const principal = res.principal || res.loanAmount;
+      const emi = res.emi;
+      let balance = principal, cumPrincipal = 0;
+      const monthlySchedule = [];
+      for (let m = 1; m <= totalMonths; m++) {
+        const intPart = balance * r;
+        const prinPart = Math.min(balance, Math.max(0, emi - intPart));
+        cumPrincipal += prinPart;
+        balance = Math.max(0, balance - prinPart);
+        monthlySchedule.push({ year: m, opening: balance + prinPart, emiPaid: emi, principalPaid: prinPart, interestPaid: intPart, cumPrincipalPaid: cumPrincipal, closing: balance });
+      }
+      window._currentSchedule = monthlySchedule;
+      const labels = monthlySchedule.map(s => `Mo ${s.year}`);
+      const principalPaidData = monthlySchedule.map(s => s.cumPrincipalPaid);
+      const balanceData = monthlySchedule.map(s => s.closing);
+
       el.innerHTML = `
         <div class="gold-loan-live-banner">
           <span class="gold-live-dot"></span>
           <span>Live Gold Rate (24K): <strong>₹${fmt(res.liveRate24K)}/g</strong></span>
           <span class="gold-live-sep">|</span>
-          <span>Rate for selected purity: <strong>₹${fmt(res.ratePerGram)}/g</strong></span>
+          <span>Purity Rate: <strong>₹${fmt(res.ratePerGram)}/g</strong></span>
+          <span class="gold-live-sep">|</span>
+          <span>LTV: <strong>${res.ltvPct}%</strong></span>
         </div>
         <div class="results-top-grid">
           <div class="summary-card">
@@ -397,8 +526,8 @@ const CALCS_LOANS = {
             <div class="summary-breakdown" style="gap:0">
               <div class="lap-dual-col">
                 <div class="lap-col-item">
-                  <div class="lap-col-label">Principal Amount</div>
-                  <div class="lap-col-value">${fmtC(res.principal || res.loanAmount)}</div>
+                  <div class="lap-col-label">Loan Amount</div>
+                  <div class="lap-col-value">${fmtC(principal)}</div>
                 </div>
                 <div class="lap-col-divider"></div>
                 <div class="lap-col-item">
@@ -407,7 +536,7 @@ const CALCS_LOANS = {
                 </div>
               </div>
               ${row("Gold Market Value",   fmtC(res.goldValue))}
-              ${row("Loan (75% LTV)",      fmtC(res.loanAmount))}
+              ${row("LTV ("+res.ltvPct+"% of Gold Value)", fmtC(res.loanAmount))}
               ${row("Total Interest",      fmtC(res.interest), "red")}
               ${row("Total Payment",       fmtC(res.total), "green")}
               ${res.processingFee ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
@@ -423,13 +552,26 @@ const CALCS_LOANS = {
               </div>
             </div>
             <div class="chart-custom-legend">
-              <div class="custom-legend-item"><span class="legend-square" style="background:#f59e0b"></span><span>Principal: <strong>${fmtC(res.principal||res.loanAmount)}</strong></span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#f59e0b"></span><span>Principal: <strong>${fmtC(principal)}</strong></span></div>
               <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Interest: <strong>${fmtC(res.interest)}</strong></span></div>
             </div>
           </div>
         </div>
-      `;
-      setTimeout(() => FinCharts.createDonut("chartDonut", res.principal || res.loanAmount, res.interest), 60);
+        <div class="amortization-card">
+          <div class="amortization-header"><div class="amortization-title">📈 Monthly Repayment Schedule</div></div>
+          <div class="amortization-canvas-wrap"><canvas id="chartAmortization" style="width:100%;height:220px"></canvas></div>
+          <div class="amortization-footer">
+            <div class="chart-custom-legend" style="margin:0">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#f59e0b"></span><span>Principal Paid</span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#16a34a"></span><span>Remaining Balance</span></div>
+            </div>
+            <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Repayment Schedule</button>
+          </div>
+        </div>`;
+      setTimeout(() => {
+        FinCharts.createDonut("chartDonut", principal, res.interest);
+        FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
+      }, 60);
     }
   },
 
