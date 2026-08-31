@@ -27,13 +27,13 @@ const CALCS_LOANS = {
     icon: "✅", name: "Home Loan Eligibility Calculator",
     desc: "Find the maximum loan amount you qualify for based on income and FOIR.",
     fields: [
-      { id:"incomeType",  label:"Income Type",
-        type:"select",
+      { id:"incomeType",  label:"Income Basis",
+        type:"segmented",
         options:[
           {value:"net",   label:"Net Income (Take-Home)"},
-          {value:"gross", label:"Gross Income (CTC / Pre-Tax)"},
+          {value:"gross", label:"Gross Income (Pre-Tax)"},
         ],
-        default:"net", fmt:v=>v==="gross"?"Gross Income":"Net Income" },
+        default:"net" },
       { id:"income",      label:"Monthly Income",           type:"range", min:0, max:2000000, step:10000, default:500000, fmt:v=>fmtC(v) },
       { id:"obligations", label:"Existing EMI Obligations", type:"range", min:0, max:1000000, step:5000,  default:100000, fmt:v=>fmtC(v) },
       { id:"rate",        label:"Expected Interest Rate",   type:"range", min:1, max:20,      step:0.1,   default:8.5,    fmt:v=>v+"%" },
@@ -44,26 +44,23 @@ const CALCS_LOANS = {
           {value:50, label:"50% FOIR"},
           {value:55, label:"55% FOIR"},
           {value:60, label:"60% FOIR"},
-          {value:65, label:"65% FOIR (Net Income only)"},
-          {value:70, label:"70% FOIR (Net Income only — Maximum)"},
+          {value:65, label:"65% FOIR"},
+          {value:70, label:"70% FOIR (Maximum)"},
         ],
         default:50, fmt:v=>v+"% FOIR" }
     ],
     calc(f) {
-      // Gross Income: bank considers ~70% of gross as effective net (deducting tax/PF)
-      // FOIR for gross income: bank caps at 50/55/60% only (no 65/70%)
       const isGross = (f.incomeType === "gross");
-      const effectiveIncome = isGross ? f.income * 0.70 : f.income;
       let foirPct = parseFloat(f.foir) || 50;
-      if (isGross && foirPct > 60) foirPct = 60; // cap FOIR at 60% for gross income
+      if (isGross && foirPct > 60) foirPct = 60; // Gross income capped at 60% max FOIR
       const n = Math.round(f.tenureMonths || f.tenure * 12);
-      const availEMI = effectiveIncome * (foirPct / 100) - f.obligations;
-      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, effectiveIncome, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
+      const availEMI = f.income * (foirPct / 100) - f.obligations;
+      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
       const r = f.rate / 12 / 100;
       const eligible = availEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
       const estimatedEMI = calcEMI(eligible, f.rate, n);
       const totalInterest = Math.max(0, estimatedEMI * n - eligible);
-      return { eligible, availEMI, income: f.income, effectiveIncome, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
+      return { eligible, availEMI, income: f.income, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
     },
     render(res, el) {
       if (res.eligible <= 0) {
@@ -82,7 +79,7 @@ const CALCS_LOANS = {
       const labels = schedule.map(s => `Year ${s.year}`);
       const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
       const balanceData = schedule.map(s => s.closing);
-      const grossNote = res.isGross ? `<div style="font-size:0.72rem;color:#f59e0b;margin-top:4px">⚡ Gross income: effective income = ${fmtC(res.effectiveIncome)}/mo (30% tax deduction applied by bank)</div>` : "";
+      const grossBadge = res.isGross ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:6px;font-weight:600">⚡ Gross Income basis: FOIR is restricted to 50%–60% per banking norms</div>` : "";
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -93,15 +90,14 @@ const CALCS_LOANS = {
               <div class="summary-hero-sub">${inLakhsCr(res.eligible)}</div>
             </div>
             <div class="summary-breakdown">
-              ${row(res.isGross ? "Gross Monthly Income" : "Monthly Net Income", fmtC(res.income))}
-              ${res.isGross ? row("Effective Income (post-tax)", fmtC(res.effectiveIncome), "gold") : ""}
+              ${row(res.isGross ? "Monthly Gross Income" : "Monthly Net Income", fmtC(res.income))}
               ${row("Existing EMIs",            fmtC(res.obligations), "red")}
               ${row("FOIR Applied",             res.foir + "% " + (res.isGross ? "(Gross cap 60%)" : ""), "green")}
               ${row("Available EMI",            fmtC(Math.max(0, res.availEMI)), "green")}
               ${row("Estimated Monthly EMI",    fmtC(res.estimatedEMI))}
               ${row("Total Interest (est.)",    fmtC(res.totalInterest), "red")}
             </div>
-            ${grossNote}
+            ${grossBadge}
           </div>
           <div class="breakdown-chart-card">
             <div class="chart-card-header">📊 Loan Composition</div>

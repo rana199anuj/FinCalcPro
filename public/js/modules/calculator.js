@@ -544,12 +544,29 @@ function updateFill(slider, f) {
 function fieldHTML(f) {
   const isTenure = f.id === "tenure" || f.id === "years";
 
+  // ── Segmented Toggle Group (e.g. Gross vs Net Income) ──
+  if (f.type === "segmented") {
+    return `
+    <div class="form-group">
+      <div class="form-group-header">
+        <label><span id="lbl-${f.id}">${f.label}</span></label>
+      </div>
+      <div class="segmented-toggle-group" id="seg-${f.id}">
+        ${(f.options||[]).map(o => `
+          <button type="button" class="segmented-btn${o.value === f.default ? ' active' : ''}"
+            onclick="setSegmentedValue('${f.id}', '${o.value}')">${o.label}</button>
+        `).join('')}
+      </div>
+      <input type="hidden" id="ni-${f.id}" value="${f.default}">
+    </div>`;
+  }
+
   // ── Select / Dropdown type (e.g. FOIR %, LTV %) ──
   if (f.type === "select") {
     return `
     <div class="form-group">
       <div class="form-group-header">
-        <label><span>${f.label}</span></label>
+        <label><span id="lbl-${f.id}">${f.label}</span></label>
         <span class="form-val-badge" id="vl-${f.id}">${f.fmt ? f.fmt(f.default) : f.default}</span>
       </div>
       <select class="form-select" id="ni-${f.id}">
@@ -562,7 +579,7 @@ function fieldHTML(f) {
     <div class="form-group">
       <div class="form-group-header">
         <label>
-          <span>${f.label}</span>
+          <span id="lbl-${f.id}">${f.label}</span>
         </label>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="form-val-badge" id="vl-${f.id}">${f.fmt ? f.fmt(f.default) : f.default}</span>
@@ -581,6 +598,69 @@ function fieldHTML(f) {
       <input type="range" class="range-slider" id="sl-${f.id}"
         min="${f.min}" max="${f.max}" step="${f.step}" value="${f.default}">
     </div>`;
+}
+
+function setSegmentedValue(fieldId, value) {
+  const hiddenInput = document.getElementById(`ni-${fieldId}`);
+  if (hiddenInput) {
+    hiddenInput.value = value;
+  }
+  const segWrap = document.getElementById(`seg-${fieldId}`);
+  if (segWrap) {
+    segWrap.querySelectorAll('.segmented-btn').forEach(btn => {
+      if (btn.getAttribute('onclick')?.includes(`'${value}'`)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  // Handle dynamic FOIR update when incomeType changes in Eligibility Calculator
+  if (fieldId === "incomeType") {
+    updateEligibilityFOIROptions(value);
+  }
+
+  computeCalc(currentCalcId);
+}
+
+function updateEligibilityFOIROptions(incomeType) {
+  const foirSelect = document.getElementById("ni-foir");
+  const foirBadge  = document.getElementById("vl-foir");
+  const incomeLbl  = document.getElementById("lbl-income");
+  if (!foirSelect) return;
+
+  const isGross = (incomeType === "gross");
+  const grossOptions = [
+    { value: 50, label: "50% FOIR" },
+    { value: 55, label: "55% FOIR" },
+    { value: 60, label: "60% FOIR (Gross Max)" }
+  ];
+  const netOptions = [
+    { value: 50, label: "50% FOIR" },
+    { value: 55, label: "55% FOIR" },
+    { value: 60, label: "60% FOIR" },
+    { value: 65, label: "65% FOIR" },
+    { value: 70, label: "70% FOIR (Maximum)" }
+  ];
+
+  const currentVal = parseFloat(foirSelect.value) || 50;
+  const opts = isGross ? grossOptions : netOptions;
+  
+  foirSelect.innerHTML = opts.map(o => `<option value="${o.value}"${o.value === currentVal ? ' selected' : ''}>${o.label}</option>`).join('');
+
+  // If current value is not in the new options, clamp to max available
+  const availableVals = opts.map(o => o.value);
+  let newVal = currentVal;
+  if (!availableVals.includes(currentVal)) {
+    newVal = isGross ? 60 : 50;
+    foirSelect.value = newVal;
+  }
+  if (foirBadge) foirBadge.textContent = newVal + "% FOIR";
+
+  if (incomeLbl) {
+    incomeLbl.textContent = isGross ? "Monthly Gross Income" : "Monthly Net Income";
+  }
 }
 
 function setTenureUnit(fieldId, unit) {
@@ -893,8 +973,12 @@ function computeCalc(id) {
   const fields = {};
   cfg.fields.forEach(f => {
     const el = document.getElementById(`ni-${f.id}`);
-    const val = parseFloat(el?.value);
-    fields[f.id] = isNaN(val) ? (f.default ?? 0) : val;
+    if (f.type === "segmented" || (f.type === "select" && typeof f.default === "string" && isNaN(Number(f.default)))) {
+      fields[f.id] = el ? el.value : (f.default ?? "");
+    } else {
+      const val = parseFloat(el?.value);
+      fields[f.id] = isNaN(val) ? (f.default ?? 0) : val;
+    }
   });
 
   // Account for tenure in months if toggled
