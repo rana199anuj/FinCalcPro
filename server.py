@@ -159,6 +159,63 @@ async def broadcast(payload: dict):
     clients.difference_update(dead)
 
 
+# ─── Live External Market Data Fetcher (yfinance) ───────────────────────────
+def _fetch_external_quotes_sync():
+    try:
+        import yfinance as yf
+        symbols = {
+            "nifty": "^NSEI",
+            "sensex": "^BSESN",
+            "bankNifty": "^NSEBANK",
+            "niftyIT": "^CNXIT"
+        }
+        tickers = yf.Tickers(" ".join(symbols.values()))
+        results = {}
+        for key, sym in symbols.items():
+            try:
+                t = tickers.tickers.get(sym)
+                if not t: continue
+                fi = t.fast_info
+                last_price = getattr(fi, "last_price", None)
+                prev_close = getattr(fi, "previous_close", None)
+                open_val   = getattr(fi, "open", None)
+                high_val   = getattr(fi, "day_high", None)
+                low_val    = getattr(fi, "day_low", None)
+                if last_price and last_price > 0:
+                    results[key] = {
+                        "value": round(float(last_price), 2),
+                        "prev": round(float(prev_close or last_price), 2),
+                        "open": round(float(open_val or last_price), 2),
+                        "high": round(float(high_val or last_price), 2),
+                        "low": round(float(low_val or last_price), 2),
+                    }
+            except Exception:
+                continue
+        return results
+    except Exception as e:
+        print(f"[LIVE] External fetch warning: {e}")
+        return {}
+
+async def live_data_sync_loop():
+    loop = asyncio.get_running_loop()
+    while True:
+        try:
+            # Run yfinance in threadpool executor so it never blocks the async WebSocket loop
+            live_quotes = await loop.run_in_executor(None, _fetch_external_quotes_sync)
+            if live_quotes:
+                for key, data in live_quotes.items():
+                    if key in base:
+                        base[key]["value"] = data["value"]
+                        base[key]["prev"]  = data["prev"]
+                        base[key]["open"]  = data["open"]
+                        base[key]["high"]  = max(base[key]["high"], data["high"])
+                        base[key]["low"]   = min(base[key]["low"], data["low"])
+                print(f"[LIVE DATA] Refreshed from live exchanges: Nifty={base['nifty']['value']} | Sensex={base['sensex']['value']}")
+        except Exception as e:
+            print(f"[LIVE DATA] Fetch error: {e}")
+        # Refresh live external market data every 60 seconds
+        await asyncio.sleep(60)
+
 # ─── Background Market Broadcaster (every 3 seconds) ──────────────────────────
 async def market_broadcaster():
     while True:
@@ -168,17 +225,20 @@ async def market_broadcaster():
         await broadcast(payload)
 
 
-# ─── Startup: launch broadcaster task ─────────────────────────────────────────
+# ─── Startup: launch broadcaster and live sync tasks ──────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    task = asyncio.create_task(market_broadcaster())
+    broadcaster_task = asyncio.create_task(market_broadcaster())
+    live_sync_task = asyncio.create_task(live_data_sync_loop())
     print("\n[OK]  FinCalc Pro  ->  http://localhost:3000")
     print("[WS]  WebSocket    ->  ws://localhost:3000/ws")
+    print("[LIVE] Real live market sync enabled (NSE / BSE via yfinance)")
     print("[>>]  Broadcasting live market data every 3s\n")
     yield
     # Shutdown
-    task.cancel()
+    broadcaster_task.cancel()
+    live_sync_task.cancel()
 
 app = FastAPI(title="FinCalc Pro", lifespan=lifespan)
 
