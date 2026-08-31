@@ -12,146 +12,157 @@
    ══════════════════════════════════════════════════ */
 
 let goldChartInstance = null;
+let emeraldMetal = "gold";
+let emeraldCity = "Meerut";
+let emeraldPurity = "22";
+
+const CITIES_LIST = [
+  { city: "Meerut", off24: 15, offSil: 50 },
+  { city: "Delhi", off24: 15, offSil: 50 },
+  { city: "Mumbai", off24: 0, offSil: 0 },
+  { city: "Chennai", off24: 25, offSil: 100 },
+  { city: "Kolkata", off24: 0, offSil: 0 },
+  { city: "Bengaluru", off24: 10, offSil: -50 },
+  { city: "Hyderabad", off24: 10, offSil: 50 },
+  { city: "Ahmedabad", off24: 5, offSil: 0 },
+  { city: "Pune", off24: 0, offSil: 0 },
+  { city: "Jaipur", off24: 15, offSil: 50 },
+  { city: "Lucknow", off24: 15, offSil: 50 },
+  { city: "Kerala", off24: 10, offSil: 50 },
+  { city: "Patna", off24: 12, offSil: 40 }
+];
 
 function renderGoldRates() {
   const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950, ch24: 25, chp24: 0.27 };
+  const todayDateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   document.getElementById("appMain").innerHTML = `
     <div class="gold-page">
       <!-- Header Banner -->
-      <div class="calc-banner" style="background:linear-gradient(135deg, #b45309 0%, #f59e0b 100%);margin-bottom:28px">
+      <div class="calc-banner" style="background:linear-gradient(135deg, #064e3b 0%, #059669 100%);margin-bottom:28px">
         <div class="calc-banner-left">
           <h1>💛 Gold Rates &amp; Jewellery Calculator</h1>
-          <p>Live MCX &amp; Retail Rates (24K, 22K, 20K, 18K, Silver, Platinum) · <span id="goldTs">Live</span></p>
+          <p>Live MCX &amp; City Retail Rates (24K, 22K, 18K, Silver, Platinum) · <span id="goldTs">Live</span></p>
         </div>
         <button class="calc-banner-back" onclick="goBack()">← Back</button>
       </div>
 
-      <!-- Live Rate Cards -->
-      <div class="gold-grid" id="goldGrid">
-        ${[["24","24K (99.9%)"],["22","22K (91.7%)"],["20","20K (83.3%)"],["18","18K (75.0%)"]].map(([id, label]) => `
-          <div class="gold-card">
-            <div class="gold-purity">${label.split(" ")[0]}</div>
-            <div class="gold-name">Gold ${label}</div>
-            <div class="gold-price" id="gp-${id}">₹${fmt(g["g"+id] || 0)}</div>
-            <div class="gold-unit">per gram</div>
-            <div class="gold-change" id="gc-${id}">—</div>
-          </div>
-        `).join("")}
-      </div>
-
-      <!-- Silver & Platinum Cards -->
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px">
-        <div class="gold-card">
-          <div class="gold-purity" style="color:#94a3b8">Silver</div>
-          <div class="gold-name">Silver · 999 Pure</div>
-          <div class="gold-price" id="gpSilver">₹${fmt(g.silver, 2)}</div>
-          <div class="gold-unit">per gram (₹${fmt(g.silver * 1000)}/kg)</div>
-          <div class="gold-change" id="gcSilver">—</div>
-        </div>
-        <div class="gold-card">
-          <div class="gold-purity" style="color:#a78bfa">Platinum</div>
-          <div class="gold-name">Platinum · 950 Pure</div>
-          <div class="gold-price" id="gpPlatinum">₹${fmt(g.platinum)}</div>
-          <div class="gold-unit">per gram</div>
-          <div class="gold-change" id="gcPlatinum">—</div>
-        </div>
-      </div>
-
       <!-- ══════════════════════════════════════════════════ -->
-      <!-- SECTION 1: INTERACTIVE GOLD RATE CALCULATOR        -->
-      <!-- Formula: (Weight * Rate) + Making = Subtotal + GST = Final -->
+      <!-- EMERALD DARK GOLD & JEWELLERY WIDGET (Image Match) -->
       <!-- ══════════════════════════════════════════════════ -->
-      <div class="calc-form-card" style="margin-bottom:32px;padding:24px">
-        <div style="margin-bottom:16px">
-          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:8px">🧮 Gold &amp; Jewellery Price Calculator</div>
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem;font-weight:600">
-            <span style="background:rgba(245,158,11,0.12);color:#b45309;padding:3px 10px;border-radius:20px;border:1px solid rgba(245,158,11,0.3)">Gold Weight × Rate</span>
-            <span style="color:var(--text-muted)">+</span>
-            <span style="background:rgba(99,102,241,0.1);color:var(--accent-light);padding:3px 10px;border-radius:20px;border:1px solid rgba(99,102,241,0.2)">Making Charges</span>
-            <span style="color:var(--text-muted)">=</span>
-            <span style="background:rgba(0,0,0,0.05);color:var(--text-secondary);padding:3px 10px;border-radius:20px;border:1px solid var(--border)">Sub Total</span>
-            <span style="color:var(--text-muted)">+</span>
-            <span style="background:rgba(239,68,68,0.08);color:#dc2626;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,0.2)">GST 3%</span>
-            <span style="color:var(--text-muted)">=</span>
-            <span style="background:rgba(22,163,74,0.1);color:#16a34a;padding:3px 10px;border-radius:20px;border:1px solid rgba(22,163,74,0.2);font-weight:800">Final Amount</span>
+      <div class="emerald-gold-widget">
+        
+        <!-- Toolbar: Date, Metal Tabs, City Selector -->
+        <div class="egw-toolbar">
+          <div class="egw-date-box">
+            <span>📅</span>
+            <span class="egw-date-val">${todayDateStr}</span>
+          </div>
+
+          <div class="egw-metal-tabs">
+            <button type="button" class="egw-metal-btn ${emeraldMetal==='gold'?'active':''}" id="btnMetalGold" onclick="setEmeraldMetal('gold')">Gold</button>
+            <button type="button" class="egw-metal-btn ${emeraldMetal==='silver'?'active':''}" id="btnMetalSilver" onclick="setEmeraldMetal('silver')">Silver</button>
+            <button type="button" class="egw-metal-btn ${emeraldMetal==='platinum'?'active':''}" id="btnMetalPlatinum" onclick="setEmeraldMetal('platinum')">Platinum</button>
+          </div>
+
+          <div class="egw-city-select-wrap">
+            <select class="egw-city-select" id="egwCitySelect" onchange="setEmeraldCity(this.value)">
+              ${CITIES_LIST.map(c => `<option value="${c.city}" ${c.city===emeraldCity?'selected':''}>${c.city}</option>`).join('')}
+            </select>
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-          <!-- Inputs -->
-          <div>
-            <div class="form-group">
-              <label class="form-label">Select Gold Purity</label>
-              <select id="goldCalcPurity" class="form-input" onchange="calculateGoldPrice()">
-                <option value="24">24K (99.9% Pure Gold)</option>
-                <option value="22" selected>22K (91.7% Standard Jewellery)</option>
-                <option value="20">20K (83.3% Modern Jewellery)</option>
-                <option value="18">18K (75.0% Diamond/Stone Jewellery)</option>
-              </select>
-            </div>
+        <!-- 3 Top Rate Cards -->
+        <div class="egw-rate-cards" id="egwRateCards">
+          <div class="egw-rate-card">
+            <div class="egw-rate-card-label" id="egwCard1Label">24K Gold /g</div>
+            <div class="egw-rate-card-price" id="egwCard1Price">₹9,435</div>
+          </div>
+          <div class="egw-rate-card">
+            <div class="egw-rate-card-label" id="egwCard2Label">22K Gold /g</div>
+            <div class="egw-rate-card-price" id="egwCard2Price">₹8,650</div>
+          </div>
+          <div class="egw-rate-card">
+            <div class="egw-rate-card-label" id="egwCard3Label">18K Gold /g</div>
+            <div class="egw-rate-card-price" id="egwCard3Price">₹7,076</div>
+          </div>
+        </div>
 
-            <div class="form-group">
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <label class="form-label">Gold Weight (grams)</label>
-                <span style="font-weight:700;color:var(--accent)" id="weightVal">10 g</span>
-              </div>
-              <input type="number" id="goldWeightNum" class="form-input" value="10" min="0.1" max="1000" step="0.1" oninput="syncGoldWeight(this.value)"/>
-              <input type="range" id="goldWeightRange" class="range-slider" min="1" max="100" value="10" step="0.5" oninput="syncGoldWeight(this.value)"/>
-            </div>
-
-            <div class="form-group">
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <label class="form-label">Making Charges (% of Gold Value)</label>
-                <span style="font-weight:700;color:var(--accent)" id="makingVal">10%</span>
-              </div>
-              <input type="number" id="goldMakingNum" class="form-input" value="10" min="0" max="50" step="0.5" oninput="syncGoldMaking(this.value)"/>
-              <input type="range" id="goldMakingRange" class="range-slider" min="0" max="30" value="10" step="0.5" oninput="syncGoldMaking(this.value)"/>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">GST Tax Rate</label>
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm)">
-                <span style="font-size:1.1rem;font-weight:900;color:#dc2626">3%</span>
-                <span style="font-size:0.8rem;color:var(--text-muted)">Standard GST on Gold Jewellery (Government Mandated)</span>
-              </div>
+        <!-- Calculator Section -->
+        <div class="egw-calc-title">Calculator</div>
+        <div class="egw-calc-controls">
+          
+          <!-- Purity Selector -->
+          <div class="egw-field-group" id="egwPurityGroup">
+            <label>Purity</label>
+            <div class="egw-purity-pills">
+              <button type="button" class="egw-purity-btn ${emeraldPurity==='24'?'active':''}" id="btnPurity24" onclick="setEmeraldPurity('24')">24K</button>
+              <button type="button" class="egw-purity-btn ${emeraldPurity==='22'?'active':''}" id="btnPurity22" onclick="setEmeraldPurity('22')">22K</button>
+              <button type="button" class="egw-purity-btn ${emeraldPurity==='18'?'active':''}" id="btnPurity18" onclick="setEmeraldPurity('18')">18K</button>
             </div>
           </div>
 
-          <!-- Price Output Breakdown Card -->
-          <div class="summary-card" style="display:flex;flex-direction:column;justify-content:space-between">
-            <div>
-              <div class="summary-card-header">🧾 Jewellery Invoice Breakdown</div>
-              <div class="summary-hero" style="background:linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.08));border-color:rgba(245,158,11,0.2)">
-                <div class="summary-hero-label">Final Payable Amount</div>
-                <div class="summary-hero-value" id="goldFinalAmount" style="color:#d97706">₹97,835</div>
-                <div class="summary-hero-sub" id="goldRateUsedSub">Based on 22K Rate: ₹8,635 / gram</div>
+          <!-- Weight -->
+          <div class="egw-field-group">
+            <label>Weight (gm)</label>
+            <input type="text" inputmode="decimal" class="egw-input" id="egwWeightInput" value="10" oninput="calcEmeraldGold()">
+          </div>
+
+          <!-- Making (%) -->
+          <div class="egw-field-group">
+            <label>Making (%)</label>
+            <input type="text" inputmode="decimal" class="egw-input" id="egwMakingInput" value="12" oninput="calcEmeraldGold()">
+          </div>
+
+          <!-- GST Select -->
+          <div class="egw-field-group">
+            <label>GST</label>
+            <select class="egw-select" id="egwGstSelect" onchange="calcEmeraldGold()">
+              <option value="3" selected>Incl. 3%</option>
+              <option value="0">Excl. GST (0%)</option>
+              <option value="5">Incl. 5%</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Bottom Results Row (2 Cards) -->
+        <div class="egw-results-row">
+          
+          <!-- Left Box: Breakdown + Total Amount -->
+          <div class="egw-breakdown-card">
+            <div class="egw-breakdown-table">
+              <div class="egw-breakdown-row">
+                <span class="egw-breakdown-label">Base value</span>
+                <span class="egw-breakdown-val" id="egwBaseVal">₹86,500</span>
+              </div>
+              <div class="egw-breakdown-row">
+                <span class="egw-breakdown-label">Making charges</span>
+                <span class="egw-breakdown-val" id="egwMakingVal">₹10,380</span>
+              </div>
+              <div class="egw-breakdown-row">
+                <span class="egw-breakdown-label" id="egwGstLabel">GST (3%)</span>
+                <span class="egw-breakdown-val" id="egwGstVal">₹2,906</span>
               </div>
             </div>
 
-            <div class="summary-breakdown" style="margin-top:16px">
-              <div class="summary-row">
-                <span class="summary-label">Weight &amp; Purity</span>
-                <span class="summary-val" id="rowWeightPurity">10g · 22K</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">Gold Value (Weight × Rate)</span>
-                <span class="summary-val" id="rowGoldValue">₹86,350</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">+ Making Charges</span>
-                <span class="summary-val" style="color:var(--gold)" id="rowMakingCharge">₹8,635</span>
-              </div>
-              <div class="summary-row" style="font-weight:700">
-                <span class="summary-label">Sub Total</span>
-                <span class="summary-val" id="rowSubTotal">₹94,985</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">+ GST Tax (3%)</span>
-                <span class="summary-val" style="color:var(--red)" id="rowGst">₹2,850</span>
-              </div>
+            <div class="egw-total-box">
+              <div class="egw-total-label">Total Amount</div>
+              <div class="egw-total-val" id="egwTotalVal">₹99,786</div>
+              <div class="egw-total-sub">Incl. all charges</div>
             </div>
           </div>
+
+          <!-- Right Box: Know your money's worth! -->
+          <div class="egw-worth-card">
+            <div class="egw-worth-title">Know your money's worth!</div>
+            <div class="egw-worth-sub">Enter any amount to see how much gold you can get</div>
+            <div class="egw-worth-form">
+              <input type="text" inputmode="decimal" class="egw-worth-input" id="egwWorthInput" value="10000" placeholder="10000" oninput="calcEmeraldWorth()">
+              <button type="button" class="egw-worth-btn" onclick="calcEmeraldWorth()">Try now</button>
+            </div>
+            <div class="egw-worth-result" id="egwWorthResult"></div>
+          </div>
+
         </div>
       </div>
 
@@ -295,8 +306,167 @@ function renderGoldRates() {
   `;
 
   if (marketData) updateGoldRates(marketData);
-  calculateGoldPrice();
+  updateEmeraldWidget();
+  calcEmeraldGold();
+  calcEmeraldWorth();
   renderGoldTrendChart(7);
+}
+
+/* ─ Emerald Widget Helpers ───────────────────────── */
+function setEmeraldMetal(metal) {
+  emeraldMetal = metal;
+  ["btnMetalGold", "btnMetalSilver", "btnMetalPlatinum"].forEach(id => {
+    document.getElementById(id)?.classList.remove("active");
+  });
+  if (metal === "gold") document.getElementById("btnMetalGold")?.classList.add("active");
+  if (metal === "silver") document.getElementById("btnMetalSilver")?.classList.add("active");
+  if (metal === "platinum") document.getElementById("btnMetalPlatinum")?.classList.add("active");
+
+  const purityGroup = document.getElementById("egwPurityGroup");
+  if (purityGroup) {
+    purityGroup.style.display = metal === "gold" ? "block" : "none";
+  }
+
+  updateEmeraldWidget();
+  calcEmeraldGold();
+  calcEmeraldWorth();
+}
+
+function setEmeraldCity(city) {
+  emeraldCity = city;
+  updateEmeraldWidget();
+  calcEmeraldGold();
+  calcEmeraldWorth();
+}
+
+function setEmeraldPurity(purity) {
+  emeraldPurity = purity;
+  ["btnPurity24", "btnPurity22", "btnPurity18"].forEach(id => {
+    document.getElementById(id)?.classList.remove("active");
+  });
+  document.getElementById(`btnPurity${purity}`)?.classList.add("active");
+
+  calcEmeraldGold();
+  calcEmeraldWorth();
+}
+
+function getEmeraldRates() {
+  const g = marketData?.gold || { g24: 9420, g22: 8635, g20: 7850, g18: 7065, silver: 105.5, platinum: 2950 };
+  const cityObj = CITIES_LIST.find(c => c.city === emeraldCity) || { off24: 15, offSil: 50 };
+
+  const r24 = g.g24 + cityObj.off24;
+  const r22 = Math.round(r24 * 0.9167);
+  const r18 = Math.round(r24 * 0.75);
+  const rSilver = g.silver + (cityObj.offSil / 1000);
+  const rPlat = g.platinum;
+
+  return { r24, r22, r18, rSilver, rPlat };
+}
+
+function updateEmeraldWidget() {
+  const rates = getEmeraldRates();
+  const card1Label = document.getElementById("egwCard1Label");
+  const card1Price = document.getElementById("egwCard1Price");
+  const card2Label = document.getElementById("egwCard2Label");
+  const card2Price = document.getElementById("egwCard2Price");
+  const card3Label = document.getElementById("egwCard3Label");
+  const card3Price = document.getElementById("egwCard3Price");
+
+  if (!card1Label || !card1Price) return;
+
+  if (emeraldMetal === "gold") {
+    card1Label.textContent = "24K Gold /g";
+    card1Price.textContent = "₹" + fmt(rates.r24);
+    card2Label.textContent = "22K Gold /g";
+    card2Price.textContent = "₹" + fmt(rates.r22);
+    card3Label.textContent = "18K Gold /g";
+    card3Price.textContent = "₹" + fmt(rates.r18);
+  } else if (emeraldMetal === "silver") {
+    card1Label.textContent = "Fine Silver (1g)";
+    card1Price.textContent = "₹" + fmt(rates.rSilver, 2);
+    card2Label.textContent = "Silver (100g)";
+    card2Price.textContent = "₹" + fmt(Math.round(rates.rSilver * 100));
+    card3Label.textContent = "Silver (1 Kg)";
+    card3Price.textContent = "₹" + fmt(Math.round(rates.rSilver * 1000));
+  } else if (emeraldMetal === "platinum") {
+    card1Label.textContent = "Platinum 950 (1g)";
+    card1Price.textContent = "₹" + fmt(rates.rPlat);
+    card2Label.textContent = "Platinum (10g)";
+    card2Price.textContent = "₹" + fmt(rates.rPlat * 10);
+    card3Label.textContent = "Platinum (100g)";
+    card3Price.textContent = "₹" + fmt(rates.rPlat * 100);
+  }
+}
+
+function calcEmeraldGold() {
+  const rates = getEmeraldRates();
+  let ratePerGram = rates.r22;
+  if (emeraldMetal === "gold") {
+    if (emeraldPurity === "24") ratePerGram = rates.r24;
+    else if (emeraldPurity === "18") ratePerGram = rates.r18;
+    else ratePerGram = rates.r22;
+  } else if (emeraldMetal === "silver") {
+    ratePerGram = rates.rSilver;
+  } else if (emeraldMetal === "platinum") {
+    ratePerGram = rates.rPlat;
+  }
+
+  const weight = parseFloat(document.getElementById("egwWeightInput")?.value) || 0;
+  const makingPct = parseFloat(document.getElementById("egwMakingInput")?.value) || 0;
+  const gstPct = parseFloat(document.getElementById("egwGstSelect")?.value) || 3;
+
+  const baseValue = Math.round(weight * ratePerGram);
+  const makingCharges = Math.round(baseValue * (makingPct / 100));
+  const subTotal = baseValue + makingCharges;
+  const gstAmount = Math.round(subTotal * (gstPct / 100));
+  const totalAmount = subTotal + gstAmount;
+
+  const baseEl = document.getElementById("egwBaseVal");
+  const makingEl = document.getElementById("egwMakingVal");
+  const gstLabelEl = document.getElementById("egwGstLabel");
+  const gstValEl = document.getElementById("egwGstVal");
+  const totalEl = document.getElementById("egwTotalVal");
+
+  if (baseEl) baseEl.textContent = "₹" + fmt(baseValue);
+  if (makingEl) makingEl.textContent = "₹" + fmt(makingCharges);
+  if (gstLabelEl) gstLabelEl.textContent = `GST (${gstPct}%)`;
+  if (gstValEl) gstValEl.textContent = "₹" + fmt(gstAmount);
+  if (totalEl) totalEl.textContent = "₹" + fmt(totalAmount);
+}
+
+function calcEmeraldWorth() {
+  const rates = getEmeraldRates();
+  let ratePerGram = rates.r22;
+  let labelName = `${emeraldPurity}K Gold`;
+  if (emeraldMetal === "gold") {
+    if (emeraldPurity === "24") ratePerGram = rates.r24;
+    else if (emeraldPurity === "18") ratePerGram = rates.r18;
+    else ratePerGram = rates.r22;
+  } else if (emeraldMetal === "silver") {
+    ratePerGram = rates.rSilver;
+    labelName = "Silver";
+  } else if (emeraldMetal === "platinum") {
+    ratePerGram = rates.rPlat;
+    labelName = "Platinum";
+  }
+
+  const amount = parseFloat(document.getElementById("egwWorthInput")?.value) || 0;
+  const makingPct = parseFloat(document.getElementById("egwMakingInput")?.value) || 0;
+  const gstPct = parseFloat(document.getElementById("egwGstSelect")?.value) || 3;
+
+  const resultEl = document.getElementById("egwWorthResult");
+  if (!resultEl) return;
+
+  if (amount <= 0 || ratePerGram <= 0) {
+    resultEl.textContent = "";
+    return;
+  }
+
+  // Cost per gram including making and GST
+  const costPerGram = ratePerGram * (1 + makingPct / 100) * (1 + gstPct / 100);
+  const grams = amount / costPerGram;
+
+  resultEl.innerHTML = `✨ You can get <strong>${grams >= 10 ? grams.toFixed(2) : grams.toFixed(3)} gm</strong> of ${labelName} in ${emeraldCity}`;
 }
 
 /* ─ Real-Time WebSocket Listener for Gold Rates ─── */

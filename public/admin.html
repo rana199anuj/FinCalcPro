@@ -585,10 +585,6 @@
     </div>
 
     <div class="sidebar-label" style="margin-top:8px;">Content Management</div>
-    <div class="sidebar-item" onclick="showSection('calc-manager')" id="nav-calc-manager">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      Calculator Manager
-    </div>
     <div class="sidebar-item" onclick="showSection('faq-manager')" id="nav-faq-manager">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       FAQ Manager
@@ -1028,54 +1024,7 @@
     </div>
   </section>
 
-  <!-- ══ CALC MANAGER ══════════════════════════════ -->
-  <section class="page-section" id="section-calc-manager">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">🧮 Calculator Manager</div>
-        <div class="topbar-sub">Set default values for all calculators on the live site</div>
-      </div>
-      <div id="calc-toast" class="toast"></div>
-    </div>
-    <div class="data-section">
-      <div class="data-section-head">
-        <div class="data-section-icon indigo">🏠</div>
-        <div>
-          <div class="data-section-title">Home Loan Defaults</div>
-          <div class="data-section-sub">Configure default values shown when the calculator opens</div>
-        </div>
-      </div>
-      <div class="data-section-body">
-        <div class="fields-grid">
-          <div class="field-group">
-            <label>Default Loan Amount (₹)</label>
-            <input type="number" id="cmHomeLoanDefault" value="3000000" class="input" step="50000" min="0">
-          </div>
-          <div class="field-group">
-            <label>Default Rate (% p.a.)</label>
-            <input type="number" id="cmHomeLoanRate" value="8.5" class="input" step="0.1" min="1" max="20">
-          </div>
-          <div class="field-group">
-            <label>Gold Loan Rate (% p.a.)</label>
-            <input type="number" id="cmGoldLoanRate" value="8.8" class="input" step="0.5" min="1">
-          </div>
-          <div class="field-group">
-            <label>Two-Wheeler Tenure (Years)</label>
-            <input type="number" id="cmTwoWheelerTenure" value="7" class="input" step="1" min="1" max="7">
-          </div>
-          <div class="field-group">
-            <label>LAP LTV (%)</label>
-            <input type="number" id="cmLapLtv" value="80" class="input" step="5" min="10" max="90">
-          </div>
-          <div class="field-group">
-            <label>LAP Tenure (Years)</label>
-            <input type="number" id="cmLapTenure" value="20" class="input" step="1" min="1" max="30">
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveCalcDefaults()" style="margin-top:8px">💾 Save Defaults</button>
-      </div>
-    </div>
-  </section>
+
 
   <!-- ══ FAQ MANAGER ════════════════════════════════ -->
   <section class="page-section" id="section-faq-manager">
@@ -1627,21 +1576,6 @@ function showUpdateStrip() {
 }
 
 // ─── NEW: Content Management Functions ─────────────────────────────────────
-
-// ── Calculator Manager ──
-function saveCalcDefaults() {
-  const defaults = {
-    homeLoanDefault: parseFloat(document.getElementById('cmHomeLoanDefault')?.value) || 3000000,
-    homeLoanRate: parseFloat(document.getElementById('cmHomeLoanRate')?.value) || 8.5,
-    goldLoanRate: parseFloat(document.getElementById('cmGoldLoanRate')?.value) || 8.8,
-    twoWheelerTenure: parseFloat(document.getElementById('cmTwoWheelerTenure')?.value) || 7,
-    lapLtv: parseFloat(document.getElementById('cmLapLtv')?.value) || 80,
-    lapTenure: parseFloat(document.getElementById('cmLapTenure')?.value) || 20,
-  };
-  localStorage.setItem('fincalc_calc_defaults', JSON.stringify(defaults));
-  showAdminToast('calc-toast', 'success', '✅ Calculator defaults saved! Reflected on live site.');
-  addLog('Calculator Manager', 'Defaults updated');
-}
 
 // ── FAQ Manager ──
 let currentFaqCalc = 'home-loan';
