@@ -89,18 +89,7 @@ function renderHome() {
       <p>Calculate monthly EMI for home, car, education, and more</p>
     </div>
     <div class="calc-grid">
-      ${cc("home-loan","🏠","Home Loan EMI","Monthly EMI &amp; total interest")}
-      ${cc("home-eligibility","✅","Loan Eligibility","Max loan based on income")}
-      ${cc("home-affordability","💰","Affordability","How much home can you afford?")}
-      ${cc("home-balance-transfer","🔄","Balance Transfer","Save by switching lender")}
-      ${cc("loan-to-value","📐","LTV Calculator","Loan-to-Value ratio")}
-      ${cc("compare-bank","🏦","Compare Banks","Side-by-side EMI comparison")}
-      ${cc("loan-against-property","🏗️","Loan vs Property","Loan against your asset")}
-      ${cc("car-loan","🚗","Car Loan","Car loan EMI calculator")}
-      ${cc("two-wheeler","🏍️","Two-Wheeler","Bike/scooter EMI")}
-      ${cc("education-loan","🎓","Education Loan","With moratorium period")}
-      ${cc("gold-loan","💎","Gold Loan","Loan against jewellery")}
-      ${cc("credit-card","💳","Credit Card","Payoff planner")}
+      ${(typeof getVisibleCalculators === 'function' ? getVisibleCalculators("loans") : []).map(c => cc(c.id, c.icon || "🏠", c.label || c.name, c.desc || "")).join("")}
     </div>
 
     <!-- Investment Calculators -->
@@ -109,19 +98,7 @@ function renderHome() {
       <p>Plan your wealth with SIP, FD, PPF, retirement and more</p>
     </div>
     <div class="calc-grid">
-      ${cc("sip","📈","SIP Calculator","Systematic Investment Plan")}
-      ${cc("gold-sip","🥇","Gold SIP","SIP in gold with live rates")}
-      ${cc("lumpsum","💵","Lumpsum","One-time investment returns")}
-      ${cc("lumpsum-sip","🎯","Lumpsum + SIP","Combined investment")}
-      ${cc("sip-delay","⏱️","SIP Delay Cost","Cost of procrastination")}
-      ${cc("target-value","🏆","Target SIP","SIP to reach your goal")}
-      ${cc("cagr","📊","CAGR Calculator","Compound Annual Growth Rate")}
-      ${cc("fd","🏛️","FD Calculator","Fixed deposit maturity")}
-      ${cc("rd","📅","RD Calculator","Recurring deposit")}
-      ${cc("ppf","🔐","PPF Calculator","Public Provident Fund")}
-      ${cc("retirement","👴","Retirement Planner","Your future corpus")}
-      ${cc("inflation","📉","Inflation Impact","Future purchasing power")}
-      ${cc("gratuity","🎁","Gratuity","Employee gratuity amount")}
+      ${(typeof getVisibleCalculators === 'function' ? getVisibleCalculators("investments") : []).map(c => cc(c.id, c.icon || "📈", c.label || c.name, c.desc || "")).join("")}
     </div>
 
     <!-- Live Market Data -->

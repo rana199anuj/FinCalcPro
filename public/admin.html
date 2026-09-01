@@ -501,6 +501,147 @@
       margin-top: 16px;
     }
 
+    /* ── Calculator Manager Styles ──────────── */
+    .calc-mgr-top-actions {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    }
+    .calc-mgr-filters {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .pill-btn {
+      padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: #fff; color: var(--text-2); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .pill-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .pill-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    
+    .calc-search-input {
+      padding: 8px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+      background: #fff; color: var(--text-1); font-size: 0.84rem; font-weight: 500;
+      outline: none; transition: border-color 0.18s; min-width: 220px;
+    }
+    .calc-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+    .calc-mgr-list {
+      display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;
+    }
+    .calc-item-card {
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.03);
+    }
+    .calc-item-card:hover {
+      border-color: rgba(99,102,241,0.35);
+      box-shadow: 0 4px 14px rgba(99,102,241,0.08);
+      transform: translateY(-1px);
+    }
+    .calc-item-card.is-hidden {
+      opacity: 0.65;
+      background: #f8fafc;
+      border-style: dashed;
+    }
+    .calc-item-left {
+      display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;
+    }
+    .calc-order-controls {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .btn-order-arrow {
+      background: none; border: none; color: var(--text-3); cursor: pointer;
+      font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; line-height: 1;
+      transition: all 0.15s; font-weight: bold;
+    }
+    .btn-order-arrow:hover:not(:disabled) { color: var(--accent); background: rgba(99,102,241,0.1); }
+    .btn-order-arrow:disabled { opacity: 0.2; cursor: not-allowed; }
+    .calc-order-badge {
+      font-size: 0.72rem; font-weight: 800; color: var(--accent);
+      background: rgba(99,102,241,0.08); padding: 2px 6px; border-radius: 6px;
+      min-width: 26px; text-align: center;
+    }
+
+    .calc-item-icon-box {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(99,102,241,0.16));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .calc-item-meta {
+      flex: 1; min-width: 0;
+    }
+    .calc-item-title-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px;
+    }
+    .calc-item-name {
+      font-size: 0.95rem; font-weight: 700; color: var(--text-1);
+    }
+    .calc-item-tag {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 2px 7px; border-radius: 12px;
+    }
+    .calc-tag-loans { background: rgba(99,102,241,0.1); color: var(--accent); }
+    .calc-tag-investments { background: rgba(22,163,74,0.1); color: var(--green); }
+    .calc-tag-custom { background: rgba(217,119,6,0.12); color: var(--gold); }
+    .calc-tag-hidden { background: rgba(220,38,38,0.1); color: var(--red); }
+    .calc-item-tab-label {
+      font-size: 0.76rem; color: var(--text-3); font-weight: 500;
+    }
+    .calc-item-tab-label strong { color: var(--text-2); }
+    .calc-item-desc {
+      font-size: 0.8rem; color: var(--text-2); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; max-width: 500px;
+    }
+
+    .calc-item-right {
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .calc-toggle-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+      border-radius: 6px; font-size: 0.78rem; font-weight: 700;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text-2);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .calc-toggle-btn.is-active {
+      background: var(--green-bg); color: var(--green); border-color: rgba(22,163,74,0.3);
+    }
+    .calc-toggle-btn.is-hidden {
+      background: rgba(220,38,38,0.08); color: var(--red); border-color: rgba(220,38,38,0.25);
+    }
+
+    /* Modal dialog */
+    .calc-modal-backdrop {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .calc-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .calc-modal-card {
+      background: #fff; border-radius: var(--radius-lg); width: 100%; max-width: 540px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25); border: 1px solid var(--border);
+      overflow: hidden; transform: scale(0.95); transition: transform 0.2s ease;
+    }
+    .calc-modal-backdrop.open .calc-modal-card { transform: scale(1); }
+    .calc-modal-head {
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, rgba(99,102,241,0.04), transparent);
+    }
+    .calc-modal-title { font-size: 1.1rem; font-weight: 800; }
+    .calc-modal-close {
+      background: none; border: none; font-size: 1.2rem; cursor: pointer;
+      color: var(--text-3); line-height: 1; padding: 4px; border-radius: 4px;
+    }
+    .calc-modal-close:hover { color: var(--red); }
+    .calc-modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; max-height: 75vh; overflow-y: auto; }
+    .calc-modal-foot {
+      padding: 16px 24px; border-top: 1px solid var(--border); background: var(--bg);
+      display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
       .sidebar { display: none; }
@@ -585,6 +726,10 @@
     </div>
 
     <div class="sidebar-label" style="margin-top:8px;">Content Management</div>
+    <div class="sidebar-item" onclick="showSection('calc-manager')" id="nav-calc-manager">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+      Calculators Manager
+    </div>
     <div class="sidebar-item" onclick="showSection('faq-manager')" id="nav-faq-manager">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       FAQ Manager
@@ -1026,6 +1171,160 @@
 
 
 
+  <!-- ══ CALCULATOR MANAGER ═════════════════════════ -->
+  <section class="page-section" id="section-calc-manager">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">🧮 Calculator Manager &amp; Reordering</div>
+        <div class="topbar-sub">Reshuffle order, rename, add custom calculators, delete, or hide from public view.</div>
+      </div>
+      <div id="calc-toast" class="toast"></div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-row" style="margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="stat-icon blue">🧮</div>
+        <div class="stat-label">Total Registered</div>
+        <div class="stat-val" id="calcStatTotal">0</div>
+        <div class="stat-note">Loan &amp; Investment tools</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">👁️</div>
+        <div class="stat-label">Visible on Site</div>
+        <div class="stat-val" id="calcStatVisible" style="color:var(--green)">0</div>
+        <div class="stat-note">Active on tabs &amp; home</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">🙈</div>
+        <div class="stat-label">Hidden</div>
+        <div class="stat-val" id="calcStatHidden" style="color:var(--gold)">0</div>
+        <div class="stat-note">Hidden from public view</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">✨</div>
+        <div class="stat-label">Custom Added</div>
+        <div class="stat-val" id="calcStatCustom">0</div>
+        <div class="stat-note">Custom created tools</div>
+      </div>
+    </div>
+
+    <!-- Toolbar & Action Bar -->
+    <div class="data-section">
+      <div class="data-section-head" style="justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="data-section-icon indigo">⚙️</div>
+          <div>
+            <div class="data-section-title">Calculator Master List</div>
+            <div class="data-section-sub">Use ▲ / ▼ to reorder, ✏️ to rename, 👁️ to toggle hide/show</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-submit" onclick="openAddCalcModal()" style="padding:8px 16px;font-size:0.82rem;">
+            ➕ Add Calculator
+          </button>
+          <button class="btn btn-reset" onclick="resetAllCalcsToDefault()" style="padding:8px 14px;font-size:0.82rem;" title="Restore original calculator ordering and defaults">
+            🔄 Reset Defaults
+          </button>
+        </div>
+      </div>
+
+      <div class="data-section-body">
+        <div class="calc-mgr-top-actions">
+          <div class="calc-mgr-filters" id="calcFilterPills">
+            <button class="pill-btn active" onclick="setCalcCategoryFilter('all', this)">All Calculators</button>
+            <button class="pill-btn" onclick="setCalcCategoryFilter('loans', this)">🏠 Loans</button>
+            <button class="pill-btn" onclick="setCalcCategoryFilter('investments', this)">📈 Investments</button>
+            <button class="pill-btn" onclick="setCalcCategoryFilter('visible', this)">🟢 Visible Only</button>
+            <button class="pill-btn" onclick="setCalcCategoryFilter('hidden', this)">🙈 Hidden Only</button>
+          </div>
+          <input type="text" id="calcSearchInput" class="calc-search-input" placeholder="🔍 Search calculator..." oninput="handleCalcSearch(this.value)"/>
+        </div>
+
+        <!-- Dynamic list of calculators -->
+        <div class="calc-mgr-list" id="adminCalcList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add / Edit Calculator Modal -->
+  <div class="calc-modal-backdrop" id="calcModal">
+    <div class="calc-modal-card">
+      <div class="calc-modal-head">
+        <div class="calc-modal-title" id="calcModalTitle">Edit Calculator</div>
+        <button class="calc-modal-close" onclick="closeCalcModal()">✕</button>
+      </div>
+      <div class="calc-modal-body">
+        <input type="hidden" id="modalCalcMode" value="edit"/>
+        
+        <div class="field-group">
+          <label>Calculator ID (Slug) *</label>
+          <input type="text" id="modalCalcId" class="faq-input-styled" placeholder="e.g. personal-loan"/>
+          <span class="field-hint" id="modalCalcIdHint">Unique identifier used for URLs and routing.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:12px;">
+          <div class="field-group">
+            <label>Full Display Name *</label>
+            <input type="text" id="modalCalcName" class="faq-input-styled" placeholder="e.g. Personal Loan EMI Calculator"/>
+          </div>
+          <div class="field-group">
+            <label>Icon / Emoji</label>
+            <input type="text" id="modalCalcIcon" class="faq-input-styled" placeholder="💼" style="text-align:center;font-size:1.2rem;"/>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field-group">
+            <label>Short Tab Label *</label>
+            <input type="text" id="modalCalcLabel" class="faq-input-styled" placeholder="e.g. Personal Loan"/>
+            <span class="field-hint">Label shown in top tab slider</span>
+          </div>
+          <div class="field-group">
+            <label>Category *</label>
+            <select id="modalCalcCategory" class="faq-select" style="height:44px;">
+              <option value="loans">🏠 Loans &amp; EMI</option>
+              <option value="investments">📈 Investments &amp; Savings</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Description Summary *</label>
+          <textarea id="modalCalcDesc" class="faq-textarea-styled" style="min-height:75px;" placeholder="Brief description shown under header and on home page..."></textarea>
+        </div>
+
+        <div class="field-group" style="flex-direction:row;align-items:center;gap:10px;margin-top:4px;">
+          <input type="checkbox" id="modalCalcVisible" checked style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);"/>
+          <label for="modalCalcVisible" style="margin:0;cursor:pointer;font-weight:600;text-transform:none;letter-spacing:normal;color:var(--text-1);">Visible on public website (uncheck to hide)</label>
+        </div>
+      </div>
+      <div class="calc-modal-foot">
+        <button class="btn btn-reset" onclick="closeCalcModal()">Cancel</button>
+        <button class="btn btn-submit" onclick="saveCalcFromModal()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Calculator Confirmation Modal -->
+  <div class="calc-modal-backdrop" id="calcDeleteModal">
+    <div class="calc-modal-card" style="max-width:440px;text-align:center;">
+      <div class="calc-modal-body" style="padding:32px 24px 20px;">
+        <div style="font-size:2.8rem;margin-bottom:12px;">🗑️</div>
+        <h3 style="font-size:1.15rem;font-weight:800;color:var(--text-1);margin-bottom:8px;">Delete Calculator?</h3>
+        <p id="deleteModalPromptText" style="font-size:0.86rem;color:var(--text-2);line-height:1.5;margin-bottom:20px;">
+          Are you sure you want to delete this calculator?
+        </p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
+          <button class="btn btn-reset" onclick="closeDeleteCalcModal()" style="padding:10px 20px;">Cancel</button>
+          <button class="btn" onclick="confirmExecuteDeleteCalc()" style="padding:10px 24px;font-size:0.88rem;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ FAQ MANAGER ════════════════════════════════ -->
   <section class="page-section" id="section-faq-manager">
     <div class="topbar">
@@ -1247,8 +1546,10 @@
     </div>
   </section>
 
+<!-- ── Calculator Config & Registry ─────────────── -->
+<script src="js/data/calc-config.js?v=20"></script>
 <!-- ── FAQ Data Repository ───────────────────────── -->
-<script src="js/data/faqs.js?v=9"></script>
+<script src="js/data/faqs.js?v=20"></script>
 
 <script>
 /* ═══════════════════════════════════════════════
@@ -1302,7 +1603,10 @@ function showSection(name) {
   const nav = document.getElementById('nav-' + name);
   if (nav) nav.classList.add('active');
 
-  if (name === 'faq-manager') {
+  if (name === 'calc-manager') {
+    renderCalcManager();
+  } else if (name === 'faq-manager') {
+    syncFaqDropdownFromCalcs();
     const sel = document.getElementById('faqCalcSelect');
     loadFaqEditor(sel ? sel.value : currentFaqCalc || 'home-loan');
   }
@@ -1918,6 +2222,368 @@ function showAdminToast(id, type, msg) {
   el.textContent = msg;
   el.className = `toast ${type} show`;
   setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─── CALCULATOR MANAGER FUNCTIONS ──────────────────────────────────────────
+let currentCalcFilter = 'all';
+let calcSearchQuery = '';
+
+function setCalcCategoryFilter(filter, el) {
+  currentCalcFilter = filter;
+  document.querySelectorAll('#calcFilterPills .pill-btn').forEach(btn => btn.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCalcManager();
+}
+
+function handleCalcSearch(query) {
+  calcSearchQuery = (query || '').toLowerCase().trim();
+  renderCalcManager();
+}
+
+function renderCalcManager() {
+  const listEl = document.getElementById('adminCalcList');
+  if (!listEl) return;
+
+  const allCalcs = typeof getCalculatorsConfig === 'function' ? getCalculatorsConfig() : DEFAULT_CALCULATORS;
+  
+  // Update stats cards
+  const totalCount = allCalcs.length;
+  const visibleCount = allCalcs.filter(c => !c.hidden).length;
+  const hiddenCount = allCalcs.filter(c => c.hidden).length;
+  const customCount = allCalcs.filter(c => c.custom).length;
+
+  const sTotal = document.getElementById('calcStatTotal');
+  const sVisible = document.getElementById('calcStatVisible');
+  const sHidden = document.getElementById('calcStatHidden');
+  const sCustom = document.getElementById('calcStatCustom');
+
+  if (sTotal) sTotal.textContent = totalCount;
+  if (sVisible) sVisible.textContent = visibleCount;
+  if (sHidden) sHidden.textContent = hiddenCount;
+  if (sCustom) sCustom.textContent = customCount;
+
+  // Filter list
+  let filtered = allCalcs.map((c, index) => ({ ...c, originalIndex: index }));
+
+  if (currentCalcFilter === 'loans') {
+    filtered = filtered.filter(c => c.category === 'loans');
+  } else if (currentCalcFilter === 'investments') {
+    filtered = filtered.filter(c => c.category === 'investments');
+  } else if (currentCalcFilter === 'visible') {
+    filtered = filtered.filter(c => !c.hidden);
+  } else if (currentCalcFilter === 'hidden') {
+    filtered = filtered.filter(c => c.hidden);
+  }
+
+  if (calcSearchQuery) {
+    filtered = filtered.filter(c =>
+      (c.name && c.name.toLowerCase().includes(calcSearchQuery)) ||
+      (c.label && c.label.toLowerCase().includes(calcSearchQuery)) ||
+      (c.id && c.id.toLowerCase().includes(calcSearchQuery)) ||
+      (c.desc && c.desc.toLowerCase().includes(calcSearchQuery))
+    );
+  }
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center;padding:48px 20px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-md);">
+        <div style="font-size:2.2rem;margin-bottom:8px;">🔍</div>
+        <div style="font-weight:700;color:var(--text-1);font-size:1rem;margin-bottom:4px;">No Calculators Found</div>
+        <div style="font-size:0.82rem;color:var(--text-3);margin-bottom:16px;">Try adjusting your filter category or search query.</div>
+        <button class="btn btn-reset" onclick="setCalcCategoryFilter('all');document.getElementById('calcSearchInput').value='';handleCalcSearch('');">Clear Filters</button>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(item => {
+    const isFirst = item.originalIndex === 0;
+    const isLast = item.originalIndex === allCalcs.length - 1;
+    const isHidden = !!item.hidden;
+    const catClass = item.category === 'loans' ? 'calc-tag-loans' : item.category === 'investments' ? 'calc-tag-investments' : 'calc-tag-custom';
+    const catLabel = item.category === 'loans' ? 'Loan / EMI' : item.category === 'investments' ? 'Investment' : 'Other';
+
+    return `
+      <div class="calc-item-card${isHidden ? ' is-hidden' : ''}" id="calc-item-${item.id}">
+        <div class="calc-item-left">
+          <!-- Order Controls -->
+          <div class="calc-order-controls">
+            <button class="btn-order-arrow" onclick="moveCalc(${item.originalIndex}, 'up')" ${isFirst ? 'disabled' : ''} title="Move Up">▲</button>
+            <span class="calc-order-badge" title="Position #${item.originalIndex + 1}">#${item.originalIndex + 1}</span>
+            <button class="btn-order-arrow" onclick="moveCalc(${item.originalIndex}, 'down')" ${isLast ? 'disabled' : ''} title="Move Down">▼</button>
+          </div>
+
+          <!-- Icon Box -->
+          <div class="calc-item-icon-box">${item.icon || '🧮'}</div>
+
+          <!-- Meta Info -->
+          <div class="calc-item-meta">
+            <div class="calc-item-title-row">
+              <span class="calc-item-name">${item.name}</span>
+              <span class="calc-item-tag ${catClass}">${catLabel}</span>
+              ${item.custom ? '<span class="calc-item-tag calc-tag-custom">Custom</span>' : ''}
+              ${isHidden ? '<span class="calc-item-tag calc-tag-hidden">Hidden</span>' : ''}
+            </div>
+            <div class="calc-item-tab-label">
+              Tab Label: <strong>${item.label || item.name}</strong> &bull; ID: <code>${item.id}</code>
+            </div>
+            <div class="calc-item-desc">${item.desc || ''}</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="calc-item-right">
+          <!-- Visibility Toggle -->
+          <button class="calc-toggle-btn ${isHidden ? 'is-hidden' : 'is-active'}" onclick="toggleHideCalc('${item.id}')" title="${isHidden ? 'Click to Show on Site' : 'Click to Hide from Site'}">
+            ${isHidden ? '🙈 Hidden' : '🟢 Visible'}
+          </button>
+
+          <!-- Edit / Rename Button -->
+          <button class="btn-action-edit" onclick="openEditCalcModal('${item.id}')" title="Rename and Edit details">
+            ✏️ Edit
+          </button>
+
+          <!-- Delete Button -->
+          <button class="btn-action-del" onclick="deleteCalc('${item.id}')" title="Delete calculator">
+            🗑️
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function moveCalc(index, direction) {
+  const calcs = getCalculatorsConfig();
+  const targetIndex = direction === 'up' ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= calcs.length) return;
+
+  // Swap positions
+  const temp = calcs[index];
+  calcs[index] = calcs[targetIndex];
+  calcs[targetIndex] = temp;
+
+  // Re-normalize order
+  saveCalculatorsConfig(calcs);
+  renderCalcManager();
+  syncFaqDropdownFromCalcs();
+  showAdminToast('calc-toast', 'success', `↕️ Moved "${temp.name}" ${direction === 'up' ? 'up' : 'down'} to position #${targetIndex + 1}!`);
+  addLog('Calculator Reshuffle', `Moved "${temp.label}" to position #${targetIndex + 1}`);
+}
+
+function toggleHideCalc(id) {
+  const calcs = getCalculatorsConfig();
+  const item = calcs.find(c => c.id === id);
+  if (!item) return;
+
+  item.hidden = !item.hidden;
+  saveCalculatorsConfig(calcs);
+  renderCalcManager();
+  syncFaqDropdownFromCalcs();
+
+  const statusMsg = item.hidden ? `🙈 "${item.label}" is now hidden from public view.` : `🟢 "${item.label}" is now visible on website.`;
+  showAdminToast('calc-toast', 'success', statusMsg);
+  addLog('Calculator Visibility', `${item.label}: ${item.hidden ? 'Hidden' : 'Visible'}`);
+}
+
+function openAddCalcModal() {
+  document.getElementById('calcModalTitle').textContent = '➕ Add New Custom Calculator';
+  document.getElementById('modalCalcMode').value = 'add';
+  
+  const idInput = document.getElementById('modalCalcId');
+  idInput.value = '';
+  idInput.disabled = false;
+  idInput.style.opacity = '1';
+  document.getElementById('modalCalcIdHint').textContent = 'Unique identifier (e.g. personal-loan, wedding-loan, fd-monthly).';
+
+  document.getElementById('modalCalcName').value = '';
+  document.getElementById('modalCalcLabel').value = '';
+  document.getElementById('modalCalcIcon').value = '🧮';
+  document.getElementById('modalCalcCategory').value = 'loans';
+  document.getElementById('modalCalcDesc').value = '';
+  document.getElementById('modalCalcVisible').checked = true;
+
+  document.getElementById('calcModal').classList.add('open');
+}
+
+function openEditCalcModal(id) {
+  const calcs = getCalculatorsConfig();
+  const item = calcs.find(c => c.id === id);
+  if (!item) return;
+
+  document.getElementById('calcModalTitle').textContent = `✏️ Edit "${item.label || item.name}"`;
+  document.getElementById('modalCalcMode').value = 'edit';
+
+  const idInput = document.getElementById('modalCalcId');
+  idInput.value = item.id;
+  idInput.disabled = true; // prevent changing core ID during edit
+  idInput.style.opacity = '0.7';
+  document.getElementById('modalCalcIdHint').textContent = 'Calculator ID cannot be changed once created.';
+
+  document.getElementById('modalCalcName').value = item.name || '';
+  document.getElementById('modalCalcLabel').value = item.label || '';
+  document.getElementById('modalCalcIcon').value = item.icon || '🧮';
+  document.getElementById('modalCalcCategory').value = item.category || 'loans';
+  document.getElementById('modalCalcDesc').value = item.desc || '';
+  document.getElementById('modalCalcVisible').checked = !item.hidden;
+
+  document.getElementById('calcModal').classList.add('open');
+}
+
+function closeCalcModal() {
+  document.getElementById('calcModal').classList.remove('open');
+}
+
+function saveCalcFromModal() {
+  const mode = document.getElementById('modalCalcMode').value;
+  let id = document.getElementById('modalCalcId').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const name = document.getElementById('modalCalcName').value.trim();
+  const label = document.getElementById('modalCalcLabel').value.trim();
+  const icon = document.getElementById('modalCalcIcon').value.trim() || '🧮';
+  const category = document.getElementById('modalCalcCategory').value;
+  const desc = document.getElementById('modalCalcDesc').value.trim();
+  const isVisible = document.getElementById('modalCalcVisible').checked;
+
+  if (!id) {
+    alert('Please enter a unique Calculator ID.');
+    return;
+  }
+  if (!name || !label) {
+    alert('Please provide both Full Display Name and Short Tab Label.');
+    return;
+  }
+
+  const calcs = getCalculatorsConfig();
+
+  if (mode === 'add') {
+    // Check if ID already exists
+    if (calcs.some(c => c.id === id)) {
+      alert(`A calculator with ID "${id}" already exists. Please choose a different ID.`);
+      return;
+    }
+
+    const newCalc = {
+      id,
+      icon,
+      name,
+      label,
+      desc,
+      category,
+      hidden: !isVisible,
+      order: calcs.length + 1,
+      custom: true
+    };
+
+    calcs.push(newCalc);
+    saveCalculatorsConfig(calcs);
+    closeCalcModal();
+    renderCalcManager();
+    syncFaqDropdownFromCalcs();
+    showAdminToast('calc-toast', 'success', `✨ Added new calculator "${name}"!`);
+    addLog('Calculator Added', `Created: ${name} (${id})`);
+  } else {
+    // Edit existing
+    const item = calcs.find(c => c.id === id);
+    if (!item) return;
+
+    item.name = name;
+    item.label = label;
+    item.icon = icon;
+    item.category = category;
+    item.desc = desc;
+    item.hidden = !isVisible;
+
+    saveCalculatorsConfig(calcs);
+    closeCalcModal();
+    renderCalcManager();
+    syncFaqDropdownFromCalcs();
+    showAdminToast('calc-toast', 'success', `💾 Updated "${name}"!`);
+    addLog('Calculator Updated', `Renamed/Edited: ${name}`);
+  }
+}
+
+let pendingDeleteCalcId = null;
+
+function deleteCalc(id) {
+  const calcs = getCalculatorsConfig();
+  const item = calcs.find(c => c.id === id);
+  if (!item) return;
+
+  pendingDeleteCalcId = id;
+  const promptEl = document.getElementById('deleteModalPromptText');
+  if (promptEl) {
+    promptEl.innerHTML = `Are you sure you want to delete <strong>${item.name}</strong> (<code>${item.id}</code>)?<br><br><span style="font-size:0.78rem;color:var(--text-3);">You can restore all default calculators anytime via the "Reset Defaults" button.</span>`;
+  }
+  const modal = document.getElementById('calcDeleteModal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeDeleteCalcModal() {
+  pendingDeleteCalcId = null;
+  const modal = document.getElementById('calcDeleteModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function confirmExecuteDeleteCalc() {
+  if (!pendingDeleteCalcId) return;
+  const id = pendingDeleteCalcId;
+  const calcs = getCalculatorsConfig();
+  const item = calcs.find(c => c.id === id);
+  const name = item ? item.name : id;
+
+  const updated = calcs.filter(c => c.id !== id);
+  saveCalculatorsConfig(updated);
+  closeDeleteCalcModal();
+  renderCalcManager();
+  syncFaqDropdownFromCalcs();
+  showAdminToast('calc-toast', 'success', `🗑️ Deleted calculator "${name}".`);
+  addLog('Calculator Deleted', `Removed: ${name} (${id})`);
+}
+
+function resetAllCalcsToDefault() {
+  const confirmed = confirm('Restore all calculators to factory default ordering, titles, and visibility?\n\nAny custom reshuffles, renames, or custom added calculators will be reset.');
+  if (!confirmed) return;
+
+  resetCalculatorsConfig();
+  renderCalcManager();
+  syncFaqDropdownFromCalcs();
+  showAdminToast('calc-toast', 'success', '🔄 All calculators restored to original defaults!');
+  addLog('Calculator Reset', 'Restored all calculators to default');
+}
+
+function syncFaqDropdownFromCalcs() {
+  const sel = document.getElementById('faqCalcSelect');
+  if (!sel) return;
+  const calcs = typeof getCalculatorsConfig === 'function' ? getCalculatorsConfig() : DEFAULT_CALCULATORS;
+  const currentVal = sel.value;
+
+  const loans = calcs.filter(c => c.category === 'loans');
+  const investments = calcs.filter(c => c.category === 'investments');
+  const others = calcs.filter(c => c.category !== 'loans' && c.category !== 'investments');
+
+  let html = '';
+  if (loans.length) {
+    html += `<optgroup label="Loan Calculators">
+      ${loans.map(c => `<option value="${c.id}">${c.icon || '🏠'} ${c.name}${c.hidden ? ' (Hidden)' : ''}</option>`).join('')}
+    </optgroup>`;
+  }
+  if (investments.length) {
+    html += `<optgroup label="Investment Calculators">
+      ${investments.map(c => `<option value="${c.id}">${c.icon || '📈'} ${c.name}${c.hidden ? ' (Hidden)' : ''}</option>`).join('')}
+    </optgroup>`;
+  }
+  if (others.length) {
+    html += `<optgroup label="Other Calculators">
+      ${others.map(c => `<option value="${c.id}">${c.icon || '🧮'} ${c.name}${c.hidden ? ' (Hidden)' : ''}</option>`).join('')}
+    </optgroup>`;
+  }
+  html += `<optgroup label="Live Rates & Markets">
+    <option value="gold-rates">🥇 Gold Rates</option>
+    <option value="market">📊 Stock Market (NSE/BSE)</option>
+  </optgroup>`;
+
+  sel.innerHTML = html;
+  if (currentVal && sel.querySelector(`option[value="${currentVal}"]`)) {
+    sel.value = currentVal;
+  }
 }
 
 // allow pressing Enter on login

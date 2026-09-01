@@ -763,10 +763,67 @@ function toggleFAQ(id) {
   if (!isOpen) item.classList.add('open');
 }
 
+function getOrSynthesizeCalcConfig(id) {
+  const meta = typeof getCalculatorMeta === 'function' ? getCalculatorMeta(id) : null;
+  if (CALCS[id]) {
+    if (meta) {
+      return {
+        ...CALCS[id],
+        icon: meta.icon || CALCS[id].icon,
+        name: meta.name || CALCS[id].name,
+        label: meta.label || CALCS[id].label,
+        desc: meta.desc || CALCS[id].desc,
+        category: meta.category || CALCS[id].category
+      };
+    }
+    return CALCS[id];
+  }
+
+  if (!meta) return null;
+
+  // Synthesize definition for user-created custom calculator
+  if (meta.category === 'loans') {
+    CALCS[id] = {
+      icon: meta.icon || "🏠",
+      name: meta.name,
+      desc: meta.desc,
+      fields: [
+        { id:"principal", label:"Loan Amount", type:"range", min:0, max:100000000, step:50000, default:2000000, fmt:v=>v===0?"₹0":fmtC(v) },
+        { id:"rate", label:"Annual Interest Rate", type:"range", min:0, max:25, step:0.1, default:10.5, fmt:v=>v+"%" },
+        { id:"tenure", label:"Loan Tenure (Years)", type:"range", min:0, max:30, step:1, default:5, fmt:v=>v+" Yrs" }
+      ],
+      calc(f) {
+        const months = Math.round((f.tenureMonths || f.tenure * 12));
+        return emiCalc(f.principal, f.rate, months, f.processingFeePct, f.prepayment);
+      },
+      render(res, el, cfg, fields) { emiHTML(res, el, cfg, fields); }
+    };
+  } else {
+    CALCS[id] = {
+      icon: meta.icon || "📈",
+      name: meta.name,
+      desc: meta.desc,
+      fields: [
+        { id:"monthly", label:"Monthly Investment", type:"range", min:0, max:1000000, step:500, default:10000, fmt:v=>fmtC(v) },
+        { id:"rate", label:"Expected Return Rate (p.a)", type:"range", min:0, max:30, step:0.5, default:12, fmt:v=>v+"%" },
+        { id:"tenure", label:"Time Period (Years)", type:"range", min:0, max:40, step:1, default:10, fmt:v=>v+" Yrs" }
+      ],
+      calc(f) {
+        const p = f.monthly, r = f.rate / 12 / 100, n = f.tenure * 12;
+        const maturity = p * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+        const invested = p * n;
+        return { invested, returns: maturity - invested, maturity, monthly: p, rate: f.rate, years: f.tenure };
+      },
+      render(res, el, cfg, fields) { sipHTML(res, el, cfg, fields); }
+    };
+  }
+  return CALCS[id];
+}
+
 /* ─ Render a Calculator Page ─────────────────────── */
 function renderCalc(id) {
   currentCalcId = id;
-  const cfg = CALCS[id];
+  const cfg = getOrSynthesizeCalcConfig(id);
   if (!cfg) { navigate("home"); return; }
 
   const loanCalcIds = [
@@ -774,21 +831,23 @@ function renderCalc(id) {
     "gold-loan", "consumer-durable", "home-eligibility", "home-affordability",
     "home-balance-transfer", "loan-to-value", "compare-bank", "loan-against-property"
   ];
-  const isLoan = loanCalcIds.includes(id);
+  const isLoan = loanCalcIds.includes(id) || (cfg.category === 'loans');
 
   const investmentCalcIds = [
     "sip", "gold-sip", "lumpsum", "lumpsum-sip", "sip-delay", "target-value",
     "cagr", "fd", "rd", "ppf", "retirement", "inflation", "gratuity"
   ];
-  const isInvestment = investmentCalcIds.includes(id);
+  const isInvestment = investmentCalcIds.includes(id) || (cfg.category === 'investments');
 
-  // Top Calculator Tab Slider
+  // Top Calculator Tab Slider (dynamically respects admin ordering and visibility)
+  const tabsList = typeof getActiveCalcTabs === 'function' ? getActiveCalcTabs() : CALC_TABS;
+
   const tabBarHTML = `
     <div id="calcTabBar" class="calc-tab-bar">
       <div class="calc-tab-bar-inner">
         <button class="calc-tab-arrow calc-tab-arrow-left" id="tabArrowLeft" title="Scroll left">&#8249;</button>
         <div class="calc-tab-scroll" id="calcTabScroll">
-          ${CALC_TABS.map(t => `
+          ${tabsList.map(t => `
             <button class="calc-tab-item${t.id === id ? " active" : ""}"
               onclick="openCalc('${t.id}')">
               <span class="calc-tab-icon">${t.icon}</span>
@@ -1033,7 +1092,7 @@ function changeCurrency(curr) {
 
 /* ─ Compute & Render Calculator Result ──────────── */
 function computeCalc(id) {
-  const cfg = CALCS[id];
+  const cfg = getOrSynthesizeCalcConfig(id);
   if (!cfg) return;
 
   const fields = {};
