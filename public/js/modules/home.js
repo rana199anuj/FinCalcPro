@@ -30,10 +30,10 @@ function renderHome() {
     <!-- Stock Ticker -->
     <div class="market-ticker market-ticker--stocks" id="homeTicker">
       ${[
-        { k: "nifty", label: "Nifty 50", exch: "NSE", val: "24,853.15", chg: "▲ +127.40 (+0.51%)", up: true },
-        { k: "sensex", label: "Sensex", exch: "BSE", val: "81,463.09", chg: "▼ -43.20 (-0.05%)", up: false },
-        { k: "bankNifty", label: "Bank Nifty", exch: "NSE", val: "53,420.80", chg: "▲ +170.80 (+0.32%)", up: true },
-        { k: "niftyIT", label: "Nifty IT", exch: "NSE", val: "40,125.50", chg: "▲ +145.50 (+0.36%)", up: true }
+        { k: "nifty", label: "Nifty 50", exch: "NSE", val: "24,080.40", chg: "▼ -267.20 (-1.10%)", up: false },
+        { k: "sensex", label: "Sensex", exch: "BSE", val: "76,957.27", chg: "▼ -2,510.74 (-3.16%)", up: false },
+        { k: "bankNifty", label: "Bank Nifty", exch: "NSE", val: "51,650.80", chg: "▼ -229.20 (-0.44%)", up: false },
+        { k: "niftyIT", label: "Nifty IT", exch: "NSE", val: "39,456.50", chg: "▼ -193.50 (-0.49%)", up: false }
       ].map(item => `
         <div class="ticker-card" onclick="openCalc('market')">
           <div class="ticker-label" id="tc-exch-${item.k}">${item.exch}</div>
@@ -52,17 +52,17 @@ function renderHome() {
       <div class="ticker-card ticker-card--gold24" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · GOLD</div>
         <div class="ticker-name">Gold 24K (99.9%)</div>
-        <div class="ticker-val" id="tc-val-gold24">₹9,420</div>
+        <div class="ticker-val" id="tc-val-gold24">₹15,692</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-gold24">▲ +₹25 (+0.27%)</div>
+        <div class="ticker-change down" id="tc-chg-gold24">▼ -₹147 (-0.93%)</div>
         <div class="ticker-spark"><canvas data-spark-metal="gold24" style="width:100%;height:40px"></canvas></div>
       </div>
       <div class="ticker-card ticker-card--gold22" onclick="openCalc('gold-rates')">
         <div class="ticker-label metal-label">MCX · GOLD</div>
         <div class="ticker-name">Gold 22K (91.7%)</div>
-        <div class="ticker-val" id="tc-val-gold22">₹8,635</div>
+        <div class="ticker-val" id="tc-val-gold22">₹14,385</div>
         <div class="ticker-unit">per gram</div>
-        <div class="ticker-change up" id="tc-chg-gold22">▲ +₹23 (+0.27%)</div>
+        <div class="ticker-change down" id="tc-chg-gold22">▼ -₹135 (-0.93%)</div>
         <div class="ticker-spark"><canvas data-spark-metal="gold22" style="width:100%;height:40px"></canvas></div>
       </div>
       <div class="ticker-card ticker-card--silver" onclick="openCalc('gold-rates')">
