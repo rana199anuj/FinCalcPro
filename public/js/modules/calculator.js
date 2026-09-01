@@ -12,6 +12,7 @@ const CALC_TABS = [
   { id:"education-loan",       icon:"🎓", label:"Education" },
   { id:"two-wheeler",          icon:"🏍️", label:"Two-Wheeler" },
   { id:"credit-card",          icon:"💳", label:"Credit Card" },
+  { id:"personal-loan",        icon:"👤", label:"Personal Loan" },
   { id:"gold-loan",            icon:"💎", label:"Gold Loan" },
   { id:"consumer-durable",     icon:"📱", label:"Consumer Durable" },
   { id:"home-eligibility",     icon:"✅", label:"Eligibility" },
@@ -78,6 +79,7 @@ function emiCalc(principal, rate, months, processingFeePct = 0, prepayment = 0) 
   let balance = principal;
   let monthsWithPrepay = 0;
   let totalInterestWithPrepay = 0;
+  const prepayInterval = (months <= 12) ? Math.max(1, Math.floor(months / 2)) : 12;
 
   for (let m = 1; m <= months * 2; m++) {  // safety cap
     if (balance <= 0) break;
@@ -87,8 +89,8 @@ function emiCalc(principal, rate, months, processingFeePct = 0, prepayment = 0) 
     balance = Math.max(0, balance - prinPart);
     monthsWithPrepay++;
 
-    // Apply lump-sum prepayment at end of each year
-    if (m % 12 === 0 && balance > 0) {
+    // Apply prepayment at interval (annual, or midpoint for short loans)
+    if (m % prepayInterval === 0 && balance > 0) {
       balance = Math.max(0, balance - prepayment);
     }
   }
@@ -98,7 +100,7 @@ function emiCalc(principal, rate, months, processingFeePct = 0, prepayment = 0) 
 
   return {
     emi,
-    total: emi * monthsWithPrepay + prepayment * Math.floor(monthsWithPrepay / 12) + processingFee,
+    total: emi * monthsWithPrepay + prepayment * Math.floor(monthsWithPrepay / prepayInterval) + processingFee,
     interest: totalInterestWithPrepay,
     principal,
     processingFee,
@@ -205,6 +207,7 @@ function emiHTML(res, el, cfg = {}, fields = {}) {
           ${row("Total Interest",   fmtC(res.interest), "red")}
           ${row("Total Amount",     fmtC(res.total), "green")}
           ${res.processingFee ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
+          ${res.prepaymentPenalty ? row("Prepayment Penalty (Total)", fmtC(res.prepaymentPenalty), "red") : ""}
           ${row("Interest Ratio",   ((res.interest / (res.principal||1)) * 100).toFixed(1) + "%", "red")}
         </div>
       </div>
@@ -828,7 +831,7 @@ function renderCalc(id) {
 
   const loanCalcIds = [
     "home-loan", "car-loan", "education-loan", "two-wheeler", "credit-card",
-    "gold-loan", "consumer-durable", "home-eligibility", "home-affordability",
+    "personal-loan", "gold-loan", "consumer-durable", "home-eligibility", "home-affordability",
     "home-balance-transfer", "loan-to-value", "compare-bank", "loan-against-property"
   ];
   const isLoan = loanCalcIds.includes(id) || (cfg.category === 'loans');
@@ -894,7 +897,7 @@ function renderCalc(id) {
           ${cfg.fields.map(f => fieldHTML(f)).join("")}
 
           <!-- Advanced Options for Loans -->
-          ${isLoan ? `
+          ${(isLoan && !['compare-bank', 'loan-to-value'].includes(id)) ? `
           <div class="advanced-options-card">
             <div class="advanced-options-header" onclick="toggleAdvancedOptions()">
               <span>⚙️ Advanced Options (Prepayment & Fees)</span>
@@ -909,6 +912,11 @@ function renderCalc(id) {
                 <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Yearly Prepayment (₹)</label>
                 <input type="number" id="advPrepayment" value="0" step="5000" min="0" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
               </div>
+              ${['credit-card', 'personal-loan'].includes(id) ? `
+              <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Prepayment Penalty (%)</label>
+                <input type="number" id="advPrepaymentPenalty" value="0" step="0.25" min="0" max="10" class="form-input" style="padding:6px 10px" oninput="computeCalc('${id}')">
+              </div>` : ''}
             </div>
           </div>` : ''}
 
@@ -1115,10 +1123,12 @@ function computeCalc(id) {
   // Advanced options
   const feePct = parseFloat(document.getElementById("advProcessingFee")?.value) || 0;
   const prepay = parseFloat(document.getElementById("advPrepayment")?.value) || 0;
+  const penaltyPct = parseFloat(document.getElementById("advPrepaymentPenalty")?.value) || 0;
   const stepUp = parseFloat(document.getElementById("advStepUp")?.value) || 0;
   const inflation = parseFloat(document.getElementById("advInflation")?.value) || 0;
   fields.processingFeePct = feePct;
   fields.prepayment = prepay;
+  fields.prepaymentPenaltyPct = penaltyPct;
   fields.stepUpPct = stepUp;
   fields.inflationRate = inflation;
 

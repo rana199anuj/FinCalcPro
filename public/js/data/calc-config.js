@@ -140,6 +140,17 @@ const DEFAULT_CALCULATORS = [
     custom: false
   },
   {
+    id: "personal-loan",
+    icon: "👤",
+    name: "Personal Loan Calculator",
+    label: "Personal Loan",
+    desc: "Calculate EMI, total interest and repayment schedule for personal loans with prepayment penalty support.",
+    category: "loans",
+    hidden: false,
+    order: 13,
+    custom: false
+  },
+  {
     id: "consumer-durable",
     icon: "📱",
     name: "Consumer Durable / No-Cost EMI Calculator",
@@ -147,7 +158,7 @@ const DEFAULT_CALCULATORS = [
     desc: "Discover the hidden interest and processing fees inside 'No-Cost EMI' offers.",
     category: "loans",
     hidden: false,
-    order: 13,
+    order: 14,
     custom: false
   },
 

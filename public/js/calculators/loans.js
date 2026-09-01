@@ -55,12 +55,19 @@ const CALCS_LOANS = {
       if (isGross && foirPct > 60) foirPct = 60; // Gross income capped at 60% max FOIR
       const n = Math.round(f.tenureMonths || f.tenure * 12);
       const availEMI = f.income * (foirPct / 100) - f.obligations;
-      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0 };
+      if (availEMI <= 0) return { eligible: 0, availEMI: 0, income: f.income, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI: 0, totalInterest: 0, processingFee: 0, prepayment: 0, savedInterest: 0, reducedMonths: 0, newTotalMonths: n, principal: 0, emi: 0, interest: 0, total: 0 };
       const r = f.rate / 12 / 100;
       const eligible = availEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
-      const estimatedEMI = calcEMI(eligible, f.rate, n);
-      const totalInterest = Math.max(0, estimatedEMI * n - eligible);
-      return { eligible, availEMI, income: f.income, isGross, obligations: f.obligations, foir: foirPct, rate: f.rate, months: n, estimatedEMI, totalInterest };
+      const fullCalc = emiCalc(eligible, f.rate, n, f.processingFeePct, f.prepayment);
+      return {
+        eligible, availEMI, income: f.income, isGross, obligations: f.obligations, foir: foirPct,
+        rate: f.rate, months: n,
+        estimatedEMI: fullCalc.emi, totalInterest: fullCalc.interest,
+        processingFee: fullCalc.processingFee, prepayment: fullCalc.prepayment,
+        savedInterest: fullCalc.savedInterest, reducedMonths: fullCalc.reducedMonths,
+        newTotalMonths: fullCalc.newTotalMonths,
+        principal: eligible, emi: fullCalc.emi, interest: fullCalc.interest, total: fullCalc.total
+      };
     },
     render(res, el) {
       if (res.eligible <= 0) {
@@ -80,6 +87,11 @@ const CALCS_LOANS = {
       const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
       const balanceData = schedule.map(s => s.closing);
       const grossBadge = res.isGross ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:6px;font-weight:600">⚡ Gross Income basis: FOIR is restricted to 50%–60% per banking norms</div>` : "";
+      const sc1Rate = res.rate || 8.5;
+      const sc1Tenure = Math.round((res.months || 240) / 12);
+      const sc2Rate = Math.max(1, +(sc1Rate - 1).toFixed(1));
+      const sc2Tenure = sc1Tenure + 2;
+      const sc2Res = emiCalc(res.eligible, sc2Rate, sc2Tenure * 12);
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -96,6 +108,7 @@ const CALCS_LOANS = {
               ${row("Available EMI",            fmtC(Math.max(0, res.availEMI)), "green")}
               ${row("Estimated Monthly EMI",    fmtC(res.estimatedEMI))}
               ${row("Total Interest (est.)",    fmtC(res.totalInterest), "red")}
+              ${res.processingFee > 0 ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
             </div>
             ${grossBadge}
           </div>
@@ -124,7 +137,59 @@ const CALCS_LOANS = {
             </div>
             <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
           </div>
-        </div>`;
+        </div>
+        <div class="compare-options-card">
+          <div class="compare-options-header">⚖️ Compare Loan Options</div>
+          <div class="compare-scenarios-grid">
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 1</span><span class="scenario-tag">Current</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc1Amount" value="${Math.round(res.eligible)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc1Rate" value="${sc1Rate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc1Tenure" value="${sc1Tenure}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc1ResEMI">${fmtC(res.estimatedEMI)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc1ResInt" style="color:#ef4444">${fmtC(res.totalInterest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(1)">Apply This Scenario</button>
+            </div>
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 2</span><span class="scenario-tag">Alternative</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc2Amount" value="${Math.round(res.eligible)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc2Rate" value="${sc2Rate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc2Tenure" value="${sc2Tenure}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc2ResEMI">${fmtC(sc2Res.emi)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc2ResInt" style="color:#ef4444">${fmtC(sc2Res.interest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(2)">Apply This Scenario</button>
+            </div>
+          </div>
+        </div>
+        ${res.prepayment > 0 ? `
+        <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+          <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact (₹${fmt(res.prepayment)}/year)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+            <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">INTEREST SAVED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs early closure)</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.newTotalMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.months} original)</div>
+            </div>
+          </div>
+        </div>` : ""}
+      `;
       setTimeout(() => {
         FinCharts.createDonut("chartDonut", res.eligible, res.totalInterest);
         FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
@@ -147,8 +212,16 @@ const CALCS_LOANS = {
       const r = f.rate / 12 / 100;
       const n = Math.round(f.tenureMonths || f.tenure * 12);
       const maxLoan = maxEMI * (Math.pow(1+r,n)-1) / (r * Math.pow(1+r,n));
-      const totalInterest = Math.max(0, maxEMI * n - maxLoan);
-      return { affordable: maxLoan + f.downPayment, maxLoan, dp: f.downPayment, maxEMI, rate: f.rate, months: n, totalInterest };
+      const fullCalc = emiCalc(maxLoan, f.rate, n, f.processingFeePct, f.prepayment);
+      return {
+        affordable: maxLoan + f.downPayment, maxLoan, dp: f.downPayment, maxEMI,
+        rate: f.rate, months: n,
+        totalInterest: fullCalc.interest,
+        processingFee: fullCalc.processingFee, prepayment: fullCalc.prepayment,
+        savedInterest: fullCalc.savedInterest, reducedMonths: fullCalc.reducedMonths,
+        newTotalMonths: fullCalc.newTotalMonths,
+        principal: maxLoan, emi: fullCalc.emi, interest: fullCalc.interest, total: fullCalc.total
+      };
     },
     render(res, el) {
       const schedule = buildAmortizationSchedule(res.maxLoan, res.rate || 8.5, res.months || 240);
@@ -156,6 +229,11 @@ const CALCS_LOANS = {
       const labels = schedule.map(s => `Year ${s.year}`);
       const principalPaidData = schedule.map(s => s.cumPrincipalPaid);
       const balanceData = schedule.map(s => s.closing);
+      const sc1Rate = res.rate || 8.5;
+      const sc1Tenure = Math.round((res.months || 240) / 12);
+      const sc2Rate = Math.max(1, +(sc1Rate - 1).toFixed(1));
+      const sc2Tenure = sc1Tenure + 2;
+      const sc2Res = emiCalc(res.maxLoan, sc2Rate, sc2Tenure * 12);
       el.innerHTML = `
         <div class="results-top-grid">
           <div class="summary-card">
@@ -171,6 +249,7 @@ const CALCS_LOANS = {
               ${row("Max Monthly EMI",   fmtC(res.maxEMI))}
               ${row("Total Interest",    fmtC(res.totalInterest), "red")}
               ${row("Down Payment %",    ((res.dp/res.affordable)*100).toFixed(1)+"%")}
+              ${res.processingFee > 0 ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
             </div>
           </div>
           <div class="breakdown-chart-card">
@@ -198,7 +277,59 @@ const CALCS_LOANS = {
             </div>
             <button class="btn-view-schedule" onclick="openScheduleModal()">📑 View Amortization Schedule</button>
           </div>
-        </div>`;
+        </div>
+        <div class="compare-options-card">
+          <div class="compare-options-header">⚖️ Compare Loan Options</div>
+          <div class="compare-scenarios-grid">
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 1</span><span class="scenario-tag">Current</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc1Amount" value="${Math.round(res.maxLoan)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc1Rate" value="${sc1Rate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc1Tenure" value="${sc1Tenure}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc1ResEMI">${fmtC(res.maxEMI)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc1ResInt" style="color:#ef4444">${fmtC(res.totalInterest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(1)">Apply This Scenario</button>
+            </div>
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 2</span><span class="scenario-tag">Alternative</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc2Amount" value="${Math.round(res.maxLoan)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc2Rate" value="${sc2Rate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc2Tenure" value="${sc2Tenure}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc2ResEMI">${fmtC(sc2Res.emi)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc2ResInt" style="color:#ef4444">${fmtC(sc2Res.interest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(2)">Apply This Scenario</button>
+            </div>
+          </div>
+        </div>
+        ${res.prepayment > 0 ? `
+        <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+          <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact (₹${fmt(res.prepayment)}/year)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+            <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">INTEREST SAVED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs early closure)</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.newTotalMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.months} original)</div>
+            </div>
+          </div>
+        </div>` : ""}
+      `;
       setTimeout(() => {
         FinCharts.createSavingsDonut("chartDonut", res.maxLoan, res.dp);
         FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
@@ -322,6 +453,37 @@ const CALCS_LOANS = {
             </div>
           </div>
         </div>` : ""}
+        <div class="compare-options-card" style="margin-top:12px">
+          <div class="compare-options-header">⚖️ Compare Loan Options</div>
+          <div class="compare-scenarios-grid">
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 1</span><span class="scenario-tag">Current Rate</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc1Amount" value="${res.outstanding}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc1Rate" value="${res.currentRate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc1Tenure" value="${Math.round(res.months/12)}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc1ResEMI">${fmtC(res.oldEMI)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc1ResInt" style="color:#ef4444">${fmtC(res.interestOld)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(1)">Apply This Scenario</button>
+            </div>
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 2</span><span class="scenario-tag">New Rate</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc2Amount" value="${res.outstanding}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc2Rate" value="${res.newRate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc2Tenure" value="${Math.round(res.months/12)}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc2ResEMI">${fmtC(res.newEMI)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc2ResInt" style="color:#ef4444">${fmtC(res.interestNew)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(2)">Apply This Scenario</button>
+            </div>
+          </div>
+        </div>
       `;
       setTimeout(() => {
         FinCharts.createDonut("chartDonut", res.interestOld - res.interestNew, res.interestNew);
@@ -530,30 +692,75 @@ const CALCS_LOANS = {
       const goldValue   = f.weight * ratePerGram;
       const ltvPct      = parseFloat(f.ltv) || 75;
       const loanAmount  = goldValue * ltvPct / 100;
-      const res         = emiCalc(loanAmount, f.rate, f.tenure, f.processingFeePct, f.prepayment);
-      res.goldValue     = goldValue;
-      res.ratePerGram   = ratePerGram;
-      res.liveRate24K   = liveRate24K;
-      res.loanAmount    = loanAmount;
-      res.ltvPct        = ltvPct;
-      res.rate          = f.rate;
-      return res;
+      const tenureMonths = Math.round(f.tenure || 12);
+      const r           = (f.rate || 8.8) / 12 / 100;
+      const emi         = calcEMI(loanAmount, f.rate || 8.8, tenureMonths);
+      const processingFee = loanAmount * ((f.processingFeePct || 0) / 100);
+      const prepay      = f.prepayment || 0;
+
+      // Base case (no prepayment)
+      let baseBal = loanAmount, baseInt = 0;
+      for (let m = 1; m <= tenureMonths; m++) {
+        if (baseBal <= 0) break;
+        const intPart = baseBal * r;
+        baseInt += intPart;
+        baseBal = Math.max(0, baseBal - (emi - intPart));
+      }
+
+      // Simulation with prepayment
+      let bal = loanAmount, totalInt = 0, monthsWithPrepay = 0, totalPrepaymentPaid = 0;
+      const prepayInterval = tenureMonths <= 12 ? 1 : 12; // if <= 12 mo, apply at month 1; else annually
+      for (let m = 1; m <= tenureMonths * 2; m++) {
+        if (bal <= 0) break;
+        const intPart = bal * r;
+        totalInt += intPart;
+        const prinPart = Math.min(bal, Math.max(0, emi - intPart));
+        bal = Math.max(0, bal - prinPart);
+        monthsWithPrepay++;
+
+        if (prepay > 0 && bal > 0 && (m % prepayInterval === 0)) {
+          const extra = Math.min(bal, prepay);
+          bal = Math.max(0, bal - extra);
+          totalPrepaymentPaid += extra;
+        }
+      }
+
+      const savedInterest = Math.max(0, baseInt - totalInt);
+      const reducedMonths = Math.max(0, tenureMonths - monthsWithPrepay);
+      const total = loanAmount + totalInt + processingFee;
+
+      return {
+        goldValue, ratePerGram, liveRate24K, loanAmount, ltvPct,
+        rate: f.rate || 8.8,
+        principal: loanAmount,
+        emi,
+        months: tenureMonths,
+        interest: totalInt,
+        processingFee,
+        processingFeePct: f.processingFeePct || 0,
+        prepayment: prepay,
+        totalPrepaymentPaid,
+        savedInterest,
+        reducedMonths,
+        newTotalMonths: monthsWithPrepay,
+        total
+      };
     },
     render(res, el) {
-      // Build monthly amortization for gold loan (tenure in months)
       const r = (res.rate || 8.8) / 12 / 100;
       const principal = res.principal || res.loanAmount;
       const emi = res.emi;
       const prepay = res.prepayment || 0;
       let balance = principal, cumPrincipal = 0;
       const monthlySchedule = [];
+      const prepayInterval = (res.months || 12) <= 12 ? 1 : 12;
       for (let m = 1; m <= (res.months || 12) * 2; m++) {
         if (balance <= 0) break;
         const intPart = balance * r;
         const prinPart = Math.min(balance, Math.max(0, emi - intPart));
         cumPrincipal += prinPart;
         balance = Math.max(0, balance - prinPart);
-        if (m % 12 === 0 && prepay > 0 && balance > 0) {
+        if (prepay > 0 && balance > 0 && (m % prepayInterval === 0)) {
           const extra = Math.min(balance, prepay);
           cumPrincipal += extra;
           balance = Math.max(0, balance - extra);
@@ -564,6 +771,11 @@ const CALCS_LOANS = {
       const labels = monthlySchedule.map(s => `Mo ${s.year}`);
       const principalPaidData = monthlySchedule.map(s => s.cumPrincipalPaid);
       const balanceData = monthlySchedule.map(s => s.closing);
+      const glPrincipal = principal;
+      const glRate = res.rate || 8.8;
+      const glTenureYrs = Math.max(1, Math.round((res.months || 12) / 12));
+      const glSc2Rate = Math.min(30, +(glRate + 1.5).toFixed(1));
+      const glSc2Res = emiCalc(glPrincipal, glSc2Rate, glTenureYrs * 12);
 
       el.innerHTML = `
         <div class="gold-loan-live-banner">
@@ -592,8 +804,9 @@ const CALCS_LOANS = {
               ${row("Gold Market Value",   fmtC(res.goldValue))}
               ${row("LTV ("+res.ltvPct+"% of Gold Value)", fmtC(res.loanAmount))}
               ${row("Total Interest",      fmtC(res.interest), "red")}
+              ${res.processingFee > 0 ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
+              ${res.prepayment > 0 ? row("Prepayment", fmtC(res.prepayment), "green") : ""}
               ${row("Total Payment",       fmtC(res.total), "green")}
-              ${res.processingFee ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
             </div>
           </div>
           <div class="breakdown-chart-card">
@@ -608,6 +821,7 @@ const CALCS_LOANS = {
             <div class="chart-custom-legend">
               <div class="custom-legend-item"><span class="legend-square" style="background:#f59e0b"></span><span>Principal: <strong>${fmtC(principal)}</strong></span></div>
               <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Interest: <strong>${fmtC(res.interest)}</strong></span></div>
+              ${res.processingFee > 0 ? `<div class="custom-legend-item"><span class="legend-square" style="background:#22c55e"></span><span>Fee: <strong>${fmtC(res.processingFee)}</strong></span></div>` : ''}
             </div>
           </div>
         </div>
@@ -642,9 +856,40 @@ const CALCS_LOANS = {
             </div>
           </div>
         </div>` : ""}
+        <div class="compare-options-card" style="margin-top:12px">
+          <div class="compare-options-header">⚖️ Compare Loan Options</div>
+          <div class="compare-scenarios-grid">
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 1</span><span class="scenario-tag">Current</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc1Amount" value="${Math.round(glPrincipal)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc1Rate" value="${glRate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc1Tenure" value="${glTenureYrs}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc1ResEMI">${fmtC(res.emi)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc1ResInt" style="color:#ef4444">${fmtC(res.interest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(1)">Apply This Scenario</button>
+            </div>
+            <div class="scenario-box">
+              <div class="scenario-title"><span>Scenario 2</span><span class="scenario-tag">Alternative</span></div>
+              <div class="scenario-inputs">
+                <div class="scenario-input-group"><label>Amount</label><input type="number" id="sc2Amount" value="${Math.round(glPrincipal)}" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Rate (%)</label><input type="number" id="sc2Rate" value="${glSc2Rate}" step="0.1" oninput="recalcScenarios()"></div>
+                <div class="scenario-input-group"><label>Years</label><input type="number" id="sc2Tenure" value="${glTenureYrs}" oninput="recalcScenarios()"></div>
+              </div>
+              <div class="scenario-results">
+                <div class="scenario-res-item"><div class="s-label">Monthly EMI</div><div class="s-val" id="sc2ResEMI">${fmtC(glSc2Res.emi)}</div></div>
+                <div class="scenario-res-item"><div class="s-label">Total Interest</div><div class="s-val" id="sc2ResInt" style="color:#ef4444">${fmtC(glSc2Res.interest)}</div></div>
+              </div>
+              <button class="btn-apply-scenario" onclick="applyScenario(2)">Apply This Scenario</button>
+            </div>
+          </div>
+        </div>
       `;
       setTimeout(() => {
-        FinCharts.createDonut("chartDonut", principal, res.interest);
+        FinCharts.createDonut("chartDonut", principal, res.interest + res.processingFee);
         FinCharts.createAmortizationChart("chartAmortization", labels, principalPaidData, balanceData);
       }, 60);
     }
@@ -661,15 +906,68 @@ const CALCS_LOANS = {
     ],
     calc(f) {
       const r = f.rate / 12 / 100;
-      if (f.payment <= f.outstanding * r) return { payable: false };
-      let bal = f.outstanding, months = 0, totalInt = 0;
-      while (bal > 0 && months < 600) {
-        const intC = bal * r;
-        totalInt  += intC;
-        bal        = bal + intC - f.payment;
-        months++;
+      const minPayable = f.outstanding * r;
+      if (f.payment <= minPayable) return { payable: false };
+
+      const processingFee = f.outstanding * ((f.processingFeePct || 0) / 100);
+      const penaltyPct = (f.prepaymentPenaltyPct || 0) / 100;
+      const yearlyPrepay = f.prepayment || 0;
+
+      // 1. Base case without yearly prepayment (to compute savings)
+      let baseBal = f.outstanding, baseMonths = 0, baseInt = 0;
+      while (baseBal > 0 && baseMonths < 600) {
+        const intC = baseBal * r;
+        baseInt += intC;
+        const principalPaid = Math.min(baseBal, f.payment - intC);
+        baseBal -= principalPaid;
+        baseMonths++;
       }
-      return { months, totalInt, totalPaid: f.outstanding + totalInt, outstanding: f.outstanding, payable: true };
+
+      // 2. Actual simulation with prepayment and penalty
+      let bal = f.outstanding, months = 0, totalInt = 0, totalPenalty = 0, totalPrepaymentPaid = 0;
+      while (bal > 0 && months < 600) {
+        months++;
+        const intC = bal * r;
+        totalInt += intC;
+
+        const excess = Math.max(0, f.payment - intC);
+
+        let prepayThisMonth = 0;
+        if (yearlyPrepay > 0 && (months % 12 === 0)) {
+          prepayThisMonth = Math.min(bal, yearlyPrepay);
+          totalPrepaymentPaid += prepayThisMonth;
+        }
+
+        if (penaltyPct > 0) {
+          const penaltyAmt = (prepayThisMonth + excess) * penaltyPct;
+          totalPenalty += penaltyAmt;
+        }
+
+        const principalPaid = Math.min(bal, excess + prepayThisMonth);
+        bal -= principalPaid;
+      }
+
+      const savedInterest = Math.max(0, baseInt - totalInt);
+      const reducedMonths = Math.max(0, baseMonths - months);
+      const totalPaid = f.outstanding + totalInt + processingFee + totalPenalty;
+
+      return {
+        payable: true,
+        months,
+        baseMonths,
+        reducedMonths,
+        totalInt,
+        savedInterest,
+        totalPaid,
+        outstanding: f.outstanding,
+        payment: f.payment,
+        processingFee,
+        processingFeePct: f.processingFeePct || 0,
+        prepayment: yearlyPrepay,
+        totalPrepaymentPaid,
+        totalPenalty,
+        penaltyPct: f.prepaymentPenaltyPct || 0
+      };
     },
     render(res, el) {
       if (!res.payable) {
@@ -689,14 +987,84 @@ const CALCS_LOANS = {
               <div class="summary-hero-sub">${res.months} total months</div>
             </div>
             <div class="summary-breakdown">
-              ${row("Outstanding",       fmtC(res.outstanding))}
-              ${row("Total Interest",    fmtC(res.totalInt), "red")}
-              ${row("Total Amount Paid", fmtC(res.totalPaid))}
-              ${row("Interest Ratio",    ((res.totalInt/res.outstanding)*100).toFixed(0)+"%", "red")}
+              ${row("Outstanding Balance",       fmtC(res.outstanding))}
+              ${row("Monthly Payment",           fmtC(res.payment))}
+              ${row("Total Interest",            fmtC(res.totalInt), "red")}
+              ${res.processingFee > 0 ? row("Processing Fee", fmtC(res.processingFee), "gold") : ""}
+              ${res.prepayment > 0 ? row("Yearly Prepayment", fmtC(res.prepayment), "green") : ""}
+              ${res.totalPenalty > 0 ? row("Prepayment Penalty (Total)", fmtC(res.totalPenalty), "red") : ""}
+              ${row("Total Amount Paid",         fmtC(res.totalPaid), "green")}
+              ${row("Interest Ratio",            ((res.totalInt/res.outstanding)*100).toFixed(0)+"%", "red")}
+            </div>
+            ${res.penaltyPct > 0 ? `<div style="font-size:0.72rem;color:#f59e0b;margin-top:8px;font-weight:600">⚠️ ${res.penaltyPct}% prepayment penalty applied to extra payments & prepayments</div>` : ""}
+          </div>
+          <div class="breakdown-chart-card">
+            <div class="chart-card-header">📊 Cost Breakdown</div>
+            <div class="donut-wrap">
+              <canvas id="chartDonut" style="max-width:180px;max-height:180px"></canvas>
+              <div class="donut-center-text">
+                <div class="center-label">Total Paid</div>
+                <div class="center-val">${fmtC(res.totalPaid)}</div>
+              </div>
+            </div>
+            <div class="chart-custom-legend">
+              <div class="custom-legend-item"><span class="legend-square" style="background:#2563eb"></span><span>Principal: <strong>${fmtC(res.outstanding)}</strong></span></div>
+              <div class="custom-legend-item"><span class="legend-square" style="background:#ef4444"></span><span>Interest: <strong>${fmtC(res.totalInt)}</strong></span></div>
+              ${(res.processingFee > 0 || res.totalPenalty > 0) ? `<div class="custom-legend-item"><span class="legend-square" style="background:#f59e0b"></span><span>Fees & Penalty: <strong>${fmtC(res.processingFee + res.totalPenalty)}</strong></span></div>` : ''}
             </div>
           </div>
-        </div>`;
+        </div>
+        ${res.prepayment > 0 ? `
+        <div class="compare-options-card" style="margin-top:12px;border:2px solid #16a34a22">
+          <div class="compare-options-header" style="color:#16a34a">💰 Prepayment Impact (₹${fmt(res.prepayment)}/year)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px">
+            <div style="text-align:center;padding:14px;background:rgba(22,163,74,0.07);border-radius:10px;border:1px solid #16a34a33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">INTEREST SAVED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#16a34a">${fmtC(res.savedInterest)}</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(37,99,235,0.07);border-radius:10px;border:1px solid #2563eb33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">TENURE REDUCED</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#2563eb">${res.reducedMonths} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(${Math.round(res.reducedMonths/12*10)/10} yrs earlier)</div>
+            </div>
+            <div style="text-align:center;padding:14px;background:rgba(245,158,11,0.07);border-radius:10px;border:1px solid #f59e0b33">
+              <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:4px">NEW TENURE</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#f59e0b">${res.months} Months</div>
+              <div style="font-size:0.68rem;color:#94a3b8">(vs ${res.baseMonths} original)</div>
+            </div>
+          </div>
+        </div>` : ""}
+      `;
+      setTimeout(() => {
+        FinCharts.createDonut("chartDonut", res.outstanding, res.totalInt + res.processingFee + res.totalPenalty);
+      }, 60);
     }
+  },
+
+  /* ── PERSONAL LOAN ── */
+  "personal-loan": {
+    icon: "👤", name: "Personal Loan Calculator",
+    desc: "Calculate EMI, total interest and repayment schedule for personal loans. Supports processing fee, yearly prepayment and prepayment penalty.",
+    fields: [
+      { id:"principal", label:"Loan Amount",         type:"range", min:0,  max:5000000,  step:10000, default:500000, fmt:v=>v===0?"\u20b90":fmtC(v) },
+      { id:"rate",      label:"Interest Rate (p.a.)", type:"range", min:1,  max:36,       step:0.25,  default:12,     fmt:v=>v+"%" },
+      { id:"tenure",    label:"Loan Tenure (Years)",  type:"range", min:1,  max:7,        step:1,     default:3,      fmt:v=>v+" Yrs" }
+    ],
+    calc(f) {
+      const months = Math.round((f.tenureMonths || f.tenure * 12));
+      const res = emiCalc(f.principal, f.rate, months, f.processingFeePct, f.prepayment);
+      // Apply prepayment penalty on each annual prepayment chunk
+      if ((f.prepaymentPenaltyPct || 0) > 0 && f.prepayment > 0) {
+        const numYears = Math.floor(months / 12);
+        const penaltyTotal = numYears * f.prepayment * (f.prepaymentPenaltyPct / 100);
+        res.prepaymentPenalty = penaltyTotal;
+        res.total += penaltyTotal;
+      } else {
+        res.prepaymentPenalty = 0;
+      }
+      return res;
+    },
+    render(res, el, cfg, fields) { emiHTML(res, el, cfg, fields); }
   },
 
   /* ── CONSUMER DURABLE ── */
